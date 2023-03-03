@@ -1,0 +1,42 @@
+\contentsline {chapter}{\numberline {1}Introduction and Background Research}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Introduction}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Reinforcement Learning}{1}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Markov Decision Processes}{2}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Model-Free RL}{3}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Model-Based RL}{3}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Dynamic Programming}{3}{subsection.1.2.4}%
+\contentsline {subsubsection}{\numberline {1.2.4.1}Policy Iteration}{3}{subsubsection.1.2.4.1}%
+\contentsline {subsubsection}{\numberline {1.2.4.2}Value Iteration}{3}{subsubsection.1.2.4.2}%
+\contentsline {subsection}{\numberline {1.2.5}Temporal Difference Learning}{3}{subsection.1.2.5}%
+\contentsline {subsubsection}{\numberline {1.2.5.1}Q-Learning: Off-Policy TD-Learning}{3}{subsubsection.1.2.5.1}%
+\contentsline {subsubsection}{\numberline {1.2.5.2}SARSA: On-Policy TD-Learning}{3}{subsubsection.1.2.5.2}%
+\contentsline {section}{\numberline {1.3}Planning}{4}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}A* Search}{4}{subsection.1.3.1}%
+\contentsline {section}{\numberline {1.4}Exploration in Reinforcement Learning}{4}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Random}{4}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Optimism}{4}{subsection.1.4.2}%
+\contentsline {subsection}{\numberline {1.4.3}Intrinsically Motivated}{4}{subsection.1.4.3}%
+\contentsline {subsection}{\numberline {1.4.4}Deliberate}{4}{subsection.1.4.4}%
+\contentsline {section}{\numberline {1.5}Related Work (Planning and Learning)}{4}{section.1.5}%
+\contentsline {chapter}{\numberline {2}Methods}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Notation and Formalisms}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Method Definition}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Proof of Convergence}{5}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Results}{6}{chapter.3}%
+\contentsline {section}{\numberline {3.1}A section}{6}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}A sub-section}{6}{subsection.3.1.1}%
+\contentsline {section}{\numberline {3.2}Another section}{6}{section.3.2}%
+\contentsline {chapter}{\numberline {4}Discussion}{7}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Conclusions}{7}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Ideas for future work}{7}{section.4.2}%
+\contentsline {chapter}{References}{8}{section.4.2}%
+\contentsline {chapter}{Appendices}{9}{section*.3}%
+\contentsline {chapter}{\numberline {A}Self-appraisal}{9}{appendix.a.A}%
+\contentsline {section}{\numberline {A.1}Critical self-evaluation}{9}{section.a.A.1}%
+\contentsline {section}{\numberline {A.2}Personal reflection and lessons learned}{9}{section.a.A.2}%
+\contentsline {section}{\numberline {A.3}Legal, social, ethical and professional issues}{9}{section.a.A.3}%
+\contentsline {subsection}{\numberline {A.3.1}Legal issues}{9}{subsection.a.A.3.1}%
+\contentsline {subsection}{\numberline {A.3.2}Social issues}{9}{subsection.a.A.3.2}%
+\contentsline {subsection}{\numberline {A.3.3}Ethical issues}{9}{subsection.a.A.3.3}%
+\contentsline {subsection}{\numberline {A.3.4}Professional issues}{9}{subsection.a.A.3.4}%
+\contentsline {chapter}{\numberline {B}External Material}{10}{appendix.a.B}%

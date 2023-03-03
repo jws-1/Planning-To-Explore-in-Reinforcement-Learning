@@ -1,0 +1,105 @@
+
+\chapter{Introduction and Background Research}
+
+% You can cite chapters by using '\ref{chapter1}', where the label must
+% match that given in the 'label' command, as on the next line.
+\label{chapter1}
+\section{Introduction}
+\begin{itemize}
+    \item Reinforcement Learning (RL) is based on the concept of learning through experience - through trial-and-error.
+    \item  This is akin to the way in which humans and animals learn new skills (\textcolor{red}{link to psychology}).
+    \item Motivate need for exploration
+    \item Exploration is a widely studied topic in RL, as it is necessary for learning. Although exploration methods exist based on optimism, \textcolor{red}{cite here}, intrinsic motivation, \textcolor{red}{cite here}, human interaction, \textcolor{red}{cite here} and information theory, \textcolor{red}{cite here}, in practice, random exploration is ubiquitous. Randomness precludes efficiency and prohibits explainability.
+    \item In contrast to RL, Automated Planning uses embedded knowledge of the environment, in the form of a model, to determine the optimal sequence of successive actions required to reach a goal. However, Planning relies the model to accurately represent  the environment - this cannot be guaranteed and therefore Planning can be quite fragile.
+    \item Combinations of Planning and RL have been developed in order to overcome the fragility of Planning and reduce exploration required for learning, such as DARLING \cite{AIJ16-leonetti}, where exploration is constrained to seemingly optimal states by reasoning on the model.
+    \item Discuss issues with current state of the art.
+    \item Within this work we explore the development of a framework that synergises planning and learning in order to drive and constrain exploration by making intelligent hypotheses about the environment, informed by the inherently inaccurate, but still useful, model, previous experience and environmental observations, rather than through randomness. The ultimate goal of this work is to mitigate the effect of the inherent inaccuracies in the model on the quality of learned behaviour; resulting in agents that can learn beyond the inaccuracies of the model, through intelligent exploration.
+\end{itemize}
+Reinforcement Learning (RL) is based on the concept of learning through experience - it is a form of trial-and-error learning. An agent learns how to behave in an environment by interacting with it and receiving reinforcement (both positive and negative) through a numerical signal called the reward.
+RL is grounded in psychology 
+
+This is akin to the way in which humans and animals learn new skills 
+\section{Reinforcement Learning}
+Reinforcement Learning (RL) does not fall into either of the traditional machine learning paradigms (supervised and unsupervised learning) - it is a machine learning paradigm of its own. Within an RL problem a goal-directed decision-making agent learns how to behave in an environment (which may be stochastic). The agent learns by interacting with the environment through actions and observing the affects through its new state and a numerical reward signal. The goal of the agent is to learn how to map states to actions in order to maximise the cumulative long-term reward signal \cite{DBLP:books/lib/SuttonB98}.
+A Model-Free RL agent has 3 elements:
+\begin{itemize}
+    \item \textbf{Policy}
+    \item \textbf{Reward}
+    \item \textbf{Value}
+\end{itemize}
+A Model-Based RL agent has the same elements as that in the Model-Free setting, but additionally it has a Model. The model may be learnt by the agent in order to plan on, or it may be given to the agent to inform exploration.
+Within the Introduction we motivated the need for exploration, however we did not mention a key problem in RL; the \textit{exploration-exploitation trade-off}. The agent needs to explore in order to gain experience and learn, but it must also exploit its learned knowledge - the problem is knowing when to explore and when to exploit.
+\subsection{Markov Decision Processes}
+The Markov Property states that the future is conditionally independent of the past given the present. An RL problem that satisfies the Markov Property is known as a Markov Decision Problem, and can be modelled by a Markov Decision Process (MDP). MDPs can be fully (MDP) or partially observable (POMDP). Consider an agent interacting with a stochastic gridworld, the agent can easily observe its state, whereas a robot navigating a maze may not be able to observe its exact state, due to uncertainty in sensors, joint readings, etc. In fact, the real-world is a POMDP. Within this work, as a simplification, we assume that the agent is fully able to observe its state. Furthermore that the environment can be discretised (rather than being modelled in a continuous nature); hence we consider \textbf{finite} MDPs.
+A finite MDP is a 4-tuple: $\text{MDP} = (S,A,T,R)$ where:
+\begin{itemize}
+    \item $S$ is a finite set of states.
+    \item $A$ is a finite set of actions.
+    \item $T : S \times A \times S \rightarrow [0,1]$ is the transition function, which determines the probability of transitioning from a state $s \in S$ to $s' \in S$ with an action $a \in A$.
+    \item $R:S \times A \times S \rightarrow \mathbb{R}$ is the reward function, which determines the reward signal, $r \in \mathbb{R}$ received by the agent from transitioning from a state $s \in S$ $s' \in S$ with the action $a \in A$. This reward is extrinsic to the agent; it comes from the environment.
+\end{itemize}
+The transition function, $T$ is a key indicator about the nature of the environment.
+If $\forall s,s' \in S, \forall a \in A$, $T(s,a,'s) \in \{0,1\}$, then the environment is deterministic, otherwise it is probabilistic.
+A deterministic environment is one which there is no variance in the outcomes of action in a given state; taking the same action in the same state always produces the same outcome. Whereas a probabilistic (or non-deterministic) environment has uncertainty associated with transitions.
+\\The Bellman Equation determines the expected reward for being in a state $s \in S$ and following a fixed policy $\pi$:
+$$V^\pi(s) = R(s, \pi(s)) + \gamma \sum_{s'}P(s'|s,\pi(s))V^\pi(s')$$
+Where $V^\pi$ is the value function of the policy, $\pi$, $0 \le \gamma \le 1$ is the discount factor.
+The Bellman Optimality equation determines the reward for taking the action giving the highest expected return.
+$$V^{\pi*}(s) = \text{argmax}_a{R(s,a) + \gamma\sum_{s'}P(s'|s,a)V^{\pi*}(s')}$$
+Where $V^{\pi*}$ is the value function of the optimal policy, $\pi*$, $0 \le \gamma \le 1$ is the discount factor.
+\subsection{Model-Free RL}
+\subsection{Model-Based RL}
+\subsection{Dynamic Programming}
+\begin{itemize}
+\item Given a perfect model of the environment, embedded in a MDP, an optimal policy can be computed using Dynamic Programming. However, this assumption of a perfect model is flawed.
+\end{itemize}
+\subsubsection{Policy Iteration}
+\subsubsection{Value Iteration}
+\subsection{Temporal Difference Learning}
+\begin{itemize}
+    \item The (temporal) credit assignment problem.
+    \item Temporal Difference (TD) learning is driven by the error/difference between temporally successive predictions; learning occurs whenever there is a change in prediction over time. \cite{Sutton:1988}
+    \item Temporal difference methods bootstrap from previous experience.
+\end{itemize}
+\subsubsection{Q-Learning: Off-Policy TD-Learning}
+\begin{itemize}
+    \item Q-Learning is an off-policy Temporal Difference Learning method. It is also model-free. \cite{Watkins:1989, journals/ml/WatkinsD92}.
+    \item Off-policy refers to the fact that the value of the optimal policy is learnt independently of the agent's actions, as opposed to on-policy learning where the value of the policy being carried out by the agent is learnt \cite{PooleMackworth17}.
+\end{itemize}
+\subsubsection{SARSA: On-Policy TD-Learning}
+    \item SARSA is an on-policy TD-Learning method.
+\section{Planning}
+\begin{itemize}
+    \item Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a goal.\cite{russelNorvig2003:aima}.
+\end{itemize}
+\subsection{A* Search}
+\begin{itemize}
+    \item A* Search \cite{4082128} is not necessarily a Planning algorithm, rather it is a search algorithm. However, a simple Planning agent with the purpose of navigation in a discretised state space can use A* for planning.
+    \item Heuristic
+    \item Admissable
+\end{itemize}
+\section{Exploration in Reinforcement Learning}
+\begin{itemize}
+    \item \cite{Thrun-1992-15850} distinguished exploration methods into two categories: directed and undirected. A more recent work \cite{DBLP:journals/corr/abs-2109-00157} distinguished between reward-free and reward-based exploration.
+\end{itemize}
+\subsection{Random}
+\subsection{Optimism}
+\subsection{Intrinsically Motivated}
+\subsection{Deliberate}
+
+% \begin{itemize}
+%     \item $\epsilon$-greedy 
+%     \item 
+
+% \subsection{Directed}
+% \subsubsection{Intrinsically Motivated}
+% \subsubsection{Optimistic}
+% \subsubsection{Deliberate}
+% \subsection{Undirected}
+% \subsubsection{Blind Exploration}
+\section{Related Work (Planning and Learning)}
+\begin{itemize}
+    \item DARLING
+    \item Dyna
+    \item AlphaGo?
+\end{itemize}

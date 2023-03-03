@@ -1,0 +1,48 @@
+\begin{thebibliography}{10}
+
+\bibitem{AIJ16-leonetti}
+M.~Leonetti, L.~Iocchi, and P.~Stone, ``A synthesis of automated planning and
+  reinforcement learning for efficient, robust decision-making,'' {\em
+  Artificial Intelligence}, vol.~241, pp.~103 -- 130, September 2016.
+
+\bibitem{DBLP:books/lib/SuttonB98}
+R.~S. Sutton and A.~G. Barto, {\em Reinforcement learning - an introduction}.
+\newblock Adaptive computation and machine learning, {MIT} Press, 1998.
+
+\bibitem{Sutton:1988}
+R.~S. Sutton, ``Learning to predict by the methods of temporal differences,''
+  {\em Machine Learning}, vol.~3, pp.~9--44, August 1988.
+
+\bibitem{Watkins:1989}
+C.~J. C.~H. Watkins, {\em Learning from Delayed Rewards}.
+\newblock PhD thesis, King's College, Cambridge, UK, May 1989.
+
+\bibitem{journals/ml/WatkinsD92}
+C.~J. C.~H. Watkins and P.~Dayan, ``Technical note q-learning.,'' {\em Mach.
+  Learn.}, vol.~8, pp.~279--292, 1992.
+
+\bibitem{PooleMackworth17}
+D.~Poole and A.~Mackworth, {\em Artificial Intelligence: Foundations of
+  Computational Agents}.
+\newblock Cambridge, UK: Cambridge University Press, 2~ed., 2017.
+
+\bibitem{russelNorvig2003:aima}
+S.~J. Russell and P.~Norvig, {\em Artificial Intelligence: A Modern Approach
+  (2nd Edition)}.
+\newblock {Prentice Hall}, December 2002.
+
+\bibitem{4082128}
+P.~E. Hart, N.~J. Nilsson, and B.~Raphael, ``A formal basis for the heuristic
+  determination of minimum cost paths,'' {\em IEEE Transactions on Systems
+  Science and Cybernetics}, vol.~4, no.~2, pp.~100--107, 1968.
+
+\bibitem{Thrun-1992-15850}
+S.~Thrun, ``Efficient exploration in reinforcement learning.,'' Tech. Rep.
+  CMU-CS-92-102, Carnegie Mellon University, Pittsburgh, PA, January 1992.
+
+\bibitem{DBLP:journals/corr/abs-2109-00157}
+S.~Amin, M.~Gomrokchi, H.~Satija, H.~van Hoof, and D.~Precup, ``A survey of
+  exploration methods in reinforcement learning,'' {\em CoRR},
+  vol.~abs/2109.00157, 2021.
+
+\end{thebibliography}
