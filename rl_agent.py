@@ -9,6 +9,7 @@ import scipy.stats as st
 import os
 from copy import deepcopy
 from types import SimpleNamespace
+from mdp import make_transition_function, make_reward_function
 
 class RLAgent():
 
@@ -30,13 +31,10 @@ class RLAgent():
             if i % 100 == 0:
                 print(f"RL-AGENT: episode {i}")
 
-            if i < config.static_threshold:
-                self.world.sample()
-            else:
-                self.world.static()
+            self.world.sample()
 
             done = False
-            state = self.world.current
+            state = self.world.start
 
             while not done:
 
@@ -45,8 +43,7 @@ class RLAgent():
                 else:
                     action = Action(int(np.argmax(self.q_table[state])))
 
-                reward, done = self.world.action(action)
-                next_state = self.world.current
+                reward, next_state = self.world.action(state, action)
 
                 old_value = self.q_table[state[0]][state[1]][action.value]
                 next_max = np.max(self.q_table[next_state])
@@ -55,6 +52,7 @@ class RLAgent():
 
                 states[i][state]+=1
                 state = next_state
+                done = state == self.world.goal
                 rewards[i] += reward
                 
             states[i][state]+=1
@@ -84,7 +82,7 @@ class RLAgent():
 
         return aggregated_rewards_windows, np.array(rewards_95pc), states
 
-    def plot_results(self, rewards, states, policy="e-greedy", rewards_95pc=None, save=True, config=None):
+    def plot_results(self, rewards, states, policy="e-greedy", rewards_95pc=None, save=True, config=None, obstacles=None, highways=None):
         if not os.path.exists(policy) and save:
             os.mkdir(policy)
         print(rewards.shape[0]-50)
@@ -106,21 +104,22 @@ class RLAgent():
         annots[self.world.start[0]][self.world.start[1]] = "S"
         annots[self.world.goal[0]][self.world.goal[1]] = "G"
         
-        for i in range(self.world.dim[0]):
-            for j in range(self.world.dim[1]):
-                if (i,j)  in self.world.static_obstacles:
-                    annots[i][j] = "O"
-                else:
-                    annots[i][j] += " " + str(self.world.static_rewards[i,j])
-                    annots[i][j] = annots[i][j].lstrip()
+        # for i in range(self.world.dim[0]):
+        #     for j in range(self.world.dim[1]):
+        #         if (i,j)  in self.world.static_obstacles:
+        #             annots[i][j] = "O"
+        #         else:
+        #             annots[i][j] += " " + str(self.world.static_rewards[i,j])
+        #             annots[i][j] = annots[i][j].lstrip()
 
         annots = np.array(annots)
         if states.ndim == 4:
             states_all = np.sum(np.sum(states, axis=0), axis=0)
         elif states.ndim == 3:
             states_all = np.sum(states, axis=0)
-        for obstacle in self.world.static_obstacles:
-            states_all[obstacle] = np.nan
+        for (obstacle, p) in obstacles:
+            if p == 1.0:
+                states_all[obstacle] = np.nan
         # states_all[self.world.static_obstacles] = np.nan
         hm = sns.heatmap(np.transpose(states_all), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
         hm.invert_yaxis()
@@ -140,8 +139,9 @@ class RLAgent():
                 states_exp = np.sum(states[:, :config.planning_steps, :, :], axis=0)
             else:
                 states_exp = np.sum(states[:, :50, :, :], axis=0)
-        for obstacle in self.world.static_obstacles:
-            states_exp[obstacle] = np.nan
+        for (obstacle, p) in obstacles:
+            if p == 1.0:
+                states_exp[obstacle] = np.nan
         hm = sns.heatmap(np.transpose(states_exp), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
         hm.invert_yaxis()
         plt.title(f"RL Agent Visited States ({policy}): Initial Exploration")
@@ -154,8 +154,9 @@ class RLAgent():
             states_fin = np.sum(np.sum(states[:, rewards.shape[0]-50:, :, :], axis=0), axis=0)
         elif states.ndim == 3:
             states_fin = np.sum(states[:, rewards.shape[0]-50:, :, :], axis=0)
-        for obstacle in self.world.static_obstacles:
-            states_fin[obstacle] = np.nan
+        for (obstacle, p) in obstacles:
+            if p == 1.0:
+                states_fin[obstacle] = np.nan
         hm = sns.heatmap(np.transpose(states_fin), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
         hm.invert_yaxis()
         plt.title(f"RL Agent Visited States ({policy}): Final Policy")
@@ -170,20 +171,27 @@ if __name__ == "__main__":
     start = (0,0)
     goal = (9,9)
 
-    world_rewards = np.full(dim, -2, dtype=int)
+    obstacles = [((0,3), 0.001), ((1,3), 0.7), ((2,3), 0.5), ((3,3), 1.0), ((4,3), 1.0), ((5,3), 0.65), ((6,3), 0.245), ((7,3), 0.1), ((8,3), 1.0), ((9,3), 0.9)]
+    highways = [(0,3), (0,4)]
+    T = make_transition_function(dim, obstacles)
+    R = make_reward_function(dim, highways)
+    world = GridWorld(dim, start, goal, T, R)
+
+
+    # world_rewards = np.full(dim, -2, dtype=int)
     
-    world_obstacles = {
-        (0,3) : 0.,
-        (2,3) : 0.5,
-        (3,3) : 1.0,
-        (4,3) : 1.0,
-        (5,3) : 0.001
-    }
-    grid = GridWorld(dim, start, goal, world_obstacles, world_rewards)
-    agent = RLAgent(grid)
+    # world_obstacles = {
+    #     (0,3) : 0.,
+    #     (2,3) : 0.5,
+    #     (3,3) : 1.0,
+    #     (4,3) : 1.0,
+    #     (5,3) : 0.001
+    # }
+    # grid = GridWorld(dim, start, goal, world_obstacles, world_rewards)
+    agent = RLAgent(world)
     config = {
         "episodes": 1000,
-        "m":20,
+        "m":1,
         "eps": 0.1,
         "lr":0.1,
         "df":1.0, # episodic, so rewards are undiscounted.
@@ -193,4 +201,4 @@ if __name__ == "__main__":
 
     min_, max_ = 0, 1000
     print(states.shape)
-    agent.plot_results(rewards[min_:max_], states[:, min_:max_, :, :], rewards_95pc=rewards_95pc[min_:max_,:], policy="rl", save=True)
+    agent.plot_results(rewards[min_:max_], states[:, min_:max_, :, :], rewards_95pc=rewards_95pc[min_:max_,:], policy="rl", save=True, obstacles=obstacles, highways=highways)

@@ -12,8 +12,8 @@ class Planner():
     def __init__(self, model):
         self.model = model
 
-    def plan(self):
-        return self.a_star()[0]
+    def plan(self, observations=None):
+        return self.a_star(observations)[0]
     
     def actions_from_path(self, path):
         actions = [] # list of actions
@@ -22,11 +22,10 @@ class Planner():
             diff = tuple(map(operator.sub, next, curr))
             actions.append(rev_modifiers[diff])
         return actions
-    
 
-    def a_star(self):
+    def a_star(self, observations=None):
         W = 1
-        start = deepcopy(self.model.current)
+        start = deepcopy(self.model.start)
         goal = tuple(self.model.goal)
         g = defaultdict(
             lambda: float("inf")
@@ -52,9 +51,20 @@ class Planner():
                 children = (new_x, new_y)
                 if not self.model.feasible_state(children):
                     continue
-                # # print(self.model.obstacles)
-                if children in self.model.obstacles.keys():
-                    continue
+                _,p = {v[0] : (k, v[1]) for k,v in self.model.T[curr].items()}[children]
+                if observations is not None:
+                    if observations[children] and p == 0.0:
+                        continue
+                # if p == 0.0:
+                #     continue
+                # print(a,p, {v[0] : (k, v[1]) for k,v in self.model.T[curr].items()})
+                # print(p)
+                # [children]
+                # if not self.model.feasible_state(children):
+                #     continue
+                # # # print(self.model.obstacles)
+                # if children in self.model.obstacles.keys():
+                #     continue
                 # print(self.model.obstacles)
                 # if children in self.model.obstacles.keys():
                 #     if self.model.obstacles[children] > 0.5:
@@ -63,7 +73,7 @@ class Planner():
                 #     # print(d)
                 # else:
                 #     d = 1
-                cost = abs(self.model.rewards[children])
+                cost = abs(self.model.R[children]) + (1-p)
                 new_g= g[curr] + cost # add + 1 to the real cost of children
                 if (
                     children not in g or new_g < g[children]

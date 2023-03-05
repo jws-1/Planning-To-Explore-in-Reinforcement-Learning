@@ -21,18 +21,17 @@ class MetaPlanner():
         for curr, next in zip(path, path[1:]):
             diff = tuple(map(operator.sub, next, curr))
             if not observations[next[0]][next[1]]:
-                if next in self.model.obstacles.keys():
-                    if meta_calls[next[0]][next[1]][MetaAction.REMOVE_OBJECT.value] == 0.0:
-                        actions.append((MetaAction.REMOVE_OBJECT, next))
-                if meta_calls[next[0]][next[1]][MetaAction.INCREASE_REWARD.value] == 0.0:
-                    # print(meta_calls[next[0]][next[1]][MetaAction.INCREASE_REWARD.value])
+                if not meta_calls[next[0]][next[1]][MetaAction.INCREASE_TRANSITION_PROBABILITY.value]:
+                    if {v[0] : (k, v[1]) for k,v in self.model.T[curr].items()}[next][1] < 1.0:
+                        actions.append((MetaAction.INCREASE_TRANSITION_PROBABILITY, next))
+                if not meta_calls[next[0]][next[1]][MetaAction.INCREASE_REWARD.value]:
                     actions.append((MetaAction.INCREASE_REWARD, next))
             actions.append((rev_modifiers[diff], next))
         return actions
     
     def a_star(self, meta_calls, observations):
         W = 1
-        start = deepcopy(self.model.current)
+        start = deepcopy(self.model.start)
         goal = tuple(self.model.goal)
         g = defaultdict(
             lambda: float("inf")
@@ -56,22 +55,23 @@ class MetaPlanner():
                 new_x, new_y = (curr[0] + dx, curr[1] + dy)  # compute children
 
                 children = (new_x, new_y)
+
                 if not self.model.feasible_state(children):
                     continue
-                # # print(self.model.obstacles)
-                if children in self.model.obstacles.keys():
-                    if meta_calls[children][MetaAction.REMOVE_OBJECT.value] > 0.0:
-                        continue
-                    if observations[children]:
-                        continue
-                    # if self.model.obstacles[children] > 0.5:
-                    #     continye
-                if meta_calls[children][MetaAction.INCREASE_REWARD.value] > 0.0:
-                    cost = abs(self.model.rewards[children])
-                else:
-                    cost = 1
 
-                new_g= g[curr] + cost # add + 1 to the real cost of children
+                _,p = {v[0] : (k, v[1]) for k,v in self.model.T[curr].items()}[children]
+                if p < 1.0:
+                    if p == 0.0 and observations[children]:
+                        continue
+                    if not observations[children] and not meta_calls[children][MetaAction.INCREASE_TRANSITION_PROBABILITY.value]:
+                        p = 1.0
+
+                if meta_calls[children][MetaAction.INCREASE_REWARD.value]:
+                    cost = abs(self.model.R[children])
+                else:
+                    cost = max(abs(self.model.R[children]) - 1, 0)
+
+                new_g= g[curr] + cost + (1-p) # add + 1 to the real cost of children
                 if (
                     children not in g or new_g < g[children]
                 ):  # only care about new undiscovered children or children with lower cost
