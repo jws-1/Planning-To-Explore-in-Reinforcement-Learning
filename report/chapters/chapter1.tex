@@ -23,24 +23,28 @@ Reinforcement Learning (RL) \cite{DBLP:books/lib/SuttonB98} is based on the conc
 \\Within this work we explore the development of a framework that synergises planning and learning in order to drive and constrain exploration by making intelligent hypotheses about the environment, informed by the inherently inaccurate, but still useful, model, previous experience and environmental observations, rather than through randomness. The ultimate goal of this work is to mitigate the effect of the inherent inaccuracies in the model on the quality of learned behaviour; resulting in agents that can learn beyond the inaccuracies of the model, through intelligent exploration.
 
 
-\section{Reinforcement Learning}.
-Reinforcement Learning (RL) does not fall into either of the traditional machine learning paradigms (supervised and unsupervised learning) - it is a machine learning paradigm of its own. Within an RL problem a goal-directed decision-making agent learns how to behave in an environment (which may be stochastic). The agent learns by interacting with the environment through actions and observing the affects through its new state and a numerical reward signal. The goal of the agent is to learn how to map states to actions in order to maximise the cumulative long-term reward signal \cite{DBLP:books/lib/SuttonB98}.
-A Model-Free RL agent has 3 elements:
-\begin{itemize}
-    \item \textbf{Policy}
-    \item \textbf{Reward}
-    \item \textbf{Value}
-\end{itemize}
-A Model-Based RL agent has the same elements as that in the Model-Free setting, but additionally it has a Model. The model may be learnt by the agent in order to plan on, or it may be given to the agent to inform exploration.
-Within the Introduction we motivated the need for exploration, however we did not mention a key problem in RL; the \textit{exploration-exploitation trade-off}. The agent needs to explore in order to gain experience and learn, but it must also exploit its learned knowledge - the problem is knowing when to explore and when to exploit.
+\section{Reinforcement Learning}
+Reinforcement Learning (RL) does not fall into either of the traditional machine learning paradigms (supervised and unsupervised learning) - it is a machine learning paradigm of its own. A RL problem comes in the form of a sequential-decision making problem, and is formalised through a Markov Decision Process (MDP). Within an RL problem a goal-directed decision-making agent learns how to behave in an environment, which may be stochastic. The agent learns by interacting with the environment through actions and observing the affects through its new state and a numerical reward signal. The goal of the agent is to learn how to map states to actions in order to maximise the cumulative long-term reward signal \cite{DBLP:books/lib/SuttonB98}. The behaviour that the agent learns is known as the \textbf{policy}. The \textbf{reward function} indicates the immediate value of state-action pair, the goal of the agent is to maximise the cumulative returns from this. The \textbf{value function} indicates the expected cumulative reward the agent can receive starting from a given state.
+\\Within this work, we split RL into two categories: model-free and model-based. Model-free RL is the traditional instantiation of RL - the agent learns to act in an environment, with no knowledge of its dynamics. We briefly mentioned model-based RL within the introduction, but didn't explain what it actually is. Model-based RL is where the agent learns to act in an environment, and has some understanding of the dynamics of the environment in the form of a model. By the nature of models, the model is inaccurate, more often than not.
+
+% \\Within the introduction, we briefly introduced model-based RL
+% A Model-Free RL agent has 3 elements:
+% \begin{itemize}
+%     \item \textbf{Policy}
+%     \item \textbf{Reward}
+%     \item \textbf{Value}
+% \end{itemize}
+% A Model-Based RL agent has the same elements as that in the Model-Free setting, but additionally it has a Model. The model may be learnt by the agent in order to plan on, or it may be given to the agent to inform exploration.
+% Within the Introduction we motivated the need for exploration, however we did not mention a key problem in RL; the \textit{exploration-exploitation trade-off}. The agent needs to explore in order to gain experience and learn, but it must also exploit its learned knowledge - the problem is knowing when to explore and when to exploit.
 \subsection{Markov Decision Processes}
-The Markov Property states that the future is conditionally independent of the past given the present. An RL problem that satisfies the Markov Property is known as a Markov Decision Problem, and can be modelled by a Markov Decision Process (MDP). MDPs can be fully (MDP) or partially observable (POMDP). Consider an agent interacting with a stochastic gridworld, the agent can easily observe its state, whereas a robot navigating a maze may not be able to observe its exact state, due to uncertainty in sensors, joint readings, etc. In fact, the real-world is a POMDP. Within this work, as a simplification, we assume that the agent is fully able to observe its state. Furthermore that the environment can be discretised (rather than being modelled in a continuous nature); hence we consider \textbf{finite} MDPs.
+The Markov Property states that the future is conditionally independent of the past given the present. An RL problem that satisfies the Markov Property is known as a Markov Decision Problem, and can be modelled by a Markov Decision Process (MDP). Where an agent is able to fully observe its state, the problem can be modelled as an MDP. Conversely, where an agent can only partially observe its state, the problem can be modelled by a Partially Observable Markov Decision Process (POMDP). Consider an agent interacting with a stochastic gridworld, the agent can easily observe its state, whereas a robot navigating a maze may not be able to observe its exact state, due to uncertainty in sensors, joint readings, etc. In fact, the real-world is a POMDP. Within this work, as a simplification, we assume that the agent is fully able to observe its state. Furthermore that the environment can be discretised (rather than being modelled in a continuous nature); hence we consider \textbf{finite} MDPs.
 A finite MDP is a 4-tuple: $\text{MDP} = (S,A,T,R)$ where:
 \begin{itemize}
     \item $S$ is a finite set of states.
     \item $A$ is a finite set of actions.
     \item $T : S \times A \times S \rightarrow [0,1]$ is the transition function, which determines the probability of transitioning from a state $s \in S$ to $s' \in S$ with an action $a \in A$.
     \item $R:S \times A \times S \rightarrow \mathbb{R}$ is the reward function, which determines the reward signal, $r \in \mathbb{R}$ received by the agent from transitioning from a state $s \in S$ $s' \in S$ with the action $a \in A$. This reward is extrinsic to the agent; it comes from the environment.
+    \item $\gamma$ is the discount factor.
 \end{itemize}
 The transition function, $T$ is a key indicator about the nature of the environment.
 If $\forall s,s' \in S, \forall a \in A$, $T(s,a,'s) \in \{0,1\}$, then the environment is deterministic, otherwise it is probabilistic.
@@ -51,8 +55,6 @@ Where $V^\pi$ is the value function of the policy, $\pi$, $0 \le \gamma \le 1$ i
 The Bellman Optimality equation determines the reward for taking the action giving the highest expected return.
 $$V^{\pi*}(s) = \text{argmax}_a{R(s,a) + \gamma\sum_{s'}P(s'|s,a)V^{\pi*}(s')}$$
 Where $V^{\pi*}$ is the value function of the optimal policy, $\pi*$, $0 \le \gamma \le 1$ is the discount factor.
-\subsection{Model-Free RL}
-\subsection{Model-Based RL}
 \subsection{Dynamic Programming}
 \begin{itemize}
 \item Given a perfect model of the environment, embedded in a MDP, an optimal policy can be computed using Dynamic Programming. However, this assumption of a perfect model is flawed.
@@ -60,18 +62,27 @@ Where $V^{\pi*}$ is the value function of the optimal policy, $\pi*$, $0 \le \ga
 \subsubsection{Policy Iteration}
 \subsubsection{Value Iteration}
 \subsection{Temporal Difference Learning}
-\begin{itemize}
-    \item The (temporal) credit assignment problem.
-    \item Temporal Difference (TD) learning is driven by the error/difference between temporally successive predictions; learning occurs whenever there is a change in prediction over time. \cite{Sutton:1988}
-    \item Temporal difference methods bootstrap from previous experience.
-\end{itemize}
-\subsubsection{Q-Learning: Off-Policy TD-Learning}
-\begin{itemize}
-    \item Q-Learning is an off-policy Temporal Difference Learning method. It is also model-free. \cite{Watkins:1989, journals/ml/WatkinsD92}.
-    \item Off-policy refers to the fact that the value of the optimal policy is learnt independently of the agent's actions, as opposed to on-policy learning where the value of the policy being carried out by the agent is learnt \cite{PooleMackworth17}.
-\end{itemize}
+The (temporal) credit assignment problem \cite{Minsky:1961:ire} is the problem of determining which actions led to an outcome, and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action. In the context of RL, temporal credit assignment is important because in order to maximise the cumulative long-term reward, the agent needs to know which actions will realise such outcome. Temporal Difference (TD) \cite{10.5555/911176, 5392560} learning uses this concept; learning is driven by the error/difference between temporally successive predictions, so learning occurs whenever there is a change in prediction over time. It's a method for learning to predict; learning a prediction from another later learned prediction.
+TD Learning algorithms are model-free.
+TD Learning algorithms can be on-policy, where the value of the policy being currently carried out by the agent is learnt, or off-policy, where the value of the optimal policy is learnt independently of the agent's actions \cite{PooleMackworth17}.
+% \\ TD(0) \cite{10.1023/A:1022633531479}
+% \begin{itemize}
+%     \item The (temporal) credit assignment problem.
+%     \item Temporal Difference (TD) learning is driven by the error/difference between temporally successive predictions; learning occurs whenever there is a change in prediction over time. 
+%     \cite{Sutton:1988}
+%     \item Only relevant in multi-step prediction problems.
+%     \item Temporal difference methods bootstrap from previous experience.
+%     \item TD learning is a method for learning to predict.
+%     \item Learnign a prediction from another later learned prediction
+%     \item TD $\lambda$, TD0
+% \end{itemize}
+\subsubsection{Q-Learning}
+Q-Learning \cite{Watkins:1989, journals/ml/WatkinsD92} is an off-policy Temporal Difference Learning method. Q-Learning is defined by:
+$$Q(s_t,A_t) \leftarrow Q(s_t,a_t) + \alpha[r_{t+1} + \gamma \max_aQ(s_{t+1}, a) -Q(s_t,a_t)]$$
 \subsubsection{SARSA: On-Policy TD-Learning}
-    \item SARSA is an on-policy TD-Learning method.
+SARSA \cite{rummery:cuedtr94, conf/nips/Sutton95} is an on-policy Temporal Difference Learning method. SARSA is defined by:
+$$Q(S_t,A_t) \leftarrow Q(s_t,a_t) + \alpha[r_{t+1} + \gamma Q(s_{t+1}, a_{t+1})-Q(s_t,A_t)]$$
+    % \item SARSA is an on-policy TD-Learning method.
 \section{Planning}
 \begin{itemize}
     \item Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a goal.\cite{russelNorvig2003:aima}.
@@ -83,10 +94,13 @@ Where $V^{\pi*}$ is the value function of the optimal policy, $\pi*$, $0 \le \ga
     \item Admissable
 \end{itemize}
 \section{Exploration in Reinforcement Learning}
-\begin{itemize}
-    \item \cite{Thrun-1992-15850} distinguished exploration methods into two categories: directed and undirected. A more recent work \cite{DBLP:journals/corr/abs-2109-00157} distinguished between reward-free and reward-based exploration.
-\end{itemize}
+Thrun \cite{Thrun-1992-15850} distinguished exploration methods into two categories: directed and undirected. A more recent work distinguished between reward-free and reward-based exploration \cite{DBLP:journals/corr/abs-2109-00157}.
 \subsection{Random}
+The most common use of randomness in exploration is through $\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95}, which aims to balance the exploration and exploitation through an $\epsilon$ factor, such that the agent exploits its learned knowledge with probability $\epsilon$, and explores randomly with probability $1-\epsilon$. A common thing is to decay $\epsilon$ temporally, so the agent explores a lot early on, and then exploits more after it has learnt for a while.
+Whilst this does provide a balance between the two extremes of pure exploration and pure exploitation, it results in continually evaluating sub-optimal actions long after they have been realised to be sub-optimal.
+\\$\epsilon z$-greedy \cite{dabney2021temporallyextended}
+\\Softmax \cite{10.1007/978-3-642-76153-9_28}
+\\Random walk \cite{anderson86, NIPS1989_17000029}
 \subsection{Optimism}
 \subsection{Intrinsically Motivated}
 \subsection{Deliberate}
