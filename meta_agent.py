@@ -75,14 +75,23 @@ class RLMetaAgent(RLAgent):
             O_sas = np.full((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m), np.inf, dtype=float)
             O = np.zeros((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m))
             O_s = np.zeros((self.env.n, self.env.m))
-            meta = np.zeros((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m, 6))
+            meta_sas = np.zeros((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m, 6))
+            meta_s = np.zeros((self.env.n, self.env.m, 6))
             reward = 0
             print(f"Meta Agent, episode {i}")
 
             planning = i < config.planning_steps
 
             state = self.env.sample()
+
+            # for s in self.T.keys():
+            #     for a in self.T[s]:
+            #         if state in [t[1] for t in self.T[s][a]]:
+            #             meta_sas[s][a.value][state] = 1
+
             
+            # meta_s[state] = 1
+
             done = False
             # states[i][state]+=1
 
@@ -92,7 +101,7 @@ class RLMetaAgent(RLAgent):
                     self.update_T(O_sas, O)
                     # pprint(self.T)
                     # pprint(self.R)
-                    action, target = self.plan(state, O, O_s, meta)
+                    action, target = self.plan(state, O, O_s, meta_sas, meta_s)
                 else:
                     action = Action(int(np.argmax(self.Q[state])))
 
@@ -101,36 +110,52 @@ class RLMetaAgent(RLAgent):
                     reward+=r
                     print(state, next_state, action)
                 elif isinstance(action, MetaAction):
-                    # print(state, target, action)
+                    print(state, target, action)
                     next_state = state
                     if action == MetaAction.INCREASE_TRANSITION_PROBABILITY:
-                        t = deepcopy(self.T)
-                        for tr in t[state].keys():
-                            for j, tk in enumerate(t[state][tr]):
-                                if target[1] == tk[1]:
-                                    entry = list(deepcopy(self.T[state][tr][j]))
-                                    entry[0] = 1.0
-                                    self.T[state][tr][j] = tuple(entry)
-                                    print(f"Hypothesised increased T[{state}][{tr}][{target}], {self.T[state][tr]}")
-                                    # self.T[state][target[0]][target[1]] = 
-                                    meta[state][target[0].value][target[1]][action.value] = 1
-                                    break
+                        for i in range(len(self.T[state][target[0]])):
+                            if self.T[state][target[0]][i][1] == target[1]:
+                                entry = list(self.T[state][target[0]][i])
+                                entry[0] = 1.0
+                                self.T[state][target[0]][i] = tuple(entry)
+                                meta_sas[state][target[0].value][target[1]][MetaAction.INCREASE_TRANSITION_PROBABILITY.value] = 1
+                                print(f"Hypothesised increased T[{state}][{target[0]}][{target[1]}]")
+                                break
+                        # for t in self.T[state][target[0]]:
+                        #     if t[1] == target[1]:
+                        #         entry = list(t)
+
+
+                        # t = deepcopy(self.T)
+                        # for tr in t[state].keys():
+                        #     for j, tk in enumerate(t[state][tr]):
+                        #         if target[1] == tk[1]:
+                        #             entry = list(deepcopy(self.T[state][tr][j]))
+                        #             entry[0] = 1.0
+                        #             self.T[state][tr][j] = tuple(entry)
+                        #             print(f"Hypothesised increased T[{state}][{tr}][{target}], {self.T[state][tr]}")
+                        #             # self.T[state][target[0]][target[1]] = 
+                        #             meta_sas[state][target[0].value][target[1]][action.value] = 1
+                        #             break
                     elif action == MetaAction.INCREASE_REWARD:
-                        t = deepcopy(self.T)
-                        for tr in t[state].keys():
-                            for j, tk in enumerate(t[state][tr]):
-                                if target[1] == tk[1]:
-                                    # entry = list(deepcopy(self.T[state][tr][i]))
-                                    # entry[0] = 1.0
-                                    # self.T[state][tr][i] = tuple(entry)
-                                    # print(f"Hypothesised increased T[{state}][{tr}][{target}], {self.T[state][tr]}")
-                                    self.R[target[1]]+=1
-                                    print(f"Hypothesised increased R[{state}][{tr}][{target[1]}], {self.R[target[1]]}")
-                                    meta[state][target[0].value][target[1]][action.value] = 1
-                                    break
+                        self.R[target]+=1
+                        meta_s[target][MetaAction.INCREASE_REWARD.value] = 1
+                        # t = deepcopy(self.T)
+                        # for tr in t[state].keys():
+                        #     for j, tk in enumerate(t[state][tr]):
+                        #         if target[1] == tk[1]:
+                        #             # entry = list(deepcopy(self.T[state][tr][i]))
+                        #             # entry[0] = 1.0
+                        #             # self.T[state][tr][i] = tuple(entry)
+                        #             # print(f"Hypothesised increased T[{state}][{tr}][{target}], {self.T[state][tr]}")
+                        #             self.R[target[1]]+=1
+                        #             print(f"Hypothesised increased R[{state}][{tr}][{target[1]}], {self.R[target[1]]}")
+                        #             meta_s[target[1]] = 1
+                                    #meta[state][target[0].value][target[1]][action.value] = 1
+                                    # break
 
                 if isinstance(action, Action):
-                    if planning: print(state, action, r, self.R[next_state])
+                    # if planning: print(state, action, r, self.R[next_state])
                     old_value = self.Q[state[0]][state[1]][action.value]
                     next_max = np.max(self.Q[next_state])
                     new_value = (1 - config.lr) * old_value + config.lr * (r + config.df * next_max)
@@ -139,7 +164,7 @@ class RLMetaAgent(RLAgent):
                     self.N_sas[state][action.value][next_state]+=1
                     self.N_sa[state][action.value]+=1
 
-                    expected_state = tuple(map(operator.add, state, ACTION_MODIFIERS[action]))
+                    expected_state = max(self.T[state][action], key = lambda x : x[0])[1]#tuple(map(operator.add, state, ACTION_MODIFIERS[action]))
 
                     if state != next_state:
                         states[i][state]+=1
@@ -151,6 +176,7 @@ class RLMetaAgent(RLAgent):
                     else:
                         # Take the expected state from the model!
                         O_sas[state][action.value][expected_state] = 0
+                        print(f"Observed failed transition. Expected T[{state}][{action}][{expected_state}], got T[{state}][{action}][{next_state}]")
                         # if 0 <= expected_state[0] < self.env.n and 0 <= expected_state[1] < self.env.m:
                         #     O_sas[state][action.value][expected_state] = 0
                     # if 0 <= expected_state[0] < self.env.n and 0 <= expected_state[1] < self.env.m:
@@ -160,18 +186,20 @@ class RLMetaAgent(RLAgent):
                         #     self.R[expected_state] = r
                         #     print(f"Updated R: {expected_state}, {self.R[expected_state]} -> {r}")
                     self.update_T(O_sas, O)
-                state = next_state
+                    state = next_state
 
             rewards[i]=reward
 
             states[i][state]+=1
+
+        print(rewards )
         return rewards, states
 
 
     """
     I think this should change to MCTS or something like that..., it's not exhaustive! Upper confidence trees might be the way to go.
     """
-    def plan(self, s, observed_sas, observed, meta):
+    def plan(self, s, observed_sas, observed_s, meta_sas, meta_s):
         """
         Maybe store the "policy" somewhere, and only update it when we see changes in the model.
         Reward needs to be modified somehow.. reward is per state, but the transitions are stochastic.
@@ -179,9 +207,12 @@ class RLMetaAgent(RLAgent):
         # return MonteCarloTreeSearch(self.env.g, self.T, [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]).search(s)
         # return uct_search(s, self.env.g, self.T, self.R, meta=meta, observed=observed, observed_sas=observed_sas)
 
+        hypotheses = defaultdict(set)
+
         V = {state: 0.0 for state in self.T.keys()}
-        policy = {state: None for state in T.keys()}  
-        for i in range(1000):
+        policy = {state: None for state in T.keys()}
+
+        for i in range(10000):
             delta = 0
             # Update value of each state
             for state in T.keys():
@@ -192,30 +223,62 @@ class RLMetaAgent(RLAgent):
                     q = -np.inf
                     for prob, next_state, _ in self.T[state][action]:
                         reward = self.R[next_state]
+                        if prob < 1.0:
+                            if observed_sas[state][action.value][next_state] == np.inf:
+                                if not meta_sas[state][action.value][next_state][MetaAction.INCREASE_TRANSITION_PROBABILITY.value]:
+
+                        # if prob < 1.0 and observed_sas[state][action.value][next_state] < 1 and meta_sas[state][action.value][next_state][MetaAction.INCREASE_TRANSITION_PROBABILITY.value] < 1:
+                                    hypotheses[next_state].add((action, MetaAction.INCREASE_TRANSITION_PROBABILITY))
+                                    prob = 1.0
+                        if not observed_s[next_state]:
+                            if not meta_s[next_state][MetaAction.INCREASE_REWARD.value]:
+
+                        # if observed_s[next_state] < 1 and meta_s[next_state][MetaAction.INCREASE_REWARD.value] < 1:
+                                hypotheses[next_state].add(MetaAction.INCREASE_REWARD)
+                                reward+=1
                         if q == -np.inf and prob != 0.0: q = 0.0
                         q += prob * (reward + V[next_state])
                     q_values.append(q)
                 # Update value of current state
                 V[state] = max(q_values)
-                policy[state] = list(T[state].keys())[np.argmax(q_values)]
+                policy[state] = list(T[state].keys())[np.random.choice(np.flatnonzero(q_values == max(q_values)))]
                 delta = max(delta, abs(v - V[state]))
             # Stop when change in value is below threshold
-            if delta < 0.001:
+            if delta < 0.1:
                 break
         
         def get_path(policy, start, goal):
-            path = [start]
             state = start
+            path= []
             while state != goal:
                 action = policy[state]
-                next_state = list(T[state][action][0])[1]  # Assumes deterministic transitions
-                path.append(next_state)
+                probs = [t[0] for t in T[state][action]]
+                idx = np.random.choice(np.flatnonzero(np.array(probs) == np.max(np.array(probs))))
+                # print(state, T[state][action])
+                # print(np.flatnonzero(T[state][action] == max(T[state][action], key= lambda x: x[0])))
+                # print(np.random.choice(np.flatnonzero(T[state][action] == max(T[state][action], key= lambda x: x[0]))))
+                next_state = T[state][action][idx][1]#np.max(T[state][action], lambda x: x[0])   #list(T[state][action][0])[1]  # Assumes deterministic transitions
+                path.extend([(a, next_state) for a in list(hypotheses[next_state])])#list(hypotheses[next_state]))
+                path.append(action)
                 state = next_state
             return path
 
-        print(get_path(policy, s, self.env.g))
+        # pprint(policy)
+        # pprint(hypotheses)
+        # print(get_path(policy, s, self.env.g))
 
-        return policy[s], None
+        path = get_path(policy, s, self.env.g)
+        # print(path)
+        if isinstance(path[0], tuple):
+            if isinstance(path[0][0], tuple):
+                return path[0][0][1], (path[0][0][0], path[0][1]) 
+            return path[0]
+        else:
+            return path[0], None
+
+        # print(get_path(policy, s, self.env.g))
+
+        #return policy[s], None
 
         # V = np.zeros((self.env.n, self.env.m)) # initialize value function to zero
         # pi = np.random.randint(len(self.env.action_space), size=(self.env.n, self.env.m)) # initialize policy to always take action 0
@@ -483,11 +546,11 @@ if __name__ == "__main__":
     agent = RLMetaAgent(world, T = T, R = np.full(dim, -2., dtype=float))
     config = {
         "episodes": 100,
-        "m":1,
+        "m":20,
         "lr":0.6,
         "df":1.0, # episodic, so rewards are undiscounted.
         "window_size":20,
-        "planning_steps":20 ,
+        "planning_steps":10 ,
     }
     rewards, rewards_95pc, states = agent.learn_and_aggregate(SimpleNamespace(**config))
 
