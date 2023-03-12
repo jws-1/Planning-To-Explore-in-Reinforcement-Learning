@@ -54,35 +54,43 @@ class RLMetaAgent(RLAgent):
 
         for i in range(config.episodes):
             # O_sas = np.full((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m), np.inf, dtype=float)
-            O_sas = {}
-            O_s = set()
-            meta_sas = []
-            meta_s = []
+
             print(f"Meta Agent, episode {i}")
 
             planning = i < config.planning_steps
 
             state = self.env.sample()
 
+            O_sas = {}
+            O_s = set([state])
+            meta_sas = []
+            meta_s = [state]
+
             done = False
+            verify_reward = None
 
             while not done:
                 if planning:
-                    self.MDP.update_transition_probs(self.probs_from_observations(meta_sas))
-                    pprint(self.MDP.transition_function)
-                    #plan = self.MDP.plan_VI(list(O_s), meta_s, meta_sas)
-                    plan = self.MDP.plan_VI(state, self.env.g)
-                    if isinstance(plan, tuple):
-                        if len(plan) == 3:
-                            action, target_state, target_action = plan
-                        elif len(plan) == 2:
-                            action, target_state = plan
+                    if self.MDP.cached_action is None:
+                        self.MDP.update_transition_probs(self.probs_from_observations(meta_sas))
+                        plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
+                        if isinstance(plan, tuple):
+                            if len(plan) == 3:
+                                action, target_state, target_action = plan
+                            elif len(plan) == 2:
+                                action, target_state = plan
+                        else:
+                            action = plan
                     else:
-                        action = plan
+                        if action == MetaAction.INCREASE_REWARD:
+                            verify_reward = target_state
+                        action = self.MDP.cached_action
+                        self.MDP.cached_action = None
                 else:
                     action = Action(int(np.argmax(self.Q[state])))
 
                 if isinstance(action, Action):
+                    print(state, action)
                     # Step
                     next_state, reward, done = self.env.step(action)
                     print(state, action, next_state, reward)
@@ -100,6 +108,8 @@ class RLMetaAgent(RLAgent):
 
                     if state != next_state:
                         states[i][state]+=1
+                    elif verify_reward:
+                        self.R[target_state]-=1
 
                     if planning:
                         # Transition out of current state.
@@ -110,16 +120,18 @@ class RLMetaAgent(RLAgent):
                 else:
                     # Update MDP using Meta Action.
                     if action == MetaAction.INCREASE_REWARD:
+                        print(state, action, target_state)
                         meta_s.append(target_state)
                         self.MDP.update_reward(target_state, self.MDP.get_reward(target_state)+1)
                     elif action == MetaAction.INCREASE_TRANSITION_PROBABILITY:
+                        print(state, action, target_state, target_action)
                         meta_sas.append((state, target_action, target_state))
                         self.MDP.update_transition_prob(state, target_action, target_state, 1.0)
 
+                    reward = 0
+
                 rewards[i]+=reward
             states[i][state]+=1
-        pprint(self.MDP.transition_function)
-        print(rewards)
         return rewards, states
 
 if __name__ == "__main__":

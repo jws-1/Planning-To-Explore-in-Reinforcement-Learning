@@ -2,57 +2,54 @@
 import numpy as np
 import random
 from actions import Action
-from gridworld import GridWorld
+# from gridworld import GridWorld
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
 import os
 from copy import deepcopy
 from types import SimpleNamespace
-from mdp import make_transition_function, make_reward_function
 
 class RLAgent():
 
-    def __init__(self, world):
+    def __init__(self, env):
         np.random.seed(42)
-        self.world = world
-        self.q_table = np.full((*self.world.dim, 4), 100000., dtype=float)
+        self.env = env
+        self.reset()
+        # self.q_table = np.full((*self.world.dim, 4), 100000., dtype=float)
 
     def reset(self):
-        self.q_table = np.full((*self.world.dim, 4), 100000., dtype=float)
+        self.Q = np.full((self.env.n, self.env.m, len(self.env.action_space)), 0., dtype=float)
 
     def learn(self, config):
         self.reset()
 
         rewards = np.zeros(config.episodes)
-        states = np.zeros((config.episodes, *self.world.dim))
+        states = np.zeros((config.episodes, self.env.n, self.env.m))
 
         for i in range(config.episodes):
             if i % 100 == 0:
                 print(f"RL-AGENT: episode {i}")
 
-            self.world.sample()
-
             done = False
-            state = self.world.start
+            state = self.env.sample()
 
             while not done:
 
                 if random.uniform(0, 1) < config.eps:
                     action = Action(random.randint(0, 3))
                 else:
-                    action = Action(int(np.argmax(self.q_table[state])))
+                    action = Action(int(np.argmax(self.Q[state])))
 
-                reward, next_state = self.world.action(state, action)
+                next_state, reward, done = self.env.step(action)
 
-                old_value = self.q_table[state[0]][state[1]][action.value]
-                next_max = np.max(self.q_table[next_state])
+                old_value = self.Q[state[0]][state[1]][action.value]
+                next_max = np.max(self.Q[next_state])
                 new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.q_table[state[0]][state[1]][action.value] = new_value
+                self.Q[state[0]][state[1]][action.value] = new_value
 
                 states[i][state]+=1
                 state = next_state
-                done = state == self.world.goal
                 rewards[i] += reward
                 
             states[i][state]+=1
@@ -60,7 +57,7 @@ class RLAgent():
 
     def learn_and_aggregate(self, config):
         rewards_windows = np.zeros((config.m, config.episodes - config.window_size+1, config.window_size))
-        states = np.zeros((config.m, config.episodes, *self.world.dim))
+        states = np.zeros((config.m, config.episodes, self.env.n, self.env.m))
         for i in range(config.m):
 
             rewards, states_ = self.learn(config)
@@ -100,9 +97,9 @@ class RLAgent():
         cmap = plt.cm.get_cmap("Reds")
         cmap.set_bad("black")
         plt.figure(1)
-        annots = [ [""]*self.world.dim[0] for _ in range(self.world.dim[1]) ]
-        annots[self.world.start[0]][self.world.start[1]] = "S"
-        annots[self.world.goal[0]][self.world.goal[1]] = "G"
+        annots = [ [""]*self.env.n for _ in range(self.env.m) ]
+        annots[self.env.start[0]][self.env.start[1]] = "S"
+        annots[self.env.g[0]][self.env.g[1]] = "G"
         
         # for i in range(self.world.dim[0]):
         #     for j in range(self.world.dim[1]):
@@ -167,15 +164,35 @@ class RLAgent():
             plt.show()
 
 if __name__ == "__main__":
-    dim = (10,10)
-    start = (0,0)
-    goal = (9,9)
+    dim = (4,4)
+    start = (0,3)
+    goal = (3,0)
 
-    obstacles = [((0,3), 0.001), ((1,3), 0.7), ((2,3), 0.5), ((3,3), 1.0), ((4,3), 1.0), ((5,3), 0.65), ((6,3), 0.245), ((7,3), 0.1), ((8,3), 1.0), ((9,3), 0.9)]
-    highways = [(0,3), (0,4)]
-    T = make_transition_function(dim, obstacles)
-    R = make_reward_function(dim, highways)
-    world = GridWorld(dim, start, goal, T, R)
+
+    obstacles = [(1.0, (0,0)), (1.0, (1,2)), (1.0, (3,1)), (1.0, (3,2))]
+
+    # obstacles = [((0,3), 0.001), ((1,3), 0.7), ((2,3), 0.5), ((3,3), 1.0), ((4,3), 1.0), ((5,3), 0.65), ((6,3), 0.245), ((7,3), 0.1), ((8,3), 1.0), ((9,3), 0.9)]
+    highways = []#[(0,3), (0,4)]
+    #T = make_transition_function(dim, obstacles) # {state : action : (p, s, ,r)}
+    # R = make_reward_function(dim, highways)
+    R = np.full(dim, -1, dtype=float)
+    R[goal] = 0
+    actions = [Action.RIGHT, Action.LEFT, Action.UP, Action.DOWN]
+    T = {(i,j) : {a : [] for a in actions} for i in range(dim[0]) for j in range(dim[1])}
+    
+    for i in range(dim[0]):
+        for j in range(dim[1]):
+            if 0 <= i - 1 < dim[0] and 0 <= j < dim[1]:
+                T[(i,j)][Action.LEFT].append((1.0, (i-1, j), 0.0 if (i-1,j) == goal else -1.0))
+            if 0 <= i + 1 < dim[0] and 0 <= j < dim[1]:
+                T[(i,j)][Action.RIGHT].append((1.0, (i+1, j), 0.0 if (i+1,j) == goal else -1.0))
+            if 0 <= i < dim[0] and 0 <= j - 1 < dim[1]:
+                T[(i,j)][Action.DOWN].append((1.0, (i, j-1), 0.0 if (i,j-1) == goal else -1.0))
+            if 0 <= i < dim[0] and 0 <= j+1 < dim[1]:
+                T[(i,j)][Action.UP].append((1.0, (i, j+1), 0.0 if (i,j+1) == goal else -1.0))
+
+    from grid import GridWorld
+    world = GridWorld(dim[0], dim[1], start, goal, T, R, actions, obstacles)
 
 
     # world_rewards = np.full(dim, -2, dtype=int)
@@ -188,9 +205,10 @@ if __name__ == "__main__":
     #     (5,3) : 0.001
     # }
     # grid = GridWorld(dim, start, goal, world_obstacles, world_rewards)
+
     agent = RLAgent(world)
     config = {
-        "episodes": 1000,
+        "episodes": 10000,
         "m":1,
         "eps": 0.1,
         "lr":0.1,
