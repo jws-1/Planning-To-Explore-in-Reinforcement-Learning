@@ -27,7 +27,7 @@ class GridWorld():
     def action(self, s, a):
         s_ = self.T_[s][a]
         if s_ == s:
-            return -10, s_
+            return -10.0, s_
         else:
             return self.R[s], s_
 
