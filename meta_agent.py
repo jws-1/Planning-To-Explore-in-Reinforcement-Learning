@@ -68,10 +68,14 @@ class RLMetaAgent(RLAgent):
             meta_s = [state]
 
             done = False
-            verify_reward = None
+            next_action = None
 
             while not done:
-                if planning:
+
+                if next_action is not None:
+                    action = next_action
+                    next_action = None
+                elif planning:
                     """
                     1. Transition probabilities are not getting updated correctly.
                     2. Need to ensure that meta action is followed by a relevant action. Maybe store the current policy?
@@ -82,8 +86,9 @@ class RLMetaAgent(RLAgent):
                     if isinstance(plan, tuple):
                         if len(plan) == 3:
                             action, target_state, target_action = plan
+                            next_action = target_action
                         elif len(plan) == 2:
-                            action, target_state = plan
+                            action, target_state, next_action = plan
                     else:
                         action = plan
                 else:
@@ -126,8 +131,8 @@ class RLMetaAgent(RLAgent):
                         print(state, action, target_state, target_action)
                         meta_sas.append((state, target_action, target_state))
                         self.MDP.update_transition_prob(state, target_action, target_state, 1.0)
+                    
                     reward = 0
-
 
                 rewards[i]+=reward
             states[i][state]+=1
