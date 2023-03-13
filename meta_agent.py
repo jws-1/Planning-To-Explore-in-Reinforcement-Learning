@@ -36,15 +36,15 @@ class RLMetaAgent(RLAgent):
         self.N_sas = np.zeros((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m))
         self.N_sa = np.zeros((self.env.n, self.env.m, len(self.env.action_space)))
     
-    def probs_from_observations(self, meta_sas):
+    def probs_from_observations(self):
         probs = defaultdict(lambda: defaultdict(dict))
         for state in self.MDP.states:
             for action in self.MDP.actions:
                 for next_state in self.MDP.states:
-                    if (state, action, next_state) in meta_sas:
-                        continue
+                    # if (MetaAction.INCREASE_TRANSITION_PROBABILITY, (state, action, next_state)) in meta_sas:
+                    #     continue
                     if self.N_sa[state][action.value] > 0:
-                        if next_state in self.MDP.get_legal_transitions(state):
+                        if next_state in [t[1] for t in self.MDP.transition_function[state][action]]:#self.MDP.get_legal_transitions(state):
                             probs[state][action][next_state] = self.N_sas[state][action.value][next_state] / self.N_sa[state][action.value]
         return probs
 
@@ -52,7 +52,8 @@ class RLMetaAgent(RLAgent):
         self.reset()
         rewards = np.zeros(config.episodes)
         states = np.zeros((config.episodes, self.env.n, self.env.m))
-
+        actions = [[] for i in range(config.episodes)]
+        watch(self.MDP.transition_function)
         for i in range(config.episodes):
             # O_sas = np.full((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m), np.inf, dtype=float)
 
@@ -64,43 +65,44 @@ class RLMetaAgent(RLAgent):
 
             O_sas = {}
             O_s = set([state])
-            meta_sas = []
-            meta_s = [state]
+            meta_sas = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+            meta_s = defaultdict(list)
 
             done = False
             next_action = None
-
+            verify_reward = None
             while not done:
 
                 if next_action is not None:
                     action = next_action
                     next_action = None
+                    print("Using NA")
                 elif planning:
                     """
                     1. Transition probabilities are not getting updated correctly.
                     2. Need to ensure that meta action is followed by a relevant action. Maybe store the current policy?
                     """
-                    self.MDP.update_transition_probs(self.probs_from_observations(meta_sas)) # this
+                    
                     # pprint(self.MDP.transition_function)
                     plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
                     if isinstance(plan, tuple):
-                        if len(plan) == 3:
-                            action, target_state, target_action = plan
+                        if plan[0] == MetaAction.INCREASE_TRANSITION_PROBABILITY:
+                            action, (_, target_action, target_state) = plan
                             next_action = target_action
-                        elif len(plan) == 2:
+                        elif plan[0] == MetaAction.INCREASE_REWARD:
                             action, target_state, next_action = plan
+                            verify_reward = target_state
                     else:
+                        print(self.MDP.transition_function)
                         action = plan
                 else:
                     action = Action(int(np.argmax(self.Q[state])))
 
                 if isinstance(action, Action):
-                    print(state, action)
-                    print(self.MDP.transition_function[state])
+                    actions[i].append((state, action))
                     # Step
                     next_state, reward, done = self.env.step(action)
-                    print(state, action, next_state, reward)
-
+                    print(state, action, next_state)
                     # Update Q Value
                     old_value = self.Q[state[0]][state[1]][action.value]
                     next_max = np.max(self.Q[next_state])
@@ -111,7 +113,6 @@ class RLMetaAgent(RLAgent):
                     self.N_sas[state][action.value][next_state]+=1
                     self.N_sa[state][action.value]+=1
 
-
                     if state != next_state:
                         states[i][state]+=1
 
@@ -119,23 +120,39 @@ class RLMetaAgent(RLAgent):
                         # Transition out of current state.
                         if state != next_state:
                             self.MDP.update_reward(next_state, reward)
-                    O_s.add(next_state)
+                        if verify_reward is not None and next_state != verify_reward:
+                            print(f"Didn't transition to {verify_reward}, so decreasing.")
+                            self.MDP.update_reward(verify_reward, self.MDP.get_reward(verify_reward)-1)
+                            verify_reward = None
+                        self.MDP.update_transition_probs(self.probs_from_observations())
+                    #O_s.add(next_state)
                     state = next_state
+
                 else:
                     # Update MDP using Meta Action.
                     if action == MetaAction.INCREASE_REWARD:
-                        print(state, action, target_state)
-                        meta_s.append(target_state)
+                        actions[i].append((state, action, target_state))
+                        print(action, target_state)
+                        meta_s[target_state].append(action)
                         self.MDP.update_reward(target_state, self.MDP.get_reward(target_state)+1)
                     elif action == MetaAction.INCREASE_TRANSITION_PROBABILITY:
-                        print(state, action, target_state, target_action)
-                        meta_sas.append((state, target_action, target_state))
+                        actions[i].append((state, action, target_action, target_state))
+                        print(action, state, target_action, target_state)
+                        meta_sas[state][target_action][target_state].append(action)
                         self.MDP.update_transition_prob(state, target_action, target_state, 1.0)
-                    
                     reward = 0
 
                 rewards[i]+=reward
+            
             states[i][state]+=1
+
+        with open("out.txt", "w") as fp:
+            pprint(actions, fp)
+
+        with open("transition.txt", "w") as fp:
+            pprint(self.MDP.transition_function, fp)
+            pprint(self.env.T, fp)
+
         return rewards, states
 
 if __name__ == "__main__":
@@ -251,7 +268,7 @@ if __name__ == "__main__":
         "lr":0.6,
         "df":1.0, # episodic, so rewards are undiscounted.
         "window_size":20,
-        "planning_steps":20 ,
+        "planning_steps":10 ,
     }
     rewards, rewards_95pc, states = agent.learn_and_aggregate(SimpleNamespace(**config))
 
