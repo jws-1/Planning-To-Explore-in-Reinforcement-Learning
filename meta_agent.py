@@ -44,7 +44,8 @@ class RLMetaAgent(RLAgent):
                     if (state, action, next_state) in meta_sas:
                         continue
                     if self.N_sa[state][action.value] > 0:
-                        probs[state][action][next_state] = self.N_sas[state][action.value][next_state] / self.N_sa[state][action.value]
+                        if next_state in self.MDP.get_legal_transitions(state):
+                            probs[state][action][next_state] = self.N_sas[state][action.value][next_state] / self.N_sa[state][action.value]
         return probs
 
     def learn(self, config):
@@ -71,26 +72,26 @@ class RLMetaAgent(RLAgent):
 
             while not done:
                 if planning:
-                    if self.MDP.cached_action is None:
-                        self.MDP.update_transition_probs(self.probs_from_observations(meta_sas))
-                        plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
-                        if isinstance(plan, tuple):
-                            if len(plan) == 3:
-                                action, target_state, target_action = plan
-                            elif len(plan) == 2:
-                                action, target_state = plan
-                        else:
-                            action = plan
+                    """
+                    1. Transition probabilities are not getting updated correctly.
+                    2. Need to ensure that meta action is followed by a relevant action. Maybe store the current policy?
+                    """
+                    self.MDP.update_transition_probs(self.probs_from_observations(meta_sas)) # this
+                    # pprint(self.MDP.transition_function)
+                    plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
+                    if isinstance(plan, tuple):
+                        if len(plan) == 3:
+                            action, target_state, target_action = plan
+                        elif len(plan) == 2:
+                            action, target_state = plan
                     else:
-                        if action == MetaAction.INCREASE_REWARD:
-                            verify_reward = target_state
-                        action = self.MDP.cached_action
-                        self.MDP.cached_action = None
+                        action = plan
                 else:
                     action = Action(int(np.argmax(self.Q[state])))
 
                 if isinstance(action, Action):
                     print(state, action)
+                    print(self.MDP.transition_function[state])
                     # Step
                     next_state, reward, done = self.env.step(action)
                     print(state, action, next_state, reward)
@@ -108,8 +109,6 @@ class RLMetaAgent(RLAgent):
 
                     if state != next_state:
                         states[i][state]+=1
-                    elif verify_reward:
-                        self.R[target_state]-=1
 
                     if planning:
                         # Transition out of current state.
@@ -127,8 +126,8 @@ class RLMetaAgent(RLAgent):
                         print(state, action, target_state, target_action)
                         meta_sas.append((state, target_action, target_state))
                         self.MDP.update_transition_prob(state, target_action, target_state, 1.0)
-
                     reward = 0
+
 
                 rewards[i]+=reward
             states[i][state]+=1
