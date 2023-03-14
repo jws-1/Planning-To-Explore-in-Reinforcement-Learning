@@ -129,7 +129,7 @@ class MDP:
             for state in temporal_mdp.get_states():
                 actions = deepcopy(self.actions)
                 random.shuffle(actions)
-                for action in temporal_mdp.actions:
+                for action in actions:
                     transitions = deepcopy(temporal_mdp.get_transition_probs(state, action))
                     random.shuffle(transitions)
                     for (prob, next_state) in transitions:
@@ -147,7 +147,7 @@ class MDP:
 
         temporal_mdp.prune()
         V = {state: 0.0 for state in temporal_mdp.get_states()}
-
+        pi = {}
         for _ in range(max_iter):
             delta = 0
             for state in temporal_mdp.states:
@@ -164,7 +164,11 @@ class MDP:
                 
                 # Update value function with maximum Q-value
                 V[state] = max(Q.values()) if Q else 0
-                
+                # if s == state:
+                #     print([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
+                #     import sys
+                #     sys.exit(69)
+                pi[state] = random.choice([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
                 # Check for convergence
                 delta = max(delta, abs(v - V[state]))
             
@@ -173,12 +177,12 @@ class MDP:
                 break
 
         # Compute optimal policy based on final value function
-        pi = {}
-        for state in self.states:
-            Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
-                        for (p, sp) in temporal_mdp.transition_function[state][a]
-                        if p > 0) for a in self.get_legal_actions(state)}
-            pi[state] = max(temporal_mdp.get_legal_actions(state), key=lambda a: Q[a])
+        # pi = {}
+        # for state in self.states:
+        #     Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+        #                 for (p, sp) in temporal_mdp.transition_function[state][a]
+        #                 if p > 0) for a in self.get_legal_actions(state)}
+        #     pi[state] = max(temporal_mdp.get_legal_actions(state), key=lambda a: Q[a])
 
         print(pi[s])
         if meta:

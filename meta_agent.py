@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     obstacles = [(1.0, (0,0)), (1.0, (1,2)), (1.0, (3,1)), (1.0, (3,2))]
 
-    highways = [(0,2), (2,3)]#[(0,3), (0,4)]
+    highways = [(2,3)]#[(0,3), (0,4)]
     R = np.full(dim, -2, dtype=float)
     R[goal] = 0
     actions = [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
@@ -263,12 +263,12 @@ if __name__ == "__main__":
 
     agent = RLMetaAgent(world, model)
     config = {
-        "episodes": 100,
-        "m":1,
+        "episodes": 50,
+        "m":20,
         "lr":0.6,
         "df":1.0, # episodic, so rewards are undiscounted.
-        "window_size":20,
-        "planning_steps":10 ,
+        "window_size":10,
+        "planning_steps":5 ,
     }
     rewards, rewards_95pc, states = agent.learn_and_aggregate(SimpleNamespace(**config))
 
