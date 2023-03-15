@@ -31,30 +31,27 @@ class MDP:
         return self.discount_factor
 
     def step(self, state, action):
-        if isinstance(action, Action):
-            transition_probs = self.get_transition_probs(state, action)
-            probs, next_states = zip(*transition_probs)
-            # Choose a random next state with probabilities given by probs
-            next_state = random.choices(next_states, weights=probs)[0]
-            reward = self.get_reward(next_state)
-            return next_state, reward
-        else:
-            pass
+        transition_probs = self.get_transition_probs(state, action)
+        probs, next_states = zip(*transition_probs)
+        # Choose a random next state with probabilities given by probs
+        next_state = random.choices(next_states, weights=probs)[0]
+        reward = self.get_reward(next_state)
+        return next_state, reward
 
     def get_legal_actions(self, state):
         # return [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
         return [action for action in self.get_actions() if self.get_transition_probs(state, action)]
 
-    def get_legal_transitions(self, state):
+    # def get_legal_transitions(self, state):
         
-        def t(a):
-            return tuple(map(operator.add, state, ACTION_MODIFIERS[a]))
+    #     def t(a):
+    #         return tuple(map(operator.add, state, ACTION_MODIFIERS[a]))
 
-        return [t(a) for a in self.get_actions()]
+    #     return [t(a) for a in self.get_actions()]
 
 
     def update_transition_prob(self, state, action, next_state, prob):
-        if next_state in self.get_legal_transitions(state):
+        if next_state in [t[1] for t in self.transition_function[state][action]]:
         # if len([(p, s) for p, s in self.transition_function[state][action] if s != next_state]) != len(self.transition_function[state][action]):
 
         # if next_state in self.get_legal_transitions(state):  
@@ -112,7 +109,7 @@ class MDP:
 
         return False
 
-    def plan_VI(self, s, goal, meta=False, o_s=None, meta_s=None, meta_sas=None, max_iter=100, theta=0.0001):
+    def plan_VI(self, s, goal, meta=False, o_s=None, meta_s=None, meta_sas=None, max_iter=1000, theta=0.0001):
         """
         Maybe remove everything that is probability 0?
         """
@@ -158,10 +155,19 @@ class MDP:
                 v = V[state]
                 
                 # Compute Q-values for each action
-                Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
-                            for (p, sp) in temporal_mdp.transition_function[state][a]
-                            if p > 0) for a in temporal_mdp.get_legal_actions(state)}
-                
+                Q = {a: -np.inf for a in temporal_mdp.get_legal_actions(state)}
+                for a in temporal_mdp.get_legal_actions(state):
+                    for (p, sp) in temporal_mdp.transition_function[state][a]:
+                        if p > 0.0 and state != sp:
+                            if Q[a] == -np.inf:
+                                Q[a] = 0.0
+                            Q[a]+= p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+
+
+                # Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+                #             for (p, sp) in temporal_mdp.transition_function[state][a]
+                #             if p > 0 and state != sp)for a in temporal_mdp.get_legal_actions(state)}
+                # print(Q)
                 # Update value function with maximum Q-value
                 V[state] = max(Q.values()) if Q else 0
                 # if s == state:
@@ -183,8 +189,8 @@ class MDP:
         #                 for (p, sp) in temporal_mdp.transition_function[state][a]
         #                 if p > 0) for a in self.get_legal_actions(state)}
         #     pi[state] = max(temporal_mdp.get_legal_actions(state), key=lambda a: Q[a])
-
-        print(pi[s])
+        # print(pi)
+        # print(pi[s])
         if meta:
             action = pi[s]
             next_state, _ = temporal_mdp.step(s, action)

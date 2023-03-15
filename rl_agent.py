@@ -19,36 +19,37 @@ class RLAgent():
         # self.q_table = np.full((*self.world.dim, 4), 100000., dtype=float)
 
     def reset(self):
-        self.Q = np.full((self.env.n, self.env.m, len(self.env.action_space)), 0., dtype=float)
+        self.Q = {state : {action : 0. for action in range(self.env.nA)} for state in range(self.env.nS)}#np.full((self.env.n, self.env.m, len(self.env.action_space)), 0., dtype=float)
 
     def learn(self, config):
         self.reset()
 
         rewards = np.zeros(config.episodes)
-        states = np.zeros((config.episodes, self.env.n, self.env.m))
+        states = np.zeros((config.episodes, self.env.nS))
 
         for i in range(config.episodes):
             if i % 100 == 0:
                 print(f"RL-AGENT: episode {i}")
 
             done = False
-            state = self.env.sample()
+            state = self.env.reset()
 
             while not done:
 
                 if random.uniform(0, 1) < config.eps:
-                    action = Action(random.randint(0, 3))
+                    action = self.env.action_space.sample()
                 else:
-                    action = Action(int(np.argmax(self.Q[state])))
+                    action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
 
-                next_state, reward, done = self.env.step(action)
+                next_state, reward, done, _ = self.env.step(action)
 
-                old_value = self.Q[state[0]][state[1]][action.value]
-                next_max = np.max(self.Q[next_state])
+                old_value = self.Q[state][action]
+                next_max = max(self.Q[next_state].values())
                 new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state[0]][state[1]][action.value] = new_value
+                self.Q[state][action] = new_value
 
-                states[i][state]+=1
+                if state != next_state:
+                    states[i][state]+=1
                 state = next_state
                 rewards[i] += reward
                 
@@ -57,7 +58,7 @@ class RLAgent():
 
     def learn_and_aggregate(self, config):
         rewards_windows = np.zeros((config.m, config.episodes - config.window_size+1, config.window_size))
-        states = np.zeros((config.m, config.episodes, self.env.n, self.env.m))
+        states = np.zeros((config.m, config.episodes, self.env.nS))
         for i in range(config.m):
 
             rewards, states_ = self.learn(config)
@@ -94,12 +95,12 @@ class RLAgent():
             plt.clf()
 
 
-        cmap = plt.cm.get_cmap("Reds")
-        cmap.set_bad("black")
-        plt.figure(1)
-        annots = [ [""]*self.env.n for _ in range(self.env.m) ]
-        annots[self.env.start[0]][self.env.start[1]] = "S"
-        annots[self.env.g[0]][self.env.g[1]] = "G"
+        # cmap = plt.cm.get_cmap("Reds")
+        # cmap.set_bad("black")
+        # plt.figure(1)
+        # annots = [ [""]*self.env.n for _ in range(self.env.m) ]
+        # annots[self.env.start[0]][self.env.start[1]] = "S"
+        # annots[self.env.g[0]][self.env.g[1]] = "G"
         
         # for i in range(self.world.dim[0]):
         #     for j in range(self.world.dim[1]):
@@ -109,59 +110,53 @@ class RLAgent():
         #             annots[i][j] += " " + str(self.world.static_rewards[i,j])
         #             annots[i][j] = annots[i][j].lstrip()
 
-        annots = np.array(annots)
-        if states.ndim == 4:
-            states_all = np.sum(np.sum(states, axis=0), axis=0)
-        elif states.ndim == 3:
-            states_all = np.sum(states, axis=0)
-        for (obstacle, p) in obstacles:
-            if p == 1.0:
-                states_all[obstacle] = np.nan
-        # states_all[self.world.static_obstacles] = np.nan
-        hm = sns.heatmap(np.transpose(states_all), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        hm.invert_yaxis()
-        plt.title(f"RL Agent Visited States ({policy})")
-        if save:
-            plt.savefig(os.path.join(policy, f"{policy}-states.png"))
-            plt.clf()
+        # annots = np.array(annots)
+        # if states.ndim == 4:
+        #     states_all = np.sum(np.sum(states, axis=0), axis=0)
+        # elif states.ndim == 3:
+        #     states_all = np.sum(states, axis=0)
 
-        plt.figure(2)
-        if states.ndim == 4:
-            if hasattr(config, "planning_steps"):
-                states_exp = np.sum(np.sum(states[:, :config.planning_steps, :, :], axis=0), axis=0)
-            else:
-                states_exp = np.sum(np.sum(states[:, :50, :, :], axis=0), axis=0)
-        elif states.ndim == 3:
-            if hasattr(config, "planning_steps"):
-                states_exp = np.sum(states[:, :config.planning_steps, :, :], axis=0)
-            else:
-                states_exp = np.sum(states[:, :50, :, :], axis=0)
-        for (obstacle, p) in obstacles:
-            if p == 1.0:
-                states_exp[obstacle] = np.nan
-        hm = sns.heatmap(np.transpose(states_exp), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        hm.invert_yaxis()
-        plt.title(f"RL Agent Visited States ({policy}): Initial Exploration")
-        if save:
-            plt.savefig(os.path.join(policy, f"{policy}-initial-exploration.png"))
-            plt.clf()
+        # # states_all[self.world.static_obstacles] = np.nan
+        # hm = sns.heatmap(np.transpose(states_all), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
+        # hm.invert_yaxis()
+        # plt.title(f"RL Agent Visited States ({policy})")
+        # if save:
+        #     plt.savefig(os.path.join(policy, f"{policy}-states.png"))
+        #     plt.clf()
 
-        plt.figure(3)
-        if states.ndim == 4:
-            states_fin = np.sum(np.sum(states[:, rewards.shape[0]-50:, :, :], axis=0), axis=0)
-        elif states.ndim == 3:
-            states_fin = np.sum(states[:, rewards.shape[0]-50:, :, :], axis=0)
-        for (obstacle, p) in obstacles:
-            if p == 1.0:
-                states_fin[obstacle] = np.nan
-        hm = sns.heatmap(np.transpose(states_fin), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        hm.invert_yaxis()
-        plt.title(f"RL Agent Visited States ({policy}): Final Policy")
-        if save:
-            plt.savefig(os.path.join(policy, f"{policy}-final-policy.png"))
-            plt.clf()
-        else:
-            plt.show()
+        # plt.figure(2)
+        # if states.ndim == 4:
+        #     if hasattr(config, "planning_steps"):
+        #         states_exp = np.sum(np.sum(states[:, :config.planning_steps, :], axis=0), axis=0)
+        #     else:
+        #         states_exp = np.sum(np.sum(states[:, :50, :], axis=0), axis=0)
+        # elif states.ndim == 3:
+        #     if hasattr(config, "planning_steps"):
+        #         states_exp = np.sum(states[:, :config.planning_steps, :], axis=0)
+        #     else:
+        #         states_exp = np.sum(states[:, :50, :], axis=0)
+
+        # hm = sns.heatmap(np.transpose(states_exp), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
+        # hm.invert_yaxis()
+        # plt.title(f"RL Agent Visited States ({policy}): Initial Exploration")
+        # if save:
+        #     plt.savefig(os.path.join(policy, f"{policy}-initial-exploration.png"))
+        #     plt.clf()
+
+        # plt.figure(3)
+        # if states.ndim == 4:
+        #     states_fin = np.sum(np.sum(states[:, rewards.shape[0]-50:, :], axis=0), axis=0)
+        # elif states.ndim == 3:
+        #     states_fin = np.sum(states[:, rewards.shape[0]-50:, :], axis=0)
+
+        # hm = sns.heatmap(np.transpose(states_fin), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
+        # hm.invert_yaxis()
+        # plt.title(f"RL Agent Visited States ({policy}): Final Policy")
+        # if save:
+        #     plt.savefig(os.path.join(policy, f"{policy}-final-policy.png"))
+        #     plt.clf()
+        # else:
+        #     plt.show()
 
 if __name__ == "__main__":
     dim = (4,4)
