@@ -109,151 +109,154 @@ class MDP:
 
         return False
 
-    def plan_VI(self, s, goal, meta=False, o_s=None, meta_s=None, meta_sas=None, max_iter=1000, theta=0.0001):
-        """
-        Maybe remove everything that is probability 0?
-        """
-        temporal_mdp = MDP(self.get_states(), self.get_actions(), deepcopy(self.transition_function), deepcopy(self.reward_function), self.get_discount_factor())
+    # def plan_VI(self, s, goal, meta=False, o_s=None, meta_s=None, meta_sas=None, max_iter=10000, theta=0.0001):
+    #     """
+    #     Maybe remove everything that is probability 0?
+    #     """
+    #     temporal_mdp = MDP(self.get_states(), self.get_actions(), deepcopy(self.transition_function), deepcopy(self.reward_function), self.get_discount_factor())
 
-        # meta_actions = {state: [] for state in self.get_states()}
+    #     # meta_actions = {state: [] for state in self.get_states()}
 
-        o_s = list(o_s)
+    #     o_s = list(o_s)
 
-        meta_sas_ = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        meta_s_ = defaultdict(list)
+    #     meta_sas_ = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    #     meta_s_ = defaultdict(list)
         
-        if meta:
-            for state in temporal_mdp.get_states():
-                actions = deepcopy(self.actions)
-                random.shuffle(actions)
-                for action in actions:
-                    transitions = deepcopy(temporal_mdp.get_transition_probs(state, action))
-                    random.shuffle(transitions)
-                    for (prob, next_state) in transitions:
-                        if prob < 1.0 and state != next_state:
-                            #meta_call = (MetaAction.INCREASE_TRANSITION_PROBABILITY, (state, action, next_state))
-                            #if not meta_call in meta_sas and not meta_call in meta_actions[next_state]:
-                            if not MetaAction.INCREASE_TRANSITION_PROBABILITY in meta_sas[state][action][next_state] and not MetaAction.INCREASE_TRANSITION_PROBABILITY in meta_sas_[state][action][next_state]: 
-                                temporal_mdp.update_transition_prob(state, action, next_state, 1.0)
-                                meta_sas_[state][action][next_state].append(MetaAction.INCREASE_TRANSITION_PROBABILITY)
-                                break
+    #     if meta:
+    #         """
+    #         This is not hypothesising changes which would benefit the plan..
+    #         """
+    #         for state in temporal_mdp.get_states():
+    #             actions = deepcopy(self.actions)
+    #             random.shuffle(actions)
+    #             for action in actions:
+    #                 transitions = deepcopy(temporal_mdp.get_transition_probs(state, action))
+    #                 random.shuffle(transitions)
+    #                 for (prob, next_state) in transitions:
+    #                     if prob < 1.0 and state != next_state:
+    #                         #meta_call = (MetaAction.INCREASE_TRANSITION_PROBABILITY, (state, action, next_state))
+    #                         #if not meta_call in meta_sas and not meta_call in meta_actions[next_state]:
+    #                         if not MetaAction.INCREASE_TRANSITION_PROBABILITY in meta_sas[state][action][next_state] and not MetaAction.INCREASE_TRANSITION_PROBABILITY in meta_sas_[state][action][next_state]: 
+    #                             temporal_mdp.update_transition_prob(state, action, next_state, 1.0)
+    #                             meta_sas_[state][action][next_state].append(MetaAction.INCREASE_TRANSITION_PROBABILITY)
+    #                             break
 
-                if MetaAction.INCREASE_REWARD not in meta_s[state] and not MetaAction.INCREASE_REWARD in meta_s_[state] and not state in o_s:
-                    temporal_mdp.update_reward(state, temporal_mdp.get_reward(state)+1)
-                    meta_s_[state].append(MetaAction.INCREASE_REWARD)
+    #             if MetaAction.INCREASE_REWARD not in meta_s[state] and not MetaAction.INCREASE_REWARD in meta_s_[state] and not state in o_s:
+    #                 temporal_mdp.update_reward(state, temporal_mdp.get_reward(state)+1)
+    #                 meta_s_[state].append(MetaAction.INCREASE_REWARD)
 
-        temporal_mdp.prune()
-        V = {state: 0.0 for state in temporal_mdp.get_states()}
-        pi = {}
-        for _ in range(max_iter):
-            delta = 0
-            for state in temporal_mdp.states:
+    #     temporal_mdp.prune()
+    #     V = {state: 0.0 for state in temporal_mdp.get_states()}
+    #     pi = {}
+    #     for _ in range(max_iter):
+    #         delta = 0
+    #         for state in temporal_mdp.states:
 
-                if state == goal:
-                    continue
+    #             if state == goal:
+    #                 continue
 
-                v = V[state]
+    #             v = V[state]
                 
-                # Compute Q-values for each action
-                Q = {a: -np.inf for a in temporal_mdp.get_legal_actions(state)}
-                for a in temporal_mdp.get_legal_actions(state):
-                    for (p, sp) in temporal_mdp.transition_function[state][a]:
-                        if p > 0.0 and state != sp:
-                            if Q[a] == -np.inf:
-                                Q[a] = 0.0
-                            Q[a]+= p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+    #             # Compute Q-values for each action
+    #             Q = {a: -np.inf for a in temporal_mdp.get_legal_actions(state)}
+    #             for a in temporal_mdp.get_legal_actions(state):
+    #                 for (p, sp) in temporal_mdp.transition_function[state][a]:
+    #                     if p > 0.0 and state != sp:
+    #                         if Q[a] == -np.inf:
+    #                             Q[a] = 0.0
+    #                         Q[a]+= p * (temporal_mdp.reward_function[sp] + (temporal_mdp.discount_factor-theta) * V[sp])
 
 
-                # Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
-                #             for (p, sp) in temporal_mdp.transition_function[state][a]
-                #             if p > 0 and state != sp)for a in temporal_mdp.get_legal_actions(state)}
-                # print(Q)
-                # Update value function with maximum Q-value
-                V[state] = max(Q.values()) if Q else 0
-                # if s == state:
-                #     print([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
-                #     import sys
-                #     sys.exit(69)
-                pi[state] = random.choice([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
-                # Check for convergence
-                delta = max(delta, abs(v - V[state]))
+    #             # Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+    #             #             for (p, sp) in temporal_mdp.transition_function[state][a]
+    #             #             if p > 0 and state != sp)for a in temporal_mdp.get_legal_actions(state)}
+    #             # print(Q)
+    #             # Update value function with maximum Q-value
+    #             V[state] = max(Q.values()) if Q else 0
+    #             # if s == state:
+    #             #     print([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
+    #             #     import sys
+    #             #     sys.exit(69)
+    #             pi[state] = random.choice([a for a in temporal_mdp.get_legal_actions(state) if Q[a] == V[state]])
+    #             # Check for convergence
+    #             delta = max(delta, abs(v - V[state]))
             
-            # Stop if convergence threshold is met
-            if delta < theta:
-                break
+    #         # Stop if convergence threshold is met
+    #         if delta < theta:
+    #             break
 
-        # Compute optimal policy based on final value function
-        # pi = {}
-        # for state in self.states:
-        #     Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
-        #                 for (p, sp) in temporal_mdp.transition_function[state][a]
-        #                 if p > 0) for a in self.get_legal_actions(state)}
-        #     pi[state] = max(temporal_mdp.get_legal_actions(state), key=lambda a: Q[a])
-        # print(pi)
-        # print(pi[s])
-        if meta:
-            action = pi[s]
-            next_state, _ = temporal_mdp.step(s, action)
-            meta_actions_sas = meta_sas_[s][action][next_state]
-            if len(meta_actions_sas):
-                return meta_actions_sas[0], (s, action, next_state)
-            meta_actions_s = meta_s_[next_state]
-            if len(meta_actions_s):
-                return meta_actions_s[0], next_state, action
-            else:
-                return action
-        else:
-            return pi[s]
+    #     # Compute optimal policy based on final value function
+    #     # pi = {}
+    #     # for state in self.states:
+    #     #     Q = {a: sum(p * (temporal_mdp.reward_function[sp] + temporal_mdp.discount_factor * V[sp])
+    #     #                 for (p, sp) in temporal_mdp.transition_function[state][a]
+    #     #                 if p > 0) for a in self.get_legal_actions(state)}
+    #     #     pi[state] = max(temporal_mdp.get_legal_actions(state), key=lambda a: Q[a])
+    #     # print(pi)
+    #     # print(pi[s])
+    #     if meta:
+    #         action = pi[s]
+    #         next_state, _ = temporal_mdp.step(s, action)
+    #         meta_actions_sas = meta_sas_[s][action][next_state]
+    #         if len(meta_actions_sas):
+    #             return meta_actions_sas[0], (s, action, next_state)
+    #         meta_actions_s = meta_s_[next_state]
+    #         if len(meta_actions_s):
+    #             return meta_actions_s[0], next_state, action
+    #         else:
+    #             return action
+    #     else:
+    #         return pi[s]
 
-        # # Perform value iteration
-        # for _ in range(max_iter):
-        #     delta = 0
+    #     # # Perform value iteration
+    #     # for _ in range(max_iter):
+    #     #     delta = 0
 
-        #     # For each state, compute the new value function based on the current value function and the transition probabilities and rewards
-        #     for state in temporal_mdp.get_states():
+    #     #     # For each state, compute the new value function based on the current value function and the transition probabilities and rewards
+    #     #     for state in temporal_mdp.get_states():
 
-        #         if state == goal:
-        #             continue
+    #     #         if state == goal:
+    #     #             continue
                 
 
-        #         # Get the legal actions for the current state
-        #         legal_actions = temporal_mdp.get_legal_actions(state)
+    #     #         # Get the legal actions for the current state
+    #     #         legal_actions = temporal_mdp.get_legal_actions(state)
                 
-        #         # Compute the Q-value for each legal action
-        #         Q = {}
-        #         for action in legal_actions:
-        #             q = 0.0
-        #             # Compute the expected value of the next state and add it to the Q-value
-        #             for prob, next_state in temporal_mdp.get_transition_probs(state, action):
-        #                 q += prob * (temporal_mdp.get_reward(next_state) + temporal_mdp.discount_factor * V[next_state])
-        #                 Q[action] = q
-        #         # Update the value function for the current state to be the maximum Q-value
-        #         if Q:
-        #             max_key = max(Q, key=lambda k: (Q[k], np.random.random()))
-        #             new_v = Q[max_key]
-        #             # new_v = max(Q)
-        #             delta = max(delta, abs(new_v - V[state]))
-        #             V[state] = new_v
-        #             pi[state] = max_key
+    #     #         # Compute the Q-value for each legal action
+    #     #         Q = {}
+    #     #         for action in legal_actions:
+    #     #             q = 0.0
+    #     #             # Compute the expected value of the next state and add it to the Q-value
+    #     #             for prob, next_state in temporal_mdp.get_transition_probs(state, action):
+    #     #                 q += prob * (temporal_mdp.get_reward(next_state) + temporal_mdp.discount_factor * V[next_state])
+    #     #                 Q[action] = q
+    #     #         # Update the value function for the current state to be the maximum Q-value
+    #     #         if Q:
+    #     #             max_key = max(Q, key=lambda k: (Q[k], np.random.random()))
+    #     #             new_v = Q[max_key]
+    #     #             # new_v = max(Q)
+    #     #             delta = max(delta, abs(new_v - V[state]))
+    #     #             V[state] = new_v
+    #     #             pi[state] = max_key
 
-        #     # for state in temporal_mdp.get_states():
-        #     #     if state == goal:
-        #     #         continue
-        #     #     v = V[state]
+    #     #     # for state in temporal_mdp.get_states():
+    #     #     #     if state == goal:
+    #     #     #         continue
+    #     #     #     v = V[state]
                 
-        #     #     # Calculate the value for each possible action in this state
-        #     #     q_values = []
-        #     #     for action in temporal_mdp.get_legal_actions(state):
-        #     #         q = -np.inf
-        #     #         for p, s_prime in temporal_mdp.get_transition_probs(state, action):
-        #     #             if p > 0.0 and q == -np.inf: q = 0.0
-        #     #             r = temporal_mdp.get_reward(s_prime)
-        #     #             q += p * (r + temporal_mdp.get_discount_factor() * V[s_prime])
-        #     #         q_values.append(q)
-        #     #     # Choose the action that leads to the maximum value
-        #     #     V[state] = max(q_values)
-        #     #     delta = max(delta, abs(v - V[state]))
+    #     #     #     # Calculate the value for each possible action in this state
+    #     #     #     q_values = []
+    #     #     #     for action in temporal_mdp.get_legal_actions(state):
+    #     #     #         q = -np.inf
+    #     #     #         for p, s_prime in temporal_mdp.get_transition_probs(state, action):
+    #     #     #             if p > 0.0 and q == -np.inf: q = 0.0
+    #     #     #             r = temporal_mdp.get_reward(s_prime)
+    #     #     #             q += p * (r + temporal_mdp.get_discount_factor() * V[s_prime])
+    #     #     #         q_values.append(q)
+    #     #     #     # Choose the action that leads to the maximum value
+    #     #     #     V[state] = max(q_values)
+    #     #     #     delta = max(delta, abs(v - V[state]))
             
-        #     # If the maximum change in value function is less than theta, we have converged
-        #     if delta < theta:
-        #         break
+    #     #     # If the maximum change in value function is less than theta, we have converged
+    #     #     if delta < theta:
+    #     #         break

@@ -95,6 +95,7 @@ class RLAgent():
             plt.clf()
 
 
+
         # cmap = plt.cm.get_cmap("Reds")
         # cmap.set_bad("black")
         # plt.figure(1)
@@ -111,20 +112,29 @@ class RLAgent():
         #             annots[i][j] = annots[i][j].lstrip()
 
         # annots = np.array(annots)
+        states_all = np.sum(np.sum(states, axis=0), axis=0)
+        # print(states.ndim, states.shape)
         # if states.ndim == 4:
         #     states_all = np.sum(np.sum(states, axis=0), axis=0)
         # elif states.ndim == 3:
         #     states_all = np.sum(states, axis=0)
+        # elif states_all.ndim == 2:
+        #     states_all = np.sum(states, axis=0)
+        # print(states_all.shape)
+        # print(states_all)
 
-        # # states_all[self.world.static_obstacles] = np.nan
-        # hm = sns.heatmap(np.transpose(states_all), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        # hm.invert_yaxis()
-        # plt.title(f"RL Agent Visited States ({policy})")
-        # if save:
-        #     plt.savefig(os.path.join(policy, f"{policy}-states.png"))
-        #     plt.clf()
+        plt.figure(1)
+        plt.bar(np.arange(len(states_all)), states_all)
+        plt.title(f"RL Agent Visited States ({policy})")
+        if save:
+            plt.savefig(os.path.join(policy, f"{policy}-states.png"))
+            plt.clf()
 
-        # plt.figure(2)
+        if hasattr(config, "planning_steps"):
+            states_exp = np.sum(np.sum(states[:,:config.planning_steps], axis=0), axis=0)
+        else:
+            states_exp = np.sum(np.sum(states[:,:50], axis=0), axis=0)
+
         # if states.ndim == 4:
         #     if hasattr(config, "planning_steps"):
         #         states_exp = np.sum(np.sum(states[:, :config.planning_steps, :], axis=0), axis=0)
@@ -135,28 +145,36 @@ class RLAgent():
         #         states_exp = np.sum(states[:, :config.planning_steps, :], axis=0)
         #     else:
         #         states_exp = np.sum(states[:, :50, :], axis=0)
+        # elif states.ndim == 2:
+        #     if hasattr(config, "planning_steps"):
+        #         states_exp = np.sum(states[:config.planning_steps, :], axis=0)
+        #     else:
+        #         states_exp = np.sum(states[:50, :], axis=0)
 
-        # hm = sns.heatmap(np.transpose(states_exp), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        # hm.invert_yaxis()
-        # plt.title(f"RL Agent Visited States ({policy}): Initial Exploration")
-        # if save:
-        #     plt.savefig(os.path.join(policy, f"{policy}-initial-exploration.png"))
-        #     plt.clf()
+        plt.figure(2)
+        plt.bar(np.arange(len(states_exp)), states_exp)
+        plt.title(f"RL Agent Visited States ({policy}): Initial Exploration")
+        if save:
+            plt.savefig(os.path.join(policy, f"{policy}-initial-exploration.png"))
+            plt.clf()
 
-        # plt.figure(3)
+        states_fin = np.sum(np.sum(states[:,:rewards.shape[0]-10], axis=0), axis=0)
         # if states.ndim == 4:
         #     states_fin = np.sum(np.sum(states[:, rewards.shape[0]-50:, :], axis=0), axis=0)
         # elif states.ndim == 3:
         #     states_fin = np.sum(states[:, rewards.shape[0]-50:, :], axis=0)
+        # elif states.ndim == 2:
+        #     states_fin = np.sum(states[rewards.shape[0]-50, :], axis=0)
 
-        # hm = sns.heatmap(np.transpose(states_fin), linewidth=0.5, annot=np.transpose(annots), square=True, fmt='', cmap=cmap)
-        # hm.invert_yaxis()
-        # plt.title(f"RL Agent Visited States ({policy}): Final Policy")
-        # if save:
-        #     plt.savefig(os.path.join(policy, f"{policy}-final-policy.png"))
-        #     plt.clf()
-        # else:
-        #     plt.show()
+        plt.figure(3)
+        plt.bar(np.arange(len(states_fin)), states_fin)
+        plt.title(f"RL Agent Visited States ({policy}): Final Policy")
+
+        if save:
+            plt.savefig(os.path.join(policy, f"{policy}-final-policy.png"))
+            plt.clf()
+        else:
+            plt.show()
 
 if __name__ == "__main__":
     dim = (4,4)

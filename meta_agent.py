@@ -15,6 +15,7 @@ from watchpoints import watch
 from pprint import pprint 
 import random
 from mdp import MDP
+from value_iteration import value_iteration, plan_VI
 # from uct import uct_search
 # from uct import MonteCarloTreeSearch
 
@@ -43,10 +44,7 @@ class RLMetaAgent(RLAgent):
         for state in self.MDP.states:
             for action in self.MDP.actions:
                 for next_state in self.MDP.states:
-                    # if (MetaAction.INCREASE_TRANSITION_PROBABILITY, (state, action, next_state)) in meta_sas:
-                    #     continue
                     if self.N_sa[state][action] > 0:
-                        # if next_state in [t[1] for t in self.MDP.transition_function[state][action]]:#self.MDP.get_legal_transitions(state):
                         probs[state][action][next_state] = self.N_sas[state][action][next_state] / self.N_sa[state][action]
         return probs
 
@@ -58,6 +56,8 @@ class RLMetaAgent(RLAgent):
         actions = [[] for i in range(config.episodes)]
         watch(self.MDP.transition_function)
         for i in range(config.episodes):
+            with open(f"transitions/t_{i}.txt", "w+") as fp:
+                pprint(self.MDP.transition_function, fp)
             # O_sas = np.full((self.env.n, self.env.m, len(self.env.action_space), self.env.n, self.env.m), np.inf, dtype=float)
 
 
@@ -68,7 +68,7 @@ class RLMetaAgent(RLAgent):
             state = self.env.reset()
 
             O_sas = {}
-            O_s = set([state])
+            O_s = [state]
             meta_sas = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
             meta_s = defaultdict(list)
 
@@ -85,8 +85,10 @@ class RLMetaAgent(RLAgent):
                     next_action = None
                     # print("Using NA")
                 elif planning:
+                    plan = plan_VI(self.MDP, state, self.env.g, meta=True, o_s=O_s, meta_s=meta_s, meta_sas=meta_sas)
+                    # plan = value_iteration(self.MDP, state, self.env.g)
                     # pprint(self.MDP.transition_function)
-                    plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
+                    # plan = self.MDP.plan_VI(state, self.env.g, True, O_s, meta_s, meta_sas)
                     if isinstance(plan, tuple):
                         if plan[0] == MetaAction.INCREASE_TRANSITION_PROBABILITY:
                             action, (_, target_action, target_state) = plan
@@ -131,6 +133,7 @@ class RLMetaAgent(RLAgent):
 
                     if state != next_state:
                         states[i][state]+=1
+                        O_s.append(next_state)
 
                     if planning:
                         # Transition out of current state.
@@ -141,9 +144,8 @@ class RLMetaAgent(RLAgent):
                             self.MDP.update_reward(verify_reward, self.MDP.get_reward(verify_reward)-1)
                             verify_reward = None
                         self.MDP.update_transition_probs(self.probs_from_observations())
-                    #O_s.add(next_state)
                     state = next_state
-                rewards[i]+=reward-1
+                rewards[i]+=reward
             
             states[i][state]+=1
 
