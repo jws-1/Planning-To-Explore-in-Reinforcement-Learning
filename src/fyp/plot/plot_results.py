@@ -28,7 +28,7 @@ def plot_states_alone(agent, states, dir):
     plt.savefig(os.path.join(dir, f"{agent}-states.png"))
     plt.clf()
 
-def plot_results(results, dir):
+def plot_results(results, dir, optimal_reward=None):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
@@ -43,7 +43,9 @@ def plot_results(results, dir):
     for agent, result in results.items():
         rewards, rewards_95pc, states = result
         states = np.sum(np.sum(states, axis=0), axis=0)
-        plot_reward(agent, rewards, rewards_95pc)        
+        plot_reward(agent, rewards, rewards_95pc)
+    if optimal_reward is not None:
+        plt.hlines(optimal_reward, plt.axis()[1], 1., linestyles="dashed", alpha=0.2, label="Optimal")
     plt.legend()
     plt.savefig(os.path.join(dir, "reward-comparison.png"))
     plt.clf()
@@ -51,7 +53,7 @@ def plot_results(results, dir):
     for agent, result in results.items():
         rewards, rewards_95pc, states = result
         states = np.sum(np.sum(states, axis=0), axis=0)
-        plot_states(agent, states, alpha=0.5)
+        plot_states(agent, states, alpha=0.8)
     plt.legend()
     plt.savefig(os.path.join(dir, "states-comparison.png"))
     plt.clf()

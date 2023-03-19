@@ -34,8 +34,8 @@ def generate_inaccurate_mdp(env, mdp, p_tf, p_r):
 
 
 mb_learn_config_dict = {
-    "m": 1,
-    "episodes": 50,
+    "m": 5,
+    "episodes": 100,
     "window_size":5,
     "planning_steps":5,
     "eps": 0.5,
@@ -45,21 +45,21 @@ mb_learn_config_dict = {
 }
 
 mb_config_dict = {
-    "m": 1,
-    "episodes": 50,
+    "m": 5,
+    "episodes": 100,
     "window_size":5,
     "planning_steps":5,
-    "eps": 0.5,
+    "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
     "learn_model":False,
 }
 
 mf_config_dict = {
-    "m": 1,
-    "episodes": 50,
+    "m": 5,
+    "episodes": 100,
     "window_size":5,
-    "eps": 0.9,
+    "eps": 0.5,
     "eps_min": 0.1,
     "decay": False,
     "lr": 0.6,
@@ -114,12 +114,12 @@ if __name__ == "__main__":
     np.random.seed(42)
     results = {
         "MetaPRL" : benchmark(MetaPRLAgent),
-        # "PRL" : benchmark(PRLAgent),
+        "PRL" : benchmark(PRLAgent),
         # "DumbPRL" : benchmark(PRLAgent, False),
         "RL" : benchmark(RLAgent)
     }
-    plot_results(results, "deterministic_results")
-    plot_states_heatmap(results)
+    plot_results(results, "deterministic_results", optimal_reward=-13.)
+    # plot_states_heatmap(results)
     for agent, (rewards, rewards_95pc, states) in results.items():
         if agent in ["MetaPRL", "PRL", "DumbPRL"]:
             print(f"{agent} min, max, mean, final planning, final model-free rewards: {min(rewards), max(rewards), np.mean(rewards), rewards[mb_learn_config_dict['planning_steps']-mb_learn_config_dict['window_size']], rewards[-1]}")

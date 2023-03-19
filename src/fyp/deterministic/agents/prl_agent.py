@@ -11,7 +11,7 @@ class PRLAgent(RLAgent):
         self.reset()
 
     def reset(self):
-        self.Q = {state : {action : 0. for action in range(self.env.nA)} for state in range(self.env.nS)}
+        self.Q = {state : {action : 100. for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.model = deepcopy(self.initial_model)
 
     def learn(self, config):

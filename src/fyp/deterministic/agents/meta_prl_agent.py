@@ -12,7 +12,7 @@ class MetaPRLAgent(RLAgent):
         self.reset()
 
     def reset(self):
-        self.Q = {state : {action : 0. for action in range(self.env.nA)} for state in range(self.env.nS)}
+        self.Q = {state : {action : 100. for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.model = deepcopy(self.initial_model)
         self.observed_sa = {state : {action : False for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.meta_sa = {state : {action : {meta_action : False for meta_action in MetaAction} for action in range(self.env.nA)} for state in range(self.env.nS)}
