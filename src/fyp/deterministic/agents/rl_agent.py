@@ -1,8 +1,6 @@
 
 import numpy as np
 import random
-from actions import Action
-from gridworld import GridWorld
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as st
@@ -25,16 +23,23 @@ class RLAgent():
         rewards = np.zeros(config.episodes)
         states = np.zeros((config.episodes, self.env.nS))
 
+        if config.decay:
+            decay_factor = (config.eps_min/config.eps)**(1/config.episodes)
+        else:
+            decay_factor = 1.0
+        
+        eps = config.eps
+
         for i in range(config.episodes):
-            if i % 100 == 0:
-                print(f"RL-AGENT: episode {i}")
+            # if i % (config.episodes // 100) == 0:
+            print(f"RL-AGENT: episode {i}")
 
             done = False
             state = self.env.reset()
 
             while not done:
-
-                if random.uniform(0, 1) < config.eps:
+                
+                if random.uniform(0, 1) < eps:
                     action = self.env.action_space.sample()
                 else:
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
@@ -52,11 +57,12 @@ class RLAgent():
                 rewards[i] += reward
                 
             states[i][state]+=1
+            eps = eps * decay_factor
         return rewards, states
 
     def learn_and_aggregate(self, config):
         rewards_windows = np.zeros((config.m, config.episodes - config.window_size+1, config.window_size))
-        states = np.zeros((config.m, config.episodes, *self.world.dim))
+        states = np.zeros((config.m, config.episodes, self.env.nS))
         for i in range(config.m):
 
             rewards, states_ = self.learn(config)
