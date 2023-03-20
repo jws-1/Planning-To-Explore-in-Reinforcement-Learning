@@ -50,8 +50,7 @@ class D_MDP:
         self.transition_function = transition_function
         self.reward_function = reward_function
         self.discount_factor = discount_factor
-        # self.V, self.pi = self.value_iteration()
-        # self.V = np.zeros(len(self.states))
+
         if run_VI:
             self.V, self.pi = value_iteration(np.zeros(len(self.states)), self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
         else:
@@ -85,7 +84,7 @@ class D_MDP:
 
         V = self.V
         pi = self.pi
-        candidate_mdp = D_MDP(self.states, self.actions, deepcopy(self.transition_function), deepcopy(self.reward_function), run_VI=False)    
+
         for state in self.states:
 
             for action in self.actions:
@@ -100,7 +99,6 @@ class D_MDP:
                             V[state] = V_[state]
                             pi[state] = pi_[state]
                             changes_r[state][action] = MetaAction.INCREASE_REWARD
-                            candidate_mdp.update_reward(state, action, 1.)
 
                     for next_state in self.states:
                         if not meta_sa[state][action][MetaAction.ADD_TRANSITION]:
@@ -113,13 +111,8 @@ class D_MDP:
                                 V[state] = V_[state]
                                 pi[state] = pi_[state]
                                 changes_t[state][action] = (MetaAction.ADD_TRANSITION, next_state)
-                                candidate_mdp.update_transition(state, action, next_state)
 
         action = pi[start]
-        # print(changes_t[start][action])
-        # print(changes_r[start][action])
-        # print(action)
-        # print(start, action, changes_t[start][action], changes_r[start][action])
         if changes_t[start][action]:
             meta_action, next_state = changes_t[start][action]
             return meta_action, action, next_state

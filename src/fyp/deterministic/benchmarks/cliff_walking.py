@@ -36,9 +36,9 @@ def generate_inaccurate_mdp(env, mdp, p_tf, p_r):
 mb_learn_config_dict = {
     "m": 5,
     "episodes": 100,
-    "window_size":5,
-    "planning_steps":5,
-    "eps": 0.5,
+    "window_size":10,
+    "planning_steps":20,
+    "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
     "learn_model":True,
@@ -47,8 +47,8 @@ mb_learn_config_dict = {
 mb_config_dict = {
     "m": 5,
     "episodes": 100,
-    "window_size":5,
-    "planning_steps":5,
+    "window_size":10,
+    "planning_steps":20,
     "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
@@ -58,7 +58,7 @@ mb_config_dict = {
 mf_config_dict = {
     "m": 5,
     "episodes": 100,
-    "window_size":5,
+    "window_size":10,
     "eps": 0.5,
     "eps_min": 0.1,
     "decay": False,
@@ -67,6 +67,7 @@ mf_config_dict = {
 }
 
 def benchmark(agent_cls, learn=True):
+    np.random.seed(42)
     env = gym.make("CliffWalking-v0")
     env.goal = 47
     T = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.int64)
@@ -111,7 +112,6 @@ def plot_states_heatmap(results, dir):
 
 
 if __name__ == "__main__":
-    np.random.seed(42)
     results = {
         "MetaPRL" : benchmark(MetaPRLAgent),
         "PRL" : benchmark(PRLAgent),
