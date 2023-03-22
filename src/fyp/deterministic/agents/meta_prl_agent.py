@@ -55,7 +55,7 @@ class MetaPRLAgent(RLAgent):
                 if isinstance(action, MetaAction):
                     if action == MetaAction.INCREASE_REWARD:
                         print(state, action, target_action)
-                        self.model.update_reward(state, target_action, 1.)
+                        self.model.update_reward(state, target_action, self.model.get_reward(state, target_action)+1.0)
                     elif action == MetaAction.ADD_TRANSITION:
                         print(state, action, target_action, target_state)
                         self.model.update_transition(state, target_action, target_state)

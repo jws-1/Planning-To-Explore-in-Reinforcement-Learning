@@ -14,22 +14,34 @@ def generate_inaccurate_mdp(env, mdp, p_tf, p_r):
         for action in mdp.actions:
             next_state = mdp.get_transition(state, action)
             reward = mdp.get_reward(state, action)
-            if np.random.random() < p_tf:
-                # Choose a random next state
-                new_tf[state, action] = np.random.choice(list(mdp.states))
-            else:
-                # Use the original transition function
-                new_tf[state, action] = next_state
+            reward = -1.0
+            new_tf[state, action] = next_state
+            new_rf[state, action] = reward
             if next_state == env.goal:
-                new_tf[state, action] = next_state
-            if np.random.random() < p_r and mdp.transition_function[state, action] != env.goal:
-            #     # Choose a random reward
-                new_rf[state, action] = np.random.uniform(-2., -1.)
-            else:
-                # Use the original reward function
-                new_rf[state, action] = reward
-            if next_state == env.goal:
-                new_rf[state, action] = 10.
+                new_rf[state,action] = 0.0
+            # if np.random.random() < p_tf:
+            #     # Choose a random next state
+            #     new_tf[state, action] = np.random.choice(list(mdp.states))
+            # else:
+            #     # Use the original transition function
+            #     new_tf[state, action] = next_state
+            # if next_state == env.goal:
+            #     new_tf[state, action] = next_state
+            # if np.random.random() < p_r and mdp.transition_function[state, action] != env.goal:
+            # #     # Choose a random reward
+            #     new_rf[state, action] = np.random.uniform(-2., -1.)
+            # else:
+            #     # Use the original reward function
+            #     new_rf[state, action] = reward
+            # if next_state == env.goal:
+            #     new_rf[state, action] = 100.
+    new_tf[36, 1] = 37
+    for state in range(37, 47, 1):
+        new_tf[state, 0] = state - 12
+        new_tf[state, 1] = state +1
+        new_tf[state, 2] = state
+        new_tf[state, 3] = state - 1
+
     return D_MDP(mdp.states, mdp.actions, new_tf, new_rf, mdp.discount_factor)
 
 
@@ -49,7 +61,7 @@ mb_config_dict = {
     "episodes": 100,
     "window_size":10,
     "planning_steps":20,
-    "eps": 0.0,
+    "eps": 0.1,
     "lr": 0.6,
     "df": 1.0,
     "learn_model":False,
