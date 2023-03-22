@@ -6,6 +6,7 @@ import numba
 from typing import Optional
 from collections import defaultdict
 from itertools import permutations, combinations, product
+
 class MetaAction(Enum):
     ADD_TRANSITION = 0
     REMOVE_TRANSITION = 1
@@ -72,9 +73,6 @@ class D_MDP:
         return self.get_transition(state, action), self.get_reward(state, action)
 
     def plan_VI(self, start, observed_sa=None, meta=None, meta_sa=None):
-        """
-        Seems like the only way to do this might be greedily, i.e. just return the best change to reward/transition function originating from the current state.
-        """
 
         self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=100)
         if not meta:
