@@ -28,13 +28,13 @@ def value_iteration(V, states, actions, transition_function, reward_function, di
             Q = np.full(len(actions), -np.inf)
             for j in range(len(actions)):
                 action = actions[j]
-                for (p, next_state) in transition_function[state, action]:
+                for next_state in range(len(states)):
+                    p = transition_function[state, action, next_state]
                     q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
-                    if q !=0.0 and Q == -np.inf: Q = 0.0
-                    Q+=q
+                    if q !=0.0 and Q[j] == -np.inf: Q[j] = 0.0
+                    Q[j]+=q
             V[i] = np.max(Q)
             pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V[i]]))
-
             delta = max(delta, abs(v - V[i]))
 
         if delta < theta:
@@ -47,7 +47,7 @@ class MDP:
     def __init__(self, states, actions, transition_function, reward_function, discount_factor=1.0, run_VI=True):
         self.states = states
         self.actions = actions
-        self.transition_function = transition_function # np array of shape (states, actions, 2[prob, next_state])
+        self.transition_function = transition_function # np array of shape (states, actions, next_state, 1[prob])
         self.reward_function = reward_function # np array of shape (states, actions, next_state, 1[reward])
         self.discount_factor = discount_factor
 
@@ -69,6 +69,10 @@ class MDP:
             self.transition_function[state, action, next_state] = prob
             self.transition_function[state, action] /= np.sum(self.transition_function[state, action])
     
+    def update_transition_probs(self, state, action, N_sa, N_sas):
+        for next_state in self.states:
+            self.transition_function[state, action, next_state] = N_sas[next_state] / N_sa
+
     def update_reward(self, state, action, next_state, reward):
         self.reward_function[state, action, next_state] = reward
 
@@ -83,27 +87,26 @@ class MDP:
         next_state = np.random.choice(self.states, p=transition_probs)
         return next_state, self.get_reward(state, action, next_state)
 
-
-    def plan_VI(self, start, observed_sa=None, meta=None, meta_sa=None, meta_sas=None):
-        self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=100)
+    def plan_VI(self, start, observed_sa=None, meta=None, meta_sa=None):
+        self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
         if not meta:
             return self.pi[start]
 
-        candidate_changes_r = {(start, a, next_state, self.get_reward(start, a)+1.0) : -np.inf for (a, next_state) in product(self.actions, self.states)}
+        candidate_changes_r = {(start, a, next_state, np.max(self.reward_function)) : -np.inf for (a, next_state) in product(self.actions, self.states)}
         candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
 
         for (s, a, s_, r) in candidate_changes_r.keys():
-            if not observed_sa[s][a] and not meta_sa[s][a][s_][MetaAction.INCREASE_REWARD]:
+            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_REWARD]:
                 candidate_MDP = deepcopy(self)
-                candidate_MDP.update_reward(s, a, r)
-                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
+                candidate_MDP.update_reward(s, a, s_, r)
+                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=10)
                 candidate_changes_r[(s,a,s_,r)] = V_[s]
-        
+
         for (s, a, s_) in candidate_changes_t.keys():
-            if not observed_sa[s][a] and not meta_sas[s][a][s_][MetaAction.INCREASE_TRANSITION_PROBABILITY]:
+            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_TRANSITION_PROBABILITY]:
                 candidate_MDP = deepcopy(self)
                 candidate_MDP.update_transition_prob(s, a, s_, 1.0)
-                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
+                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=10)
 
                 candidate_changes_t[(s,a,s_)] = V_[s]
         
@@ -111,7 +114,7 @@ class MDP:
         best_change_r = random.choice([c_r for c_r in candidate_changes_r.keys() if candidate_changes_r[c_r] == best_max_r])
         best_max_t = max(candidate_changes_t.values())
         best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
-        
+        print(self.V[start], best_max_r, best_max_t)
         if self.V[start] > candidate_changes_r[best_change_r] and self.V[start] > candidate_changes_t[best_change_t]:
             return self.pi[start]
         elif candidate_changes_r[best_change_r] > candidate_changes_t[best_change_t] and candidate_changes_r[best_change_r] > self.V[start]:
