@@ -48,7 +48,7 @@ class MetaPRLAgent(RLAgent):
                     if isinstance(plan, tuple):
                         if len(plan) == 3:
                             action, target_action, target_state = plan
-                            # next_action = target_action
+                            next_action = target_action
                     else:
                         action = plan
                 else:
