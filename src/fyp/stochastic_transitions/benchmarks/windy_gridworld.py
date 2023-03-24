@@ -1,19 +1,19 @@
-from ..agents import MetaPRLAgent
+from ..agents import MetaPRLAgent, PRLAgent, RLAgent
 import gym
 import gym_windy_gridworlds
 import numpy as np
 from ..models import MDP
 from types import SimpleNamespace
 from plot import plot_results
-
+from collections import defaultdict
 def generate_inaccurate_mdp(env, mdp):
     return mdp
 
 mb_learn_config_dict = {
     "m": 5,
-    "episodes": 100,
-    "window_size":1,
-    "planning_steps":20,
+    "episodes": 1000,
+    "window_size":20,
+    "planning_steps":200,
     "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
@@ -22,9 +22,9 @@ mb_learn_config_dict = {
 
 mb_config_dict = {
     "m": 5,
-    "episodes": 100,
-    "window_size":10,
-    "planning_steps":20,
+    "episodes": 1000,
+    "window_size":20,
+    "planning_steps":200,
     "eps": 0.1,
     "lr": 0.6,
     "df": 1.0,
@@ -33,14 +33,53 @@ mb_config_dict = {
 
 mf_config_dict = {
     "m": 5,
-    "episodes": 100,
-    "window_size":10,
+    "episodes": 1000,
+    "window_size":20,
     "eps": 0.5,
     "eps_min": 0.1,
-    "decay": False,
+    "decay": True,
     "lr": 0.6,
     "df": 1.0,
 }
+
+def make_transition_function(height, width):
+    num_states = height * width
+    actions = ["up", "right", "down", "left"]
+    num_actions = len(actions)
+
+    # Define the transition function as a 3D array
+    transition_func = np.zeros((num_states, num_actions, num_states))
+
+    # Define the helper functions for state indexing
+    def get_state_index(row, col):
+        return np.ravel_multi_index((row, col), (height, width))
+
+    def get_state_coords(state_index):
+        return np.unravel_index(state_index, (height, width))
+
+    # Define the transition probabilities for each action
+    for row in range(height):
+        for col in range(width):
+            state_index = get_state_index(row, col)
+            for action_index, action in enumerate(actions):
+                if action == "up":
+                    next_row = max(row-1, 0)
+                    next_col = col
+                elif action == "right":
+                    next_row = row
+                    next_col = min(col+1, width-1)
+                elif action == "down":
+                    next_row = min(row+1, height-1)
+                    next_col = col
+                elif action == "left":
+                    next_row = row
+                    next_col = max(col-1, 0)
+
+                next_state_index = get_state_index(next_row, next_col)
+
+                transition_func[state_index, action_index, next_state_index] = 1.0
+
+    return transition_func
 
 def generate_transition_function(height, width):
     nS = height * width  # total number of states
@@ -73,36 +112,53 @@ def generate_transition_function(height, width):
 
     return P
 
+def generate_reasonable_transitions(env):
+    reasonable = defaultdict(list)
+
+    for state in range(env.nS):
+        state_2d =  np.unravel_index(state, (env.grid_height, env.grid_width))
+        if state_2d[0]+1 < env.grid_height:
+            reasonable[state].append(np.ravel_multi_index((state_2d[0]+1, state_2d[1]),  (env.grid_height, env.grid_width)))
+        if state_2d[0]-1 >= 0:
+            reasonable[state].append(np.ravel_multi_index((state_2d[0]-1, state_2d[1]),  (env.grid_height, env.grid_width)))
+        if state_2d[1]+1 < env.grid_width:
+            reasonable[state].append(np.ravel_multi_index((state_2d[0], state_2d[1]+1),  (env.grid_height, env.grid_width)))
+        if state_2d[1]-1 >= 0:
+            reasonable[state].append(np.ravel_multi_index((state_2d[0], state_2d[1]-1),  (env.grid_height, env.grid_width)))
+    
+    return reasonable
 
 def benchmark(agent_cls, learn=True):
     np.random.seed(42)
-    env = gym.make("StochWindyGridWorld-v0")
+    env = gym.make("WindyGridWorld-v0")
+    env.seed(42)
     T = np.zeros((env.nS, env.nA, env.nS), dtype=np.int64)
     R = np.zeros((env.nS, env.nA, env.nS), dtype=np.float64)
-    print(env.nA)
-    for s in range(env.nS):
-        if s == 13:
-            print("12")
-        for a in range(env.nA):
-            for next_s in range(env.nS):
-                # T[s][a][next_s] = env.P[s][a][next_s]
-                R[s][a][next_s] = -2.
-    T = generate_transition_function(env.grid_height, env.grid_width)
-    R[:, :, env.goal_state] = 1.0
+    # print(env.nA)
+    # for s in range(env.nS):
+    #     if s == 13:
+    #     for a in range(env.nA):
+    #         for next_s in range(env.nS):
+    #             # T[s][a][next_s] = env.P[s][a][next_s]
+    #             R[s][a][next_s] = -2.
+    R[:, :, :] = -2.
+    env.goal = 37
+    T = make_transition_function(env.grid_height, env.grid_width)
+    R[:, :, 37] = 1.0
+    # print(R[38, 3, 37])
             # for p, next_s, r, _ in env.P[s][a]:
             #     T[s][a][next_s] = p
             #     R[s][a][next_s] = r
-    print(T[13])
-    print(env.P[13])
-
-
+    # print(T[31])
+    reasonable = generate_reasonable_transitions(env)
+    # print(reasonable)
     mdp = MDP(states=np.array(range(env.nS)),
                 actions=np.array(range(env.nA)),
-                transition_function=env.P,
+                transition_function=T,
                 reward_function=R,
-                discount_factor=1.0)
+                discount_factor=1.0, reasonable_meta_transitions=reasonable)
     
-    if agent_cls in [MetaPRLAgent]:
+    if agent_cls in [MetaPRLAgent, PRLAgent]:
         inaccurate_mdp = generate_inaccurate_mdp(env, mdp)
         agent = agent_cls(env, inaccurate_mdp)
         if learn:
@@ -120,6 +176,8 @@ def benchmark(agent_cls, learn=True):
 if __name__ == "__main__":
     results = {
         "MetaPRL" : benchmark(MetaPRLAgent),
+        "PRL" : benchmark(PRLAgent),
+        "RL" : benchmark(RLAgent)
     }
     plot_results(results, "stochastic_transition_results", optimal_reward=-18.)
     # plot_states_heatmap(results)

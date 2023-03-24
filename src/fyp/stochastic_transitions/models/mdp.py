@@ -28,11 +28,13 @@ def value_iteration(V, states, actions, transition_function, reward_function, di
             Q = np.full(len(actions), -np.inf)
             for j in range(len(actions)):
                 action = actions[j]
-                for next_state in range(len(states)):
+                for k in range(len(states)):
+                    next_state = states[k]
                     p = transition_function[state, action, next_state]
-                    q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
-                    if q !=0.0 and Q[j] == -np.inf: Q[j] = 0.0
-                    Q[j]+=q
+                    if state != next_state and p > 0.0:
+                        q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
+                        if Q[j] == -np.inf: Q[j] = 0.0
+                        Q[j]+=q
             V[i] = np.max(Q)
             pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V[i]]))
             delta = max(delta, abs(v - V[i]))
@@ -44,13 +46,14 @@ def value_iteration(V, states, actions, transition_function, reward_function, di
 
 class MDP:
 
-    def __init__(self, states, actions, transition_function, reward_function, discount_factor=1.0, run_VI=True):
+    def __init__(self, states, actions, transition_function, reward_function, discount_factor=1.0, run_VI=True, reasonable_meta_transitions=None):
         self.states = states
         self.actions = actions
         self.transition_function = transition_function # np array of shape (states, actions, next_state, 1[prob])
         self.reward_function = reward_function # np array of shape (states, actions, next_state, 1[reward])
         self.discount_factor = discount_factor
-
+        self.reasonable_meta_transitions = reasonable_meta_transitions
+        self.updated = False
         if run_VI:
             self.V, self.pi = value_iteration(np.zeros(len(self.states)), self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
         else:
@@ -71,10 +74,14 @@ class MDP:
     
     def update_transition_probs(self, state, action, N_sa, N_sas):
         for next_state in self.states:
-            self.transition_function[state, action, next_state] = N_sas[next_state] / N_sa
+            if  N_sas[next_state] / N_sa != self.transition_function[state, action, next_state]:
+                self.transition_function[state, action, next_state] = N_sas[next_state] / N_sa
+                self.updated = True
 
     def update_reward(self, state, action, next_state, reward):
-        self.reward_function[state, action, next_state] = reward
+        if reward != self.reward_function[state, action, next_state]:
+            self.reward_function[state, action, next_state] = reward
+            self.updated = True
 
     def get_rewards(self, state, action):
         return self.reward_function[state, action]
@@ -87,23 +94,30 @@ class MDP:
         next_state = np.random.choice(self.states, p=transition_probs)
         return next_state, self.get_reward(state, action, next_state)
 
-    def plan_VI(self, start, observed_sa=None, meta=None, meta_sa=None):
-        self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
+    def plan_VI(self, start, observed_sas=None, meta=None, meta_sas=None):
+        if self.updated:
+            self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
+            self.updated = False
         if not meta:
             return self.pi[start]
-
+        """
+        Learn the depth
+            If we normally expect to get to a state through n transitions from the current state
+            but it actually takes m transitions,
+            then we learn that meta action
+        """
         candidate_changes_r = {(start, a, next_state, np.max(self.reward_function)) : -np.inf for (a, next_state) in product(self.actions, self.states)}
         candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
 
         for (s, a, s_, r) in candidate_changes_r.keys():
-            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_REWARD]:
+            if not observed_sas[s][a][s_] and not meta_sas[s][a][s_][MetaAction.INCREASE_REWARD]:
                 candidate_MDP = deepcopy(self)
                 candidate_MDP.update_reward(s, a, s_, r)
                 V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=10)
                 candidate_changes_r[(s,a,s_,r)] = V_[s]
 
         for (s, a, s_) in candidate_changes_t.keys():
-            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_TRANSITION_PROBABILITY]:
+            if not observed_sas[s][a][s_] and not meta_sas[s][a][s_][MetaAction.INCREASE_TRANSITION_PROBABILITY] and s_ in self.reasonable_meta_transitions[s] and self.transition_function[s, a, s_] < 1.0:
                 candidate_MDP = deepcopy(self)
                 candidate_MDP.update_transition_prob(s, a, s_, 1.0)
                 V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=10)

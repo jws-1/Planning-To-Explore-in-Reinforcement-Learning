@@ -1,0 +1,3 @@
+[submodule "src/fyp/src/fyp/stochastic_transitions/benchmarks/gym-windy-gridworlds"]
+	path = src/fyp/src/fyp/stochastic_transitions/benchmarks/gym-windy-gridworlds
+	url = https://github.com/ibrahim-elshar/gym-windy-gridworlds.git
