@@ -1,1 +1,2 @@
 from .plot_results import plot_results
+from .plot_results_bandit import plot_result_bandit
