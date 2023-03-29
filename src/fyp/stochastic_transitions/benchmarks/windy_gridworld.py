@@ -153,6 +153,7 @@ def benchmark(agent_cls, learn=True):
     reasonable = generate_reasonable_transitions(env)
     # print(reasonable)
     mdp = MDP(states=np.array(range(env.nS)),
+                goal=env.goal,
                 actions=np.array(range(env.nA)),
                 transition_function=T,
                 reward_function=R,

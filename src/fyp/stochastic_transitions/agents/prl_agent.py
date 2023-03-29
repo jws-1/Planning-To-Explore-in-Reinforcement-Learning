@@ -38,7 +38,7 @@ class PRLAgent(RLAgent):
                     if random.uniform(0, 1) < config.eps:
                         action = self.env.action_space.sample()
                     else:
-                        action = self.model.plan_VI(state)
+                        action = self.model.plan_VI(state, self.env.goal)
                 else:
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
                 
