@@ -25,17 +25,21 @@ class MetaPRLAgent(RLAgent):
         states = np.zeros((config.episodes, self.env.nS))
         next_action = None
         follows_meta_action = False
+
         for i in range(config.episodes):
+
+            self.meta_sa = {state : {action : {ma : False for ma in self.meta_actions} for action in range(self.env.nA)} for state in range(self.env.nS)}
+                # for action in self.meta_actions:
+                #     self.meta_sas
+            self.observed_sa = {state : {action : False for action in range(self.env.nA)} for state in range(self.env.nS)}
+
             # if i % (config.episodes // 10) == 0:
             print(f"Meta PRL-AGENT: episode {i}")
 
             # self.meta_sas = {state : {action : {next_state : {meta_action: False for meta_action in MetaAction} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
     
             # self.meta_sas = {state : {action : {next_state: {ma : False for ma in self.meta_actions} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
-            self.meta_sa = {state : {action : {ma : False for ma in self.meta_actions} for action in range(self.env.nA)} for state in range(self.env.nS)}
-            # for action in self.meta_actions:
-            #     self.meta_sas
-            self.observed_sas = {state : {action : {next_state: False for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
+
 
             done = False
             state = self.env.reset()
@@ -50,7 +54,7 @@ class MetaPRLAgent(RLAgent):
                     follows_meta_action = True
 
                 elif planning:
-                    plan = self.model.plan_VI(state, self.env.goal, meta=True, observed_sas=self.observed_sas, meta_sa=self.meta_sa, meta_actions = self.meta_actions)
+                    plan = self.model.plan_VI(state, self.env.goal, meta=True, observed_sa=self.observed_sa, meta_sa=self.meta_sa, meta_actions = self.meta_actions)
                     if isinstance(plan, tuple):
                         if len(plan) == 4:
                             _, target_action, action, target_state = plan
@@ -62,6 +66,7 @@ class MetaPRLAgent(RLAgent):
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
                 
                 if isinstance(action, MetaAction):
+                    print(f"Update transition probability T[{state}][{target_action}][{target_state}] = 1.0")
                     self.model.update_transition_prob(state, target_action, target_state, 1.0)
                     self.meta_sa[state][target_action][action] = True
                     next_action = target_action
@@ -74,8 +79,8 @@ class MetaPRLAgent(RLAgent):
                     # self.meta_sas[state][target_action][target_state][action] = True
                     
                 else:
-
                     next_state, reward, done, _ = self.env.step(action)
+                    print(state, action, next_state)
                     # print(np.unravel_index(state, (7,10)), action, np.unravel_index(next_state, (7,10)))
                     # print(state, action, next_state)
                     # self.env.render()
@@ -102,7 +107,7 @@ class MetaPRLAgent(RLAgent):
                         self.N_sas[state][action][next_state]+=1
                         self.model.update_transition_probs(state, action, self.N_sa[state][action], self.N_sas[state][action])
                         self.model.update_reward(state, action, next_state, reward)
-                        self.observed_sas[state][action][next_state ] = True
+                        self.observed_sa[state][action] = True
 
 
                     if state != next_state:

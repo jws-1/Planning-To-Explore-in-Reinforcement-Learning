@@ -128,7 +128,7 @@ class MDP:
         next_state = np.random.choice(self.states, p=transition_probs)
         return next_state, self.get_reward(state, action, next_state)
 
-    def plan_VI(self, start, goal, observed_sas=None, meta=None, meta_sa=None, meta_actions=None):
+    def plan_VI(self, start, goal, observed_sa=None, meta=None, meta_sa=None, meta_actions=None):
         if self.updated:
             self.V, self.pi = value_iteration(self.V, self.states, goal, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
             self.updated = False
@@ -157,7 +157,7 @@ class MDP:
         #         candidate_changes_r[(s,a,s_,r)] = V_[s]
 
         for (s, a, m_a, s_) in candidate_changes_t.keys():
-            if not observed_sas[s][a][s_] and not meta_sa[s][a].get(m_a, False) and self.transition_function[s, a, s_] < 1.0:
+            if not observed_sa[s][a] and not meta_sa[s][a].get(m_a, False) and self.transition_function[s, a, s_] < 1.0:
                 candidate_MDP = deepcopy(self)
                 candidate_MDP.update_transition_prob(s, a, s_, 1.0)
                 V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, goal, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor)

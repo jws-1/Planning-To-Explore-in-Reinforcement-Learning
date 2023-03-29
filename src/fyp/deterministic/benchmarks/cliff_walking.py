@@ -42,7 +42,7 @@ def generate_inaccurate_mdp(env, mdp, p_tf, p_r):
         new_tf[state, 2] = state
         new_tf[state, 3] = state - 1
 
-    return D_MDP(mdp.states, mdp.actions, new_tf, new_rf, mdp.discount_factor)
+    return D_MDP(mdp.states, env.goal, mdp.actions, new_tf, new_rf, mdp.discount_factor)
 
 
 mb_learn_config_dict = {
@@ -98,6 +98,7 @@ def benchmark(agent_cls, learn=True):
     #                 R[s][a] = r
 
     mdp = D_MDP(states=np.array(range(env.observation_space.n)),
+                goal=env.goal,
                 actions=np.array(range(env.action_space.n)),
                 transition_function=T,
                 reward_function=R,#lambda s,a: env.P[s][a][0][2],

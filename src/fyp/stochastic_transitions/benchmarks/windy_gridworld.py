@@ -11,9 +11,9 @@ def generate_inaccurate_mdp(env, mdp):
 
 mb_learn_config_dict = {
     "m": 5,
-    "episodes": 1000,
+    "episodes": 200,
     "window_size":20,
-    "planning_steps":200,
+    "planning_steps":50,
     "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
@@ -33,7 +33,7 @@ mb_config_dict = {
 
 mf_config_dict = {
     "m": 5,
-    "episodes": 1000,
+    "episodes": 200,
     "window_size":20,
     "eps": 0.5,
     "eps_min": 0.1,
