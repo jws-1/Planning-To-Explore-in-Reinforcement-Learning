@@ -1,12 +1,18 @@
-\chapter{Frameworks}
+\chapter{Methods}
 \label{chapter4}
+The core of this work is to follow a model-based RL approach, computing plans from a (inherently inaccurate) model to guide guide exploration. What differentiates this from other works, highlighted in Chapter 2, is the additional actions exposed to the planner, that don't actually affect the environment, but rather the model; we deem these \textbf{Meta Actions}.
 
+\section{Meta Actions}
+A Meta Action is an action which does not affect the environment in any way, thus the agent receives no observation or reward upon taking it, but rather it affects the model. A Meta Action is \textbf{admissable} if applying it to the model leads to what seems like a better plan. The planner uses the Meta Actions to hypothesise the changes to the model that would most benefit it.
 
 \section{Frameworks}
-
-
-\subsection{Meta Actions}
-
-\subsection{RL-A* Meta}
-
-\subsection{RL-VI Meta}
+The high-level idea of the proposed framework is to equip the planner of the model-based agent with the aforementioned Meta Actions, that it will use to guide exploration by hypothesising changes to the model that would lead to better plans. This approach follows the idea of "optimism in the face of uncertainty", we propose that we are always in a state of uncertainty due to the inevitable inaccuracies of the model.
+\\This high-level idea was encapsulated in various different implementations, each of which we will present and highlight here.
+\subsection{RL-A* (Deterministic)}
+\subsection{RL-A* Meta (Deterministic)}
+\subsection{RL-A* Meta, with short-term memory (Stochastic)}
+\subsection{RL-VI (Deterministic)}
+\subsection{RL-VI Meta (Deterministic)}
+\subsection{RL-VI (Stochastic)}
+\subsection{RL-VI Meta (Stochastic)}
+\subsection{RL-VI Meta, with learning Meta Actions (Stochastic)}
