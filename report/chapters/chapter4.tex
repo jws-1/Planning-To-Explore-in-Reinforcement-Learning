@@ -4,15 +4,29 @@ The core of this work is to follow a model-based RL approach, computing plans fr
 
 \section{Meta Actions}
 A Meta Action is an action which does not affect the environment in any way, thus the agent receives no observation or reward upon taking it, but rather it affects the model. A Meta Action is \textbf{admissable} if applying it to the model leads to what seems like a better plan. The planner uses the Meta Actions to hypothesise the changes to the model that would most benefit it.
-
+A Meta Action is \textbf{feasible} in the deterministic case if 1) the corresponding state or transition has not been previously observed 2) the Meta Action has not been previously called on the corresponding state or transition. For the stochastic case, a Meta Action is feasible if just 2 holds.
 \section{Frameworks}
-The high-level idea of the proposed framework is to equip the planner of the model-based agent with the aforementioned Meta Actions, that it will use to guide exploration by hypothesising changes to the model that would lead to better plans. This approach follows the idea of "optimism in the face of uncertainty", we propose that we are always in a state of uncertainty due to the inevitable inaccuracies of the model.
+The high-level idea of the proposed framework is to equip the planner of the model-based agent with the aforementioned Meta Actions, that it will use to guide exploration by hypothesising changes to the model that would lead to better plans. This approach follows the idea of "optimism in the face of uncertainty", we propose that we are always in a state of uncertainty due to the inevitable inaccuracies of the model. 
 \\This high-level idea was encapsulated in various different implementations, each of which we will present and highlight here.
+\\ What's interesting about this concept is that the hypotheses are driven by reasoning on the model.
 \subsection{RL-A* (Deterministic)}
+A simple model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
 \subsection{RL-A* Meta (Deterministic)}
+A simple model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
+Additionally, the planner is equipped with the following actions: RemoveObstacle, AddObstacle, DecreaseReward, IncreaseReward.
 \subsection{RL-A* Meta, with short-term memory (Stochastic)}
+A simple model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
+Additionally, the planner is equipped with the following actions: RemoveObstacle, AddObstacle, DecreaseReward, IncreaseReward. The planner approximates a deterministic model which it plans on. To allow for sufficient exploration, the agent has a short-term memory, encouraging it to try Meta Actions again, where it wouldn't be able to do so in the deterministic case.
 \subsection{RL-VI (Deterministic)}
+A model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
 \subsection{RL-VI Meta (Deterministic)}
+A model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
+Additionally, the planner is equipped with the following actions: AddTransition, RemoveTransition, DecreaseReward, IncreaseReward.
 \subsection{RL-VI (Stochastic)}
+A model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
 \subsection{RL-VI Meta (Stochastic)}
+A model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
+Additionally, the planner is equipped with the following actions: IncreaseTransitionProbability, DecreaseTransitionProbability, DecreaseReward, IncreaseReward.
 \subsection{RL-VI Meta, with learning Meta Actions (Stochastic)}
+A model-based RL implementation; the agent explores by planning on the model, and learns the model as it does so.
+Additionally, the planner is equipped with the following actions: IncreaseTransitionProbability, DecreaseTransitionProbability, DecreaseReward, IncreaseReward. A key difference is that Meta Actions are learned and obtained through experience, rather than embedded by hand with the model.
