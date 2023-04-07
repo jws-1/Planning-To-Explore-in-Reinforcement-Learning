@@ -1023,3 +1023,98 @@ improved sample and computational complexity.",
   year={2019},
   pages={7529-7534}
 }
+
+@article{scott1996,
+author = {Scott, Paul and Markovitch, Shaul},
+year = {1996},
+month = {09},
+pages = {},
+title = {Learning Novel Domains Through Curiosity and Conjecture}
+}
+
+
+@InProceedings{pmlr-v97-jinnai19b,
+  title = 	 {Discovering Options for Exploration by Minimizing Cover Time},
+  author =       {Jinnai, Yuu and Park, Jee Won and Abel, David and Konidaris, George},
+  booktitle = 	 {Proceedings of the 36th International Conference on Machine Learning},
+  pages = 	 {3130--3139},
+  year = 	 {2019},
+  editor = 	 {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  volume = 	 {97},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--15 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v97/jinnai19b/jinnai19b.pdf},
+  url = 	 {https://proceedings.mlr.press/v97/jinnai19b.html},
+  abstract = 	 {One of the main challenges in reinforcement learning is solving tasks with sparse reward. We show that the difficulty of discovering a distant rewarding state in an MDP is bounded by the expected cover time of a random walk over the graph induced by the MDP’s transition dynamics. We therefore propose to accelerate exploration by constructing options that minimize cover time. We introduce a new option discovery algorithm that diminishes the expected cover time by connecting the most distant states in the state-space graph with options. We show empirically that the proposed algorithm improves learning in several domains with sparse rewards.}
+}
+
+@inproceedings{
+Jinnai2020Exploration,
+title={Exploration in Reinforcement Learning with Deep Covering Options},
+author={Yuu Jinnai and Jee Won Park and Marlos C. Machado and George Konidaris},
+booktitle={International Conference on Learning Representations},
+year={2020},
+url={https://openreview.net/forum?id=SkeIyaVtwB}
+}
+
+@inproceedings{10.1145/1390156.1390288,
+author = {Szita, Istv\'{a}n and L\H{o}rincz, Andr\'{a}s},
+title = {The Many Faces of Optimism: A Unifying Approach},
+year = {2008},
+isbn = {9781605582054},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1390156.1390288},
+doi = {10.1145/1390156.1390288},
+abstract = {The exploration-exploitation dilemma has been an intriguing and unsolved problem within the framework of reinforcement learning. "Optimism in the face of uncertainty" and model building play central roles in advanced exploration methods. Here, we integrate several concepts and obtain a fast and simple algorithm. We show that the proposed algorithm finds a near-optimal policy in polynomial time, and give experimental evidence that it is robust and efficient compared to its ascendants.},
+booktitle = {Proceedings of the 25th International Conference on Machine Learning},
+pages = {1048–1055},
+numpages = {8},
+location = {Helsinki, Finland},
+series = {ICML '08}
+}
+
+@article{10.1162/153244303765208377,
+author = {Brafman, Ronen I. and Tennenholtz, Moshe},
+title = {R-Max - a General Polynomial Time Algorithm for near-Optimal Reinforcement Learning},
+year = {2003},
+issue_date = {3/1/2003},
+publisher = {JMLR.org},
+volume = {3},
+number = {null},
+issn = {1532-4435},
+url = {https://doi.org/10.1162/153244303765208377},
+doi = {10.1162/153244303765208377},
+abstract = {R-MAX is a very simple model-based reinforcement learning algorithm which can attain near-optimal average reward in polynomial time. In R-MAX, the agent always maintains a complete, but possibly inaccurate model of its environment and acts based on the optimal policy derived from this model. The model is initialized in an optimistic fashion: all actions in all states return the maximal possible reward (hence the name). During execution, it is updated based on the agent's observations. R-MAX improves upon several previous algorithms: (1) It is simpler and more general than Kearns and Singh's E3 algorithm, covering zero-sum stochastic games. (2) It has a built-in mechanism for resolving the exploration vs. exploitation dilemma. (3) It formally justifies the ``optimism under uncertainty'' bias used in many RL algorithms. (4) It is simpler, more general, and more efficient than Brafman and Tennenholtz's LSG algorithm for learning in single controller stochastic games. (5) It generalizes the algorithm by Monderer and Tennenholtz for learning in repeated games. (6) It is the only algorithm for learning in repeated games, to date, which is provably efficient, considerably improving and simplifying previous algorithms by Banos and by Megiddo.},
+journal = {J. Mach. Learn. Res.},
+month = {mar},
+pages = {213–231},
+numpages = {19},
+keywords = {Markov decision processes, stochastic games, provably efficient learning, reinforcement learning, learning in games}
+}
+
+@inproceedings{NIPS2008_d5cfead9,
+ author = {Nouri, Ali and Littman, Michael},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {D. Koller and D. Schuurmans and Y. Bengio and L. Bottou},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Multi-resolution Exploration in Continuous Spaces},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2008/file/d5cfead94f5350c12c322b5b664544c1-Paper.pdf},
+ volume = {21},
+ year = {2008}
+}
+
+@inproceedings{Littman2011EfficientME,
+  title={Efficient model-based exploration in continuous state-space environments},
+  author={Michael L. Littman and Ali Nouri},
+  year={2011}
+}
+
+@inproceedings{Epshteyn2008ActiveRL,
+  title={Active reinforcement learning},
+  author={Arkady Epshteyn and Adam Vogel and Gerald DeJong},
+  booktitle={International Conference on Machine Learning},
+  year={2008}
+}
