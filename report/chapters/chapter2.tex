@@ -45,7 +45,12 @@ $$V(s)_{k+1} = \max_a\sum_{s'}P_{ss'}^{a}[R_{ss'}^a+V_k(s')]$$
 \section{Reinforcement Learning}
 Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \cite{barto1990learning}. This gives rise to the (temporal) credit assignment problem \cite{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
 The goal of the agent is to learn how to map states to actions in order to maximise the expected cumulative long-term reward, this mapping is known as the \textbf{policy} \cite{Sutton1998}.
-
+\begin{figure}[h!]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/rl.png}
+    \caption{The RL Loop}
+    \label{fig:rl}
+\end{figure}
 \subsection{Model-Free Learning}
 Model-free (or direct) RL is the traditional instantiation of RL, where the agent learns a policy directly from experience gained by interacting with the environment; it is purely trial-and-error. Model-free learning tends to be quite flexible to varying problems, since no assumptions are made about the environment's dynamics. Furthermore, since the environment's dynamics do not need to be stored, learned or considered, model-free learning is scalable and does not suffer from the \textit{curse of dimensionality} (in the non-tabular cases) and can be computationally efficient, as there is generally no lookahead deliberation process involved. However, model-free learning can be sample-inefficient; the agent may need to take many actions before discovering the optimal policy.
 \subsection{Model-Based Learning}
@@ -123,9 +128,15 @@ PEORL \cite{DBLP:journals/corr/abs-1804-07779}
 \cite{DBLP:journals/corr/abs-2006-15009}
 \subsubsection{Guided Dyna-Q}
 \cite{Hayamizu2021GuidingRE}
-\subsection{TMP}
+\subsubsection{TMP}
 \cite{Jiang2019TaskMotionPW}
-\subsection{Simple Model-Based Exploration}
+\subsubsection{Simple Model-Based Exploration}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/diagram.png}
+    \caption{Framework}
+    \label{fig:framework}
+\end{figure}
 % Randomnes underlies most exploration strategies in RL, from using pure-randomness, to randomly samplin
 % \subsection{Random}
 % \subsubsection{$\epsilon$-greedy}
