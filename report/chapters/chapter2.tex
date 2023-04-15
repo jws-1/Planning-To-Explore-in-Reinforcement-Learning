@@ -15,19 +15,29 @@ The transition function, $T$ is a key indicator about the nature of the environm
 If $\forall s,s' \in S, \forall a \in A$, $T(s,a,'s) \in \{0,1\}$, then the environment is deterministic, otherwise it is stochastic.
 A deterministic environment is one which there is no variance in the outcomes of action in a given state; taking the same action in the same state always produces the same outcome. Whereas a stochastic (or non-deterministic) environment has uncertainty associated with transitions.
 \subsection{Policies, Value and Quality}
-A policy is a mapping of states to actions that describes a behaviour within an MDP. A policy may have a Value Function associated with it, denoted $V_\pi$. For each state $s$, $V_\pi(s)$ indicates how good it is for the agent to be in that state; it is a measure of the expected reward the agent can receive starting in that state and following the policy $\pi$. A policy may also have a Quality Function associated with it, denoted $Q_\pi$. For each state-action pair $(s,a)$, $Q_\pi(s,a)$ indicates how good it is for the agent to take action $a$ in state $s$; it is a measure of the expected reward the agent can receive by taking action $a$ and then following the policy $\pi$.
+A policy is a mapping of states to actions that describes a behaviour within an MDP. A policy may have a Value Function associated with it, denoted $V_\pi$. For each state $s$, $V_\pi(s)$ indicates how good it is for the agent to be in that state; it is a measure of the expected reward the agent can receive starting in that state and following the policy $\pi$. A policy may also have a Quality Function associated with it, denoted $Q_\pi$. For each state-action pair $(s,a)$, $Q_\pi(s,a)$ indicates how good it is for the agent to take action $a$ in state $s$; it is a measure of the expected reward the agent can receive by taking action $a$ and then following the policy $\pi$. In general, value and quality functions provide a solid method for evaluating a policy.
 % \subsection{Policies}
 % A policy is a mapping of states to actions.
 % \subsection{Value Functions}
 % A Value Function, denoted $V(s)$ indicates how good it is for the agent to be in a given state, $s$. It is a measure of the expected reward the agent can receive starting in a state $s$, following a fixed policy $\pi$.
 % \subsection{Quality Functions}
-\subsection{Bellman Equations}
-The Bellman Equation determines the expected reward for being in a state $s \in S$ and following a fixed policy $\pi$:
-$$V^\pi(s) = R(s, \pi(s)) + \sum_{s'}T(s'|s,\pi(s))V^\pi(s')$$
-Where $V^\pi$ is the value function of the policy, $\pi$.\\
-The Bellman Optimality equation determines the reward for taking the action giving the highest expected return.
-$$V^{\pi*}(s) = \text{argmax}_a{R(s,a) + \sum_{s'}P(s'|s,a)V^{\pi*}(s')}$$
-Where $V^{\pi*}$ is the value function of the optimal policy.
+\subsection{Optimality}
+The optimality equation for a Value Function, $V$ is given as such:
+\begin{equation}
+\label{eqn:vstar}
+    V^*(s) = \max_a\sum_{s'}T(s,a,s')[R(s,a,s')+V*(s')]
+\end{equation}
+The optimality equation for a Quality Function, $Q$ is given as such:
+\begin{equation}
+\label{eqn:qstar}
+Q^*(s,a) = \sum_{s'}T(s,a,s')[R(s,a,s')+\max_{a'}Q^*(s',a')]
+\end{equation}
+% The Bellman Equation determines the expected reward for being in a state $s \in S$ and following a fixed policy $\pi$:
+% $$V^\pi(s) = R(s, \pi(s)) + \sum_{s'}T(s'|s,\pi(s))V^\pi(s')$$
+% Where $V^\pi$ is the value function of the policy, $\pi$.\\
+% The Bellman Optimality equation determines the reward for taking the action giving the highest expected return.
+% $$V^{\pi*}(s) = \text{argmax}_a{R(s,a) + \sum_{s'}P(s'|s,a)V^{\pi*}(s')}$$
+% Where $V^{\pi*}$ is the value function of the optimal policy.
 
 \section{Planning and Searching}
 Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a specified goal \citep{DBLP:books/aw/RN2020, Lav06, GhallabNauTraverso04}.
@@ -36,16 +46,32 @@ Heuristic search uses heuristic functions to guide the exploration of possible s
 \subsubsection{A* Search}
 A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \citep{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \citep{KORF1990189}, which is akin to model-based RL.
 \subsection{Dynamic Programming}
-Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} can be used to compute an optimal policy given a perfect model of the environment, embedded in an MDP \citep{Sutton1998}. If the model is not perfect, then the computed policy is only optimal for the model, not for the real environment; however this can still be useful. The two main algorithms that we consider are Policy Iteration \citep{Bellman:1957, howard:dp} and Value Iteration \citep{Bellman:1957}; both of which rely on the idea of Policy Improvement \citep{Bellman:1957}.
+Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} can be used to compute an optimal policy given a perfect model of the environment, embedded in an MDP \citep{Sutton1998}. If the model is not perfect, then the computed policy is only optimal for the model, not for the real environment; however this can still be useful. The two main algorithms that we consider are Policy Iteration \citep{Bellman:1957, howard:dp} and Value Iteration \citep{Bellman:1957}; both of which rely on the idea of Policy Evaluation and Improvement \citep{Bellman:1957} and are forms of Generalised Policy Iteration (which as it happens, most Dynamic Programming and RL methods are) \cite{Sutton1998}.
 % Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} is a problem-solving method which involves breaking down problems into smaller sub-problems, solving them, storing the solutions, and combining them to solve the original problem. Given a perfect model of the environment, embedded in an MDP, an optimal policy can be computed using Dynamic Programming, through both Policy Iteration  and Value Iteration.
-\subsubsection{Policy Improvement}
-Policy Improvement \citep{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \citep{DBLP:books/lib/Bertsekas05}.
+\subsubsection{Policy Evaluation and Improvement}
+Policy Improvement \citep{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \citep{DBLP:books/lib/Bertsekas05}. One way to improve a policy. $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
+\subsection{Generalised Policy Iteration}
+Generalised Policy Iteration (GPI) refers to the process of Policy Evaluation and Policy Improvement interacting with eachother\cite{Sutton1998}.
 \subsubsection{Policy Iteration}
-\citep{Bellman:1957, howard:dp}
+Policy Iteration (PI) \citep{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V_\pi$ (or a Quality Function $Q_\pi$). The policy is then updated greedily with respect to $V_\pi$ (or $Q_\pi$).
 \subsubsection{Value Iteration}
-Value Iteration is a method for computing the optimal policy in an MDP; this policy is akin to a plan and can be used in the same way. Assuming an arbitrary Value Function, $V$, at each step $k$, $V$ is updated as such:
-$$V(s)_{k+1} = \max_a\sum_{s'}P_{ss'}^{a}[R_{ss'}^a+V_k(s')]$$
-\citep{series/synthesis/2010Szepesvari}
+Value Iteration (VI) \cite{Bellman:1957} is a method for computing the optimal estimate for the Value or Quality Function of an MDP. As the estimate approaches optimality, the policy that is greedy with respect to the Value or Quality Function also approaches optimality \citep{series/synthesis/2010Szepesvari}.
+In the context of Value Functions, assuming an arbitrary initial estimate, $V$, at each step $V$ is updates as such:
+\begin{equation}
+\label{eqn:vupdate}
+V(s) \leftarrow \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]
+\end{equation}
+for all $s \in S$.
+For Quality Functions, assuming an arbitrary initial estimate, $Q$, at each step $Q$ is updated as such:
+\begin{equation}
+\label{eqn:qupdate}
+Q(s,a) \leftarrow \sum_{s'}T(s,a,s')[R(s,a,s') + \max_{a'}Q(s',a')]
+\end{equation}
+for all $s \in S$, $a \in A$. These update rule originate from the Bellman optimality equation.
+% Assuming an arbitrary estimate of the Value Function, $V$, or the Quality Function, $Q$, at each step
+% Value Iteration (VI) is a method for computing the optimal policy in an MDP; this policy is akin to a plan and can be used in the same way. Assuming an arbitrary estimate of the Value Function, $V$, at each step, $V$ is updated as such:
+% $$V(s) = \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]$$
+% VI 
 \section{Reinforcement Learning}
 Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal, as seen in Figure \ref{fig:rl}. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \citep{barto1990learning}. This gives rise to the (temporal) credit assignment problem \citep{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
 The goal of the agent is to learn a policy that maximises the expected cumulative long-term reward \citep{Sutton1998}.
@@ -55,7 +81,6 @@ The goal of the agent is to learn a policy that maximises the expected cumulativ
     \caption{The RL Loop}
     \label{fig:rl}
 \end{figure}
-\subsection{Generalised Policy Iteration}
 \subsection{Model-Free Learning}
 Model-free (or direct) RL is the traditional instantiation of RL, where the agent learns a policy directly from experience gained by interacting with the environment; it is purely trial-and-error. Model-free learning tends to be quite flexible to varying problems, since no assumptions are made about the environment's dynamics. Furthermore, since the environment's dynamics do not need to be stored, learned or considered, model-free learning is scalable and does not suffer from the \textit{curse of dimensionality} (in the non-tabular cases) and can be computationally efficient, as there is generally no lookahead deliberation process involved. However, model-free learning can be sample-inefficient; the agent may need to take many actions before discovering the optimal policy.
 \subsection{Model-Based Learning}
@@ -68,7 +93,10 @@ Model-based learning tends to provide better sample efficiency than model-free a
 % \end{itemize}
 \subsubsection{Model Learning}
 Model learning can be viewed as a supervised learning problem \citep{JORDAN1992307}. In discrete environments, exact models of the environment's dynamics can be learned in the form of a \textit{tabular maximum likelihood model} \citep{10.1145/122344.122377} which essentially maintains a table storing every possible transition. In the stochastic case, for each transition the table will store:
-$$T(s'|s,a) = \frac{n(s, a, s')}{\sum_{s'}n(s,a,s')}$$
+\begin{equation}
+\label{eqn:tmlmupdate}
+T(s'|s,a) = \frac{n(s, a, s')}{\sum_{s'}n(s,a,s')}
+\end{equation}
 Where $n(s,a,s')$ represents the number of times the transition has been observed.
 The same can be used for the deterministic case, which will result in all transitions mapping to either 0 or 1. It should be noted that an environment could be discretised in order to learn an exact model, but in-fact this model will be approximate due to this discretisation.
 % However, as with all tabular methods, this doesn't scale well.
@@ -80,8 +108,11 @@ In continuous environments, tabular approaches are not possible due to the infin
 Temporal Difference (TD) Learning \citep{10.5555/911176, 5392560, 5391906} aims at solving the problem of temporal credit assignment by combining ideas from Monte Carlo methods, which learn directly from experience in the environment, and Dynamic Programming methods, which bootstrap estimates from other previously learned estimates. It is a form of Generalised Policy Iteration, in that it aims to produce an optimal estimate of the Value Function, $V_\pi^*$, starting from an initial estimate, $V_\pi$, for a given policy, $\pi$,\citep{Sutton1998}.
 \\The core idea of TD Learning is to update the estimate of the Value Function, $V_\pi$, whenever there is a difference between temporally successive predictions \cite{Sutton:1988}. This difference is known as the TD error. The updated estimate is bootstrapped from the previous estimate, meaning that TD learning essentially learns a prediction from another prediction.
 \\The simplest TD Learning algorithm is TD(0) \citep{Sutton:1988}, which updates it's estimates as such:
-$$V(s_t) \leftarrow V(s_t) + \alpha[r_{t+1} + V(s_{t+1}) - V(s_t)]$$
-$r_{t+1} + V(s_{t+1})$ is the expected cumulative reward, known as the TD target, and $r_{t+1} + V(s_{t+1}) - V(s_t)$ is the TD error.
+\begin{equation}
+\label{eqn:td0update}
+V(s_t) \leftarrow V(s_t) + \alpha[r_{t+1} + V(s_{t+1}) - V(s_t)]
+\end{equation}
+The TD target is the current prediction of the expected cumulative reward: $r_{t+1} + V(s_{t+1})$. The TD error is $r_{t+1} + V(s_{t+1}) - V(s_t)$.
 $0 \le \alpha \le 1$ is the learning rate, which is used to control how much weight is given to the TD error when updating the estimate. 
 \\TD Learning can also be extended to learn a Q-Function, which stores the value of state-action pairs rather than the value of states. For each state-action pair, it stores an estimate of the expected cumulative reward starting in that state and taking an action, and following a fixed policy.
 % \\Starting from an initial estimate of the Value Function, $V_\pi$, for the current policy being followed, $\pi$, the goal of TD Learning is 
@@ -94,20 +125,26 @@ $0 \le \alpha \le 1$ is the learning rate, which is used to control how much wei
 % Within Temporal Difference (TD) \citep{10.5555/911176, 5392560, 5391906}, learning is driven by the error/difference between temporally successive predictions, so learning occurs whenever there is a change in prediction over time. It's a method for learning to predict; learning a prediction from another later learned prediction.
 % The problem of temporal credit assignment gives rise to Temporal Difference (TD) Learning \citep{10.5555/911176, 5392560, 5391906}. TD Learning maintains an estimate of the Value Function, which is updated whenever there is a change in prediction over time.
 \subsubsection{Q-Learning}
-Q-Learning \citep{Watkins:1989, journals/ml/WatkinsD92} is an off-policy TD Learning method that learns a Q-function. It is off-policy, as the update rule assumes a greedy policy - this means that the value of the optimal policy is learned independently of the agent's actions following the current policy. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
-$$Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \alpha[r_{t+1} + \max_aQ(s_{t+1}, a) -Q(s_t,a_t)]$$
+Q-Learning \citep{Watkins:1989, journals/ml/WatkinsD92} is an off-policy TD Learning method that learns a Quality function. It is off-policy, as the update rule assumes a greedy policy - this means that the value of the optimal policy is learned independently of the agent's actions following the current policy. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
+\begin{equation}
+\label{eqn:qlearningupdate}
+Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \alpha[r_{t+1} + \max_aQ(s_{t+1}, a) -Q(s_t,a_t)]
+\end{equation}
 Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly learning occurs.
 % \\Clearly Q-Learning comes from Dynamic Programming, and in that sense it is a tabular method; a Q-table is maintained which stores the Q-values for each state-action pair. For this reason, it doesn't scale too well to large state/action spaces - however it is suitable for the domains that we consider within this work.
 % \\The result of Q-Learning is that a deterministic, greedy policy is learned.
 \subsubsection{SARSA}
-SARSA (State Action Reward State Action) \citep{rummery:cuedtr94} is an on-policy TD Learning method that learns a Q-function. It is on-policy, as the update rule assumes that the current policy continues being followed - this means that the value of the current policy being followed is learned. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
-$$Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t, a_t)]$$
+SARSA (State Action Reward State Action) \citep{rummery:cuedtr94} is an on-policy TD Learning method that learns a Quality function. It is on-policy, as the update rule assumes that the current policy continues being followed - this means that the value of the current policy being followed is learned. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
+\begin{equation}
+\label{eqn:sarsaupdate}
+Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t, a_t)]
+\end{equation}
 Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly learning occurs.
 \section{Exploration in Reinforcement Learning}
 Thrun \citep{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. Due to the advances in exploration methods, these categories became redundant, and Amin et al's \citep{DBLP:journals/corr/abs-2109-00157} comprehensive survey on exploration in RL distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration. We consider this taxonomy of exploration methods.
 \subsection{Random Exploration}
 Due to simplicity of implementation and ease of generalisation, random exploration is the most popular form of exploration, and is widely seen in the literature; even where some other exploration method is used, there is often some underlying randomness.
-A Random Walk, or unguided random search \citep{anderson86}, arises from randomly sampling actions with uniform probability. This is perhaps the most naive method of exploration, since it is entirely random. The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
+\\A Random Walk, or unguided random search \citep{anderson86}, arises from randomly sampling actions with uniform probability. This is perhaps the most naive method of exploration, since it is entirely random. The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
 \\$\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, with probability $1-\epsilon$ the agent exploits by taking the current best action. A key drawback of $\epsilon$-greedy exploration is that is lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima.
 \\$\epsilon z$-greedy \citep{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence; the agent follows a sequence of actions (an option \citep{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
 % \begin{itemize}
