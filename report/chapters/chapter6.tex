@@ -6,16 +6,8 @@
 \end{itemize}
 \section{Complexity and Efficiency}
 \section{Limitations}
-\begin{itemize}
-    \item Tabular approaches; will not scale well if deployed straight into a larger environment.
-    \item Assumes discretisation is possible.
-    \item Assumes full observability.
-    
-\end{itemize}
+The main limitation of the implementations proposed of our framework relate to its scalibility, due to the tabular approaches followed for the model and the Q function as well as assumptions made regarding discretisation. Furthermore, our approach assumes full observability, which may not be the case in some real world tasks. Also, our approach does not consider stochastic rewards; it assumes that the reward received for every transition is the same, which is certainly not always the case, particularly in the case of bandit algorithms \citep{lattimore}. Our approach also only considers episodic taks, rather than continuous ones - this limits the application of our algorithm.
 \section{Conclusions}
-
+We proposed a framework that 
 \section{Ideas for future work}
-\begin{itemize}
-    \item Learning meta actions
-    \item Stochastic rewards
-\end{itemize}
+The ideas we have for future work mostly begin by solving the limitations outlined above. Most issues regarding scalability can be overcome by moving from exact to approximate solutions through function approximation methods; this would allow scaling to continuous, partially  observable domains. Furthermore, our method could be easily extended to domains with stochastic rewards, however in stateless domains such as Bandits, the criteria for calling a Meta Action that would increase reward needs to be further considered; this could be done by count-based methods or uncertainty based methods. Furthermore, more suitable planning algorithms could be explored, such as UCT \citep{10.1007/11871842_29}; which is the UCB algorithm \citep{auer2002finite} applied to tree search; this would offer a scalable, faster solution than Value Iteration.
