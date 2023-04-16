@@ -15,12 +15,9 @@ The transition function, $T$ is a key indicator about the nature of the environm
 If $\forall s,s' \in S, \forall a \in A$, $T(s,a,'s) \in \{0,1\}$, then the environment is deterministic, otherwise it is stochastic.
 A deterministic environment is one which there is no variance in the outcomes of action in a given state; taking the same action in the same state always produces the same outcome. Whereas a stochastic (or non-deterministic) environment has uncertainty associated with transitions.
 \subsection{Policies, Value and Quality}
-A policy is a mapping of states to actions that describes a behaviour within an MDP. A policy may have a Value Function associated with it, denoted $V_\pi$. For each state $s$, $V_\pi(s)$ indicates how good it is for the agent to be in that state; it is a measure of the expected reward the agent can receive starting in that state and following the policy $\pi$. A policy may also have a Quality Function associated with it, denoted $Q_\pi$. For each state-action pair $(s,a)$, $Q_\pi(s,a)$ indicates how good it is for the agent to take action $a$ in state $s$; it is a measure of the expected reward the agent can receive by taking action $a$ and then following the policy $\pi$. In general, value and quality functions provide a solid method for evaluating a policy.
-% \subsection{Policies}
-% A policy is a mapping of states to actions.
-% \subsection{Value Functions}
-% A Value Function, denoted $V(s)$ indicates how good it is for the agent to be in a given state, $s$. It is a measure of the expected reward the agent can receive starting in a state $s$, following a fixed policy $\pi$.
-% \subsection{Quality Functions}
+A policy, denoted by $\pi$, is a mapping of states to actions that describes a behaviour within an MDP. The desired policy within an MDP maximises the expected cumulative reward, this is known as the optimal policy and denoted $\pi^*$.
+A Value Function, denoted $V^\pi(s)$, measures the expected cumulative reward that can be received starting in each state $s \in S$ and following the policy $\pi$. The optimal value function, $V^*(s)$, is the one that is maximum for every $s \in S$, it also happens to correspond to $\pi^*$.
+Similarly, a Quality Function, denoted $Q^\pi(s,a)$, measures the expected cumulative reward that can be received starting in each state $s \in S$ and taking an action $a \in A$ and thereafter following $\pi$. The optimal quality function, $Q^*(s,a)$, is the one that is maximum for every $s \in S, a \in A$, this also corresponds to $\pi^*$. Therefore, $\pi^*$ can be determined by discovering $V*$ or $Q*$.
 \subsection{Optimality}
 The optimality equation for a Value Function, $V$ is given as such:
 \begin{equation}
@@ -39,19 +36,34 @@ Q^*(s,a) = \sum_{s'}T(s,a,s')[R(s,a,s')+\max_{a'}Q^*(s',a')]
 % $$V^{\pi*}(s) = \text{argmax}_a{R(s,a) + \sum_{s'}P(s'|s,a)V^{\pi*}(s')}$$
 % Where $V^{\pi*}$ is the value function of the optimal policy.
 
-\section{Planning and Searching}
-Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a specified goal \citep{DBLP:books/aw/RN2020, Lav06, GhallabNauTraverso04}.
+\section{Planning}
+Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a specified goal whilst satisfying some constraints or achieving some objectives, such as minimising cost \citep{DBLP:books/aw/RN2020, Lav06, GhallabNauTraverso04}. 
+Planning has been a widely studied topic in AI for many years, as such there exist many planning methods and algorithms. However, although planning is central to this work, planning methods and algorithms are not; therefore, we only consider heuristic search methods and planning by Dynamic Programming.
+
+% plannning methods and algorithms are not the main topic of this work
+%Planning has been a widely studied topic in AI for many years, as such there exist many planning methods. Some classical examples are STRIPS \cite{fikes1972strips} and SATPLAN \cite{kautz}. Heuristic search methods exists such as A* \cite{4082128}. In the context of MDPs, planning can also be done by dynamic programming 
+
+
+% from propositional logic based planning, such as STRIPS \cite{fikes1972strips}, to planning by satisfiability, such as SATPLAN \cite{kautz}, to heurstic search methods, such as A* \cite{4082128}, to Dynamic programming methods, such as Value Iteraton \cite{
+% Planning algorithms range vastly; from classical methods such as STRIPS, 
+
+
+% Planning can be as simple as using an  heuristic search algorithm, such as A* \cite{4082128}, to reason a sequence of actions, or as complex as solving an MDP by Dynamic Programming and sampling a plan from the optimal policy estimate.
 \subsection{Heuristic Search}
-Heuristic search uses heuristic functions to guide the exploration of possible solutions.
+Heuristic search (or informed search) is a class of search algorithms that use problem specific knowledge in the form of heuristics to guide the search. A heuristic, denoted $h(s)$, is a function that estimates the cost of transitioning from the current state, $s$, to the goal state. We consider best-first search algorithms, which aim at expanding states that appear best according to an evaluation function, denoted $f(s)$. 
+% Heuristic search uses heuristic functions to guide the exploration of possible solutions. A heuristic is a function that estimates the cost of transitioning from the current state to the goal state. The choice of heuristic can vary, depending on the problem; and in some domains it can be impossible to design a good heuristic.
 \subsubsection{A* Search}
-A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \citep{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \citep{KORF1990189}, which is akin to model-based RL.
+A* Search (or just A*) \cite{4082128} is a heuristic search algorithm that is a form of best-first search. A cost function, $g(s)$, is introduced, which indicates the cost to get from the start state to a state $s$. The main idea is that the evaluation function can be a combination of the cost to get to the state being evaluated, $g(s)$, and the estimated cost to get from the state being evaluated to the goal state, thus $f(s) = g(s) + h(s)$. This evaluation function indicates the estimated cost of the minimum cost solution that passes through $s$ \cite{DBLP:books/aw/RN2020}. A* works by guiding the search to expand states with the lowest value for $f(s)$ first, in order to determine a sequence of states which is the path (or in our case, the plan). A* is a complete algorithm; it will always find a solution if one exists. The optimality of A* depends on the choice of the heuristic: the heuristic must be admissible, which means that it must never overestimate the cost of getting from the current state to the goal state; in this sense, the heuristic must always be optimistic.
+
+% The idea is that the evaluation function can be a combination of the cost to reach the state, $s$, being evaluated, denoted $g(s)$, and the estimated cost to get from 
+% A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \citep{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \citep{KORF1990189}, which is akin to model-based RL.
 \subsection{Dynamic Programming}
 Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} can be used to compute an optimal policy given a perfect model of the environment, embedded in an MDP \citep{Sutton1998}. If the model is not perfect, then the computed policy is only optimal for the model, not for the real environment; however this can still be useful. The two main algorithms that we consider are Policy Iteration \citep{Bellman:1957, howard:dp} and Value Iteration \citep{Bellman:1957}; both of which rely on the idea of Policy Evaluation and Improvement \citep{Bellman:1957} and are forms of Generalised Policy Iteration (which as it happens, most Dynamic Programming and RL methods are) \cite{Sutton1998}.
 % Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} is a problem-solving method which involves breaking down problems into smaller sub-problems, solving them, storing the solutions, and combining them to solve the original problem. Given a perfect model of the environment, embedded in an MDP, an optimal policy can be computed using Dynamic Programming, through both Policy Iteration  and Value Iteration.
 \subsubsection{Policy Evaluation and Improvement}
-Policy Improvement \citep{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \citep{DBLP:books/lib/Bertsekas05}. One way to improve a policy. $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
+Policy Improvement \citep{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \citep{DBLP:books/lib/Bertsekas05}. One way to improve a policy $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
 \subsection{Generalised Policy Iteration}
-Generalised Policy Iteration (GPI) refers to the process of Policy Evaluation and Policy Improvement interacting with eachother\cite{Sutton1998}.
+Generalised Policy Iteration (GPI) refers to the process of Policy Evaluation and Policy Improvement interacting with eachother \cite{Sutton1998}.
 \subsubsection{Policy Iteration}
 Policy Iteration (PI) \citep{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V_\pi$ (or a Quality Function $Q_\pi$). The policy is then updated greedily with respect to $V_\pi$ (or $Q_\pi$).
 \subsubsection{Value Iteration}
@@ -74,7 +86,7 @@ for all $s \in S$, $a \in A$. These update rule originate from the Bellman optim
 % VI 
 \section{Reinforcement Learning}
 Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal, as seen in Figure \ref{fig:rl}. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \citep{barto1990learning}. This gives rise to the (temporal) credit assignment problem \citep{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
-The goal of the agent is to learn a policy that maximises the expected cumulative long-term reward \citep{Sutton1998}.
+The goal of the agent is to learn a policy, $\pi*$, that maximises the expected cumulative long-term reward \citep{Sutton1998}.
 \begin{figure}[h!]
     \centering
     \includegraphics[max size={\textwidth}{\textheight}]{report/assets/rl.png}
