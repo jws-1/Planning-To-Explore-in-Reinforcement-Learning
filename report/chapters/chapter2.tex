@@ -17,7 +17,7 @@ A deterministic environment is one which there is no variance in the outcomes of
 \subsection{Policies, Value and Quality}
 A policy, denoted by $\pi$, is a mapping of states to actions that describes a behaviour within an MDP. The desired policy within an MDP maximises the expected cumulative reward, this is known as the optimal policy and denoted $\pi^*$.
 A Value Function, denoted $V^\pi(s)$, measures the expected cumulative reward that can be received starting in each state $s \in S$ and following the policy $\pi$. The optimal value function, $V^*(s)$, is the one that is maximum for every $s \in S$, it also happens to correspond to $\pi^*$.
-Similarly, a Quality Function, denoted $Q^\pi(s,a)$, measures the expected cumulative reward that can be received starting in each state $s \in S$ and taking an action $a \in A$ and thereafter following $\pi$. The optimal quality function, $Q^*(s,a)$, is the one that is maximum for every $s \in S, a \in A$, this also corresponds to $\pi^*$. Therefore, $\pi^*$ can be determined by discovering $V*$ or $Q*$.
+Similarly, a Quality Function, denoted $Q^\pi(s,a)$, measures the expected cumulative reward that can be received starting in each state $s \in S$ and taking an action $a \in A$ and thereafter following $\pi$. The optimal quality function, $Q^*(s,a)$, is the one that is maximum for every $s \in S, a \in A$, this also corresponds to $\pi^*$. Therefore, $\pi^*$ can be determined by discovering $V^*$ or $Q^*$.
 \subsection{Optimality}
 The optimality equation for a Value Function, $V$ is given as such:
 \begin{equation}
@@ -79,7 +79,7 @@ For Quality Functions, assuming an arbitrary initial estimate, $Q$, at each step
 \label{eqn:qupdate}
 Q(s,a) \leftarrow \sum_{s'}T(s,a,s')[R(s,a,s') + \max_{a'}Q(s',a')]
 \end{equation}
-for all $s \in S$, $a \in A$. These update rule originate from the Bellman optimality equation.
+for all $s \in S$, $a \in A$. These update rules originate from the Bellman optimality equation.
 % Assuming an arbitrary estimate of the Value Function, $V$, or the Quality Function, $Q$, at each step
 % Value Iteration (VI) is a method for computing the optimal policy in an MDP; this policy is akin to a plan and can be used in the same way. Assuming an arbitrary estimate of the Value Function, $V$, at each step, $V$ is updated as such:
 % $$V(s) = \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]$$
@@ -107,7 +107,7 @@ Model-based learning tends to provide better sample efficiency than model-free a
 Model learning can be viewed as a supervised learning problem \citep{JORDAN1992307}. In discrete environments, exact models of the environment's dynamics can be learned in the form of a \textit{tabular maximum likelihood model} \citep{10.1145/122344.122377} which essentially maintains a table storing every possible transition. In the stochastic case, for each transition the table will store:
 \begin{equation}
 \label{eqn:tmlmupdate}
-T(s'|s,a) = \frac{n(s, a, s')}{\sum_{s'}n(s,a,s')}
+T(s, a, s') = \frac{n(s, a, s')}{\sum_{s'}n(s,a,s')}
 \end{equation}
 Where $n(s,a,s')$ represents the number of times the transition has been observed.
 The same can be used for the deterministic case, which will result in all transitions mapping to either 0 or 1. It should be noted that an environment could be discretised in order to learn an exact model, but in-fact this model will be approximate due to this discretisation.
