@@ -1219,3 +1219,189 @@ series = {ECML'06}
   year = 2002
 }
 
+
+
+@article{10.1162/153244303765208377,
+author = {Brafman, Ronen I. and Tennenholtz, Moshe},
+title = {R-Max - a General Polynomial Time Algorithm for near-Optimal Reinforcement Learning},
+year = {2003},
+issue_date = {3/1/2003},
+publisher = {JMLR.org},
+volume = {3},
+number = {null},
+issn = {1532-4435},
+url = {https://doi.org/10.1162/153244303765208377},
+doi = {10.1162/153244303765208377},
+abstract = {R-MAX is a very simple model-based reinforcement learning algorithm which can attain near-optimal average reward in polynomial time. In R-MAX, the agent always maintains a complete, but possibly inaccurate model of its environment and acts based on the optimal policy derived from this model. The model is initialized in an optimistic fashion: all actions in all states return the maximal possible reward (hence the name). During execution, it is updated based on the agent's observations. R-MAX improves upon several previous algorithms: (1) It is simpler and more general than Kearns and Singh's E3 algorithm, covering zero-sum stochastic games. (2) It has a built-in mechanism for resolving the exploration vs. exploitation dilemma. (3) It formally justifies the ``optimism under uncertainty'' bias used in many RL algorithms. (4) It is simpler, more general, and more efficient than Brafman and Tennenholtz's LSG algorithm for learning in single controller stochastic games. (5) It generalizes the algorithm by Monderer and Tennenholtz for learning in repeated games. (6) It is the only algorithm for learning in repeated games, to date, which is provably efficient, considerably improving and simplifying previous algorithms by Banos and by Megiddo.},
+journal = {J. Mach. Learn. Res.},
+month = {mar},
+pages = {213–231},
+numpages = {19},
+keywords = {stochastic games, reinforcement learning, Markov decision processes, provably efficient learning, learning in games}
+}
+
+@Article{Kearns+Singh:2002,
+  author =       "Kearns, Michael and Singh, Satinder",
+  title =        "Near-Optimal Reinforcement Learning in Polynomial Time",
+  journal =      "Machine Learning",
+  year =         "2002",
+  volume =    "49",
+  number =    "2--3",
+  pages =     "209--232",
+  publisher = "Kluwer Academic",
+  address = "Hingham, MA, USA",
+  url = "http://www.eecs.umich.edu/~baveja/Papers/ICML98_KS.ps.gz",
+  bib2html_rescat = "General RL",
+}
+
+@inproceedings{10.5555/2484920.2485088,
+author = {Hester, Todd and Lopes, Manuel and Stone, Peter},
+title = {Learning Exploration Strategies in Model-Based Reinforcement Learning},
+year = {2013},
+isbn = {9781450319935},
+publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+address = {Richland, SC},
+abstract = {Reinforcement learning (RL) is a paradigm for learning sequential decision making tasks. However, typically the user must hand-tune exploration parameters for each different domain and/or algorithm that they are using. In this work, we present an algorithm called LEO for learning these exploration strategies on-line. This algorithm makes use of bandit-type algorithms to adaptively select exploration strategies based on the rewards received when following them. We show empirically that this method performs well across a set of five domains. In contrast, for a given algorithm, no set of parameters is best across all domains. Our results demonstrate that the LEO algorithm successfully learns the best exploration strategies on-line, increasing the received reward over static parameterizations of exploration and reducing the need for hand-tuning exploration parameters.},
+booktitle = {Proceedings of the 2013 International Conference on Autonomous Agents and Multi-Agent Systems},
+pages = {1069–1076},
+numpages = {8},
+keywords = {reinforcement learning, exploration},
+location = {St. Paul, MN, USA},
+series = {AAMAS '13}
+}
+
+  
+
+
+
+
+@InProceedings{pmlr-v120-seyde20a,
+  title = 	 {Learning to Plan via Deep Optimistic Value Exploration},
+  author =       {Seyde, Tim and Schwarting, Wilko and Karaman, Sertac and Rus, Daniela},
+  booktitle = 	 {Proceedings of the 2nd Conference on Learning for Dynamics and Control},
+  pages = 	 {815--825},
+  year = 	 {2020},
+  editor = 	 {Bayen, Alexandre M. and Jadbabaie, Ali and Pappas, George and Parrilo, Pablo A. and Recht, Benjamin and Tomlin, Claire and Zeilinger, Melanie},
+  volume = 	 {120},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--11 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v120/seyde20a/seyde20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v120/seyde20a.html},
+  abstract = 	 {Deep exploration requires coordinated long-term planning. We present a model-based reinforcement learning algorithm that guides policy learning through a value function that exhibits optimism in the face of uncertainty. We capture uncertainty over values by combining predictions from an ensemble of models and formulate an upper confidence bound (UCB) objective to recover optimistic estimates. Training the policy on ensemble rollouts with the learned value function as the terminal cost allows for projecting long-term interactions into a limited planning horizon, thus enabling deep optimistic exploration. We do not assume a priori knowledge of either the dynamics or reward function. We demonstrate that our approach can accommodate both dense and sparse reward signals, while improving sample complexity on a variety of benchmarking tasks.}
+}
+
+@article{10.1016/S0004-3702(98)00002-2,
+author = {Tadepalli, Prasad and Ok, DoKyeong},
+title = {Model-Based Average Reward Reinforcement Learning},
+year = {1998},
+issue_date = {April 1998},
+publisher = {Elsevier Science Publishers Ltd.},
+address = {GBR},
+volume = {100},
+number = {1–2},
+issn = {0004-3702},
+url = {https://doi.org/10.1016/S0004-3702(98)00002-2},
+doi = {10.1016/S0004-3702(98)00002-2},
+journal = {Artif. Intell.},
+month = {apr},
+pages = {177–224},
+numpages = {48},
+keywords = {reinforcement learning, Bayesian networks, average reward, exploration, linear regression, machine learning, model-based, AGV scheduling}
+}
+
+@inproceedings{10.5555/2886521.2886686,
+author = {Guo, Zhaohan and Brunskill, Emma},
+title = {Concurrent PAC RL},
+year = {2015},
+isbn = {0262511290},
+publisher = {AAAI Press},
+abstract = {In many real-world situations a decision maker may make decisions across many separate reinforcement learning tasks in parallel, yet there has been very little work on concurrent RL. Building on the efficient exploration RL literature, we introduce two new concurrent RL algorithms and bound their sample complexity. We show that under some mild conditions, both when the agent is known to be acting in many copies of the same MDP, and when they are not the same but are taken from a finite set, we can gain linear improvements in the sample complexity over not sharing information. This is quite exciting as a linear speedup is the most one might hope to gain. Our preliminary experiments confirm this result and show empirical benefits.},
+booktitle = {Proceedings of the Twenty-Ninth AAAI Conference on Artificial Intelligence},
+pages = {2624–2630},
+numpages = {7},
+location = {Austin, Texas},
+series = {AAAI'15}
+}
+
+@article{ISHII2002665,
+title = {Control of exploitation–exploration meta-parameter in reinforcement learning},
+journal = {Neural Networks},
+volume = {15},
+number = {4},
+pages = {665-687},
+year = {2002},
+issn = {0893-6080},
+doi = {https://doi.org/10.1016/S0893-6080(02)00056-4},
+url = {https://www.sciencedirect.com/science/article/pii/S0893608002000564},
+author = {Shin Ishii and Wako Yoshida and Junichiro Yoshimoto},
+keywords = {Reinforcement learning, Exploitation–exploration problem, Neuromodulator, Attention, Partially observable Markov decision process},
+abstract = {In reinforcement learning (RL), the duality between exploitation and exploration has long been an important issue. This paper presents a new method that controls the balance between exploitation and exploration. Our learning scheme is based on model-based RL, in which the Bayes inference with forgetting effect estimates the state-transition probability of the environment. The balance parameter, which corresponds to the randomness in action selection, is controlled based on variation of action results and perception of environmental change. When applied to maze tasks, our method successfully obtains good controls by adapting to environmental changes. Recently, Usher et al. [Science 283 (1999) 549] has suggested that noradrenergic neurons in the locus coeruleus may control the exploitation–exploration balance in a real brain and that the balance may correspond to the level of animal's selective attention. According to this scenario, we also discuss a possible implementation in the brain.}
+}
+
+@inproceedings{NIPS2012_a0a080f4,
+ author = {Lopes, Manuel and Lang, Tobias and Toussaint, Marc and Oudeyer, Pierre-yves},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {F. Pereira and C.J. Burges and L. Bottou and K.Q. Weinberger},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Exploration in Model-based Reinforcement Learning by Empirically Estimating Learning Progress},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2012/file/a0a080f42e6f13b3a2df133f073095dd-Paper.pdf},
+ volume = {25},
+ year = {2012}
+}
+
+@inproceedings{10.1145/1553374.1553441,
+author = {Kolter, J. Zico and Ng, Andrew Y.},
+title = {Near-Bayesian Exploration in Polynomial Time},
+year = {2009},
+isbn = {9781605585161},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1553374.1553441},
+doi = {10.1145/1553374.1553441},
+abstract = {We consider the exploration/exploitation problem in reinforcement learning (RL). The Bayesian approach to model-based RL offers an elegant solution to this problem, by considering a distribution over possible models and acting to maximize expected reward; unfortunately, the Bayesian solution is intractable for all but very restricted cases. In this paper we present a simple algorithm, and prove that with high probability it is able to perform ε-close to the true (intractable) optimal Bayesian policy after some small (polynomial in quantities describing the system) number of time steps. The algorithm and analysis are motivated by the so-called PAC-MDP approach, and extend such results into the setting of Bayesian RL. In this setting, we show that we can achieve lower sample complexity bounds than existing algorithms, while using an exploration strategy that is much greedier than the (extremely cautious) exploration of PAC-MDP algorithms.},
+booktitle = {Proceedings of the 26th Annual International Conference on Machine Learning},
+pages = {513–520},
+numpages = {8},
+location = {Montreal, Quebec, Canada},
+series = {ICML '09}
+}
+
+@inproceedings{10.1145/1143844.1143932,
+author = {Poupart, Pascal and Vlassis, Nikos and Hoey, Jesse and Regan, Kevin},
+title = {An Analytic Solution to Discrete Bayesian Reinforcement Learning},
+year = {2006},
+isbn = {1595933832},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1143844.1143932},
+doi = {10.1145/1143844.1143932},
+abstract = {Reinforcement learning (RL) was originally proposed as a framework to allow agents to learn in an online fashion as they interact with their environment. Existing RL algorithms come short of achieving this goal because the amount of exploration required is often too costly and/or too time consuming for online learning. As a result, RL is mostly used for offline learning in simulated environments. We propose a new algorithm, called BEETLE, for effective online learning that is computationally efficient while minimizing the amount of exploration. We take a Bayesian model-based approach, framing RL as a partially observable Markov decision process. Our two main contributions are the analytical derivation that the optimal value function is the upper envelope of a set of multivariate polynomials, and an efficient point-based value iteration algorithm that exploits this simple parameterization.},
+booktitle = {Proceedings of the 23rd International Conference on Machine Learning},
+pages = {697–704},
+numpages = {8},
+location = {Pittsburgh, Pennsylvania, USA},
+series = {ICML '06}
+}
+
+
+@inproceedings{10.1145/1143844.1143845,
+author = {Abbeel, Pieter and Quigley, Morgan and Ng, Andrew Y.},
+title = {Using Inaccurate Models in Reinforcement Learning},
+year = {2006},
+isbn = {1595933832},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1143844.1143845},
+doi = {10.1145/1143844.1143845},
+abstract = {In the model-based policy search approach to reinforcement learning (RL), policies are found using a model (or "simulator") of the Markov decision process. However, for high-dimensional continuous-state tasks, it can be extremely difficult to build an accurate model, and thus often the algorithm returns a policy that works in simulation but not in real-life. The other extreme, model-free RL, tends to require infeasibly large numbers of real-life trials. In this paper, we present a hybrid algorithm that requires only an approximate model, and only a small number of real-life trials. The key idea is to successively "ground" the policy evaluations using real-life trials, but to rely on the approximate model to suggest local changes. Our theoretical results show that this algorithm achieves near-optimal performance in the real system, even when the model is only approximate. Empirical results also demonstrate that---when given only a crude model and a small number of real-life trials---our algorithm can obtain near-optimal performance in the real system.},
+booktitle = {Proceedings of the 23rd International Conference on Machine Learning},
+pages = {1–8},
+numpages = {8},
+location = {Pittsburgh, Pennsylvania, USA},
+series = {ICML '06}
+}
+
+  
+

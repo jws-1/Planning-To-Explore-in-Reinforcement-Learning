@@ -53,7 +53,7 @@ Planning has been a widely studied topic in AI for many years, as such there exi
 Heuristic search (or informed search) is a class of search algorithms that use problem specific knowledge in the form of heuristics to guide the search. A heuristic, denoted $h(s)$, is a function that estimates the cost of transitioning from the current state, $s$, to the goal state. We consider best-first search algorithms, which aim at expanding states that appear best according to an evaluation function, denoted $f(s)$. 
 % Heuristic search uses heuristic functions to guide the exploration of possible solutions. A heuristic is a function that estimates the cost of transitioning from the current state to the goal state. The choice of heuristic can vary, depending on the problem; and in some domains it can be impossible to design a good heuristic.
 \subsubsection{A* Search}
-A* Search (or just A*) \citep{4082128} is a heuristic search algorithm that is a form of best-first search. A cost function, $g(s)$, is introduced, which indicates the cost to get from the start state to a state $s$. The main idea is that the evaluation function can be a combination of the cost to get to the state being evaluated, $g(s)$, and the estimated cost to get from the state being evaluated to the goal state, thus $f(s) = g(s) + h(s)$. This evaluation function indicates the estimated cost of the minimum cost solution that passes through $s$ \citep{DBLP:books/aw/RN2020}. A* works by guiding the search to expand states with the lowest value for $f(s)$ first, in order to determine a sequence of states which is the path (or in our case, the plan). A* is a complete algorithm; it will always find a solution if one exists. The optimality of A* depends on the choice of the heuristic: the heuristic must be admissible, which means that it must never overestimate the cost of getting from the current state to the goal state; in this sense, the heuristic must always be optimistic.
+A* Search (or just A*) \citep{4082128} is a heuristic search algorithm that is a form of best-first search. A cost function, $g(s)$, is introduced, which indicates the cost to get from the start state to a state $s$. The main idea is that the evaluation function can be a combination of the cost to get to the state being evaluated, $g(s)$, and the estimated cost to get from the state being evaluated to the goal state, thus $f(s) = g(s) + h(s)$. This evaluation function indicates the estimated cost of the minimum cost solution that passes through $s$ \citep{DBLP:books/aw/RN2020}. A* works by guiding the search to expand states with the lowest value for $f(s)$ first, in order to determine a sequence of states which is the path (or in our case, the plan). A* is a complete algorithm; it will always find a solution if one exists. However, the optimality of A* depends on the choice of the heuristic: the heuristic must be admissible, which means that it must never overestimate the cost of getting from the current state to the goal state; in this sense, the heuristic must always be optimistic.
 % The idea is that the evaluation function can be a combination of the cost to reach the state, $s$, being evaluated, denoted $g(s)$, and the estimated cost to get from 
 % A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \citep{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \citep{KORF1990189}, which is akin to model-based RL.
 \subsection{Dynamic Programming}
@@ -83,7 +83,7 @@ for all $s \in S$, $a \in A$. These update rules originate from the Bellman opti
 % VI 
 \section{Reinforcement Learning}
 Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal, as seen in Figure \ref{fig:rl}. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \citep{barto1990learning}. This gives rise to the (temporal) credit assignment problem \citep{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
-The goal of the agent is to learn a policy, $\pi*$, that maximises the expected cumulative long-term reward \citep{Sutton1998}.
+The goal of the agent is to learn a policy, $\pi^*$, that maximises the expected cumulative long-term reward \citep{Sutton1998}.
 \begin{figure}[h!]
     \centering
     \includegraphics[max size={\textwidth}{\textheight}]{report/assets/rl.png}
@@ -93,7 +93,7 @@ The goal of the agent is to learn a policy, $\pi*$, that maximises the expected 
 \subsection{Model-Free Learning}
 Model-free (or direct) RL is the traditional instantiation of RL, where the agent learns a policy directly from experience gained by interacting with the environment; it is purely trial-and-error. Model-free learning tends to be quite flexible to varying problems, since no assumptions are made about the environment's dynamics. Furthermore, since the environment's dynamics do not need to be stored, learned or considered, model-free learning is scalable and does not suffer from the \textit{curse of dimensionality} (in the non-tabular cases) and can be computationally efficient, as there is generally no lookahead deliberation process involved. However, model-free learning can be sample-inefficient; the agent may need to take many actions before discovering the optimal policy.
 \subsection{Model-Based Learning}
-Model-based (or indirect) RL is where an agent uses a known or learned model of the environments dynamics (in the form of an MDP) in order to learn the optimal policy \citep{MAL-086, RLSOTA11}. The agent may learn the model and policy at the same time, as in the Dyna family \citep{Sutton:1990, 10.1145/122344.122377} or learn a policy by planning over a known model, as in AlphaZero \citep{DBLP:journals/corr/abs-1712-01815} or learn a policy by planning over a learned model, as in MuZero \citep{DBLP:journals/corr/abs-1911-08265}.
+Model-based (or indirect) RL is where an agent uses a known or learned model of the environments dynamics (in the form of an MDP) in order to learn the optimal policy \citep{MAL-086}. The agent may learn the model and policy at the same time, as in the Dyna family \citep{Sutton:1990, 10.1145/122344.122377} or learn a policy by planning over a known model, as in AlphaZero \citep{DBLP:journals/corr/abs-1712-01815} or learn a policy by planning over a learned model, as in MuZero \citep{DBLP:journals/corr/abs-1911-08265}.
 Model-based learning tends to provide better sample efficiency than model-free approaches, since learning can occur from simulation rather than directly from experience \citep{RLSOTA11} and the number of exploratory actions can be reduced by using targeted exploration \citep{Thrun-1992-15850}. However, this comes at a computational cost; planning can be expensive, especially if the state and action spaces are large.
 % \\Comparison
 % \begin{itemize}
@@ -150,12 +150,19 @@ Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t,
 \end{equation}
 Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly learning occurs.
 \section{Exploration in Reinforcement Learning}
-Thrun \citep{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. Due to the advances in exploration methods, these categories became redundant, and Amin et al's \citep{DBLP:journals/corr/abs-2109-00157} comprehensive survey on exploration in RL distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration. We consider this taxonomy of exploration methods.
+\cite{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. More recently, \cite{DBLP:journals/corr/abs-2109-00157} presented a comprehensive survey on exploration in RL, which distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration. We consider this taxonomy of exploration methods.
 \subsection{Random Exploration}
-Due to simplicity of implementation and ease of generalisation, random exploration is the most popular form of exploration, and is widely seen in the literature; even where some other exploration method is used, there is often some underlying randomness.
-\\A Random Walk, or unguided random search \citep{anderson86}, arises from randomly sampling actions with uniform probability. This is perhaps the most naive method of exploration, since it is entirely random. The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
-\\$\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, with probability $1-\epsilon$ the agent exploits by taking the current best action. A key drawback of $\epsilon$-greedy exploration is that is lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima.
-\\$\epsilon z$-greedy \citep{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence; the agent follows a sequence of actions (an option \citep{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
+% Due to simplicity of implementation and ease of generalisation, random exploration is the most popular form of exploration, and is widely seen in the literature; even where some other exploration method is used, there is often some underlying randomness.
+A Random Walk, or unguided random search \citep{anderson86}, arises from randomly sampling actions with uniform probability. Exploration occurs when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions.
+This is perhaps the most naive method of exploration, since it is entirely random.
+% The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
+\\$\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy. Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima.
+\\$\epsilon z$-greedy \citep{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence. The agent follows a temporally-extended sequence of actions with probability $\epsilon$ and with probability $1-\epsilon$ exploits by taking the best action, which is selected greedily with respect to the current policy. The temporally-extended sequences of actions are called options \citep{SUTTON1999181}). The options consist of actions repeated $n$ times, where $n$ is chosen from a distribution. Whilst this overcomes some of the issues with $\epsilon$-greedy, it can suffer in complex MDPs, where long exploratory trajectories which result in nothing informative being learned can be a very big waste of time and resources.
+
+
+
+
+% $\epsilon$-greedy that uses temporal persistence; the agent follows a temporally-extended sequence of actions (an option \citep{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
 % \begin{itemize}
 %     \item Pure random exploration: Random Walk
 %     \item $\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95}
@@ -163,33 +170,50 @@ Due to simplicity of implementation and ease of generalisation, random explorati
 %     \item Softmax
 %     \item Boltzmann \citep{Watkins:1989, 10.1007/BF00992699, SCC.Barto.Bradtke.ea1991}
 % \end{itemize}
-\subsection{Intrinsically Motivated Exploration}
-\citep{scott1996, pmlr-v97-jinnai19b, Jinnai2020Exploration}
-\subsection{Optimistic}
-\citep{10.1145/1390156.1390288, NIPS2006_c1b70d96, 10.1162/153244303765208377, NIPS2008_d5cfead9}
+% \subsection{Intrinsically Motivated Exploration}
+% \citep{scott1996, pmlr-v97-jinnai19b, Jinnai2020Exploration}
+% \subsection{Optimistic}
+% \citep{10.1145/1390156.1390288, NIPS2006_c1b70d96, 10.1162/153244303765208377, NIPS2008_d5cfead9}
 \subsection{Model-Based}
-We refer to Model-Based exploration as any method of exploration that uses a model to influence exploration. For instance, a simple form of model-based RL where an agent plans on an initial model, and performs model-learning concurrently is an exploration method; although a naive one, that doesn't work in practice.\\
-\citep{SARA07-jong, Littman2011EfficientME, Epshteyn2008ActiveRL}
-\subsubsection{DARLING}
-DARLING \citep{AIJ16-leonetti} computes a partial policy from an approximated deterministic model which it then performs $\epsilon$-greedy on. This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Furthermore, randomness is present still.
-\subsubsection{PEORL}
-PEORL \citep{DBLP:journals/corr/abs-1804-07779}
-\subsubsection{Plan-Q Learning}
-\citep{10.1007/978-3-540-77949-0_6}
-\subsubsection{FRAP}
-\citep{DBLP:journals/corr/abs-2006-15009}
-\subsubsection{Guided Dyna-Q}
-\citep{Hayamizu2021GuidingRE}
-\subsubsection{TMP}
-\citep{Jiang2019TaskMotionPW}
-\subsubsection{Simple Model-Based Exploration}
-For benchmarking and comparison purposes, we present a simple model-based exploration method.
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/diagram.png}
-    \caption{Framework}
-    \label{fig:framework}
-\end{figure}
+We refer to Model-Based exploration as any method of exploration that uses a model to influence exploration.
+% \cite{SARA07-jong}
+
+% For instance, a simple form of model-based RL where an agent plans on an initial model, and performs model-learning concurrently is an exploration method; although a naive one, that doesn't work in practice.\\
+% \citep{SARA07-jong, Littman2011EfficientME, Epshteyn2008ActiveRL}
+% \subsubsection{DARLING}
+\\ R-MAX \cite{10.1162/153244303765208377}, fitted R-MAX \cite{SARA07-jong}
+\\ MAX \cite{DBLP:journals/corr/abs-1810-12162}
+\\ \cite{NIPS2008_d5cfead9}
+\\ DOVE \cite{pmlr-v120-seyde20a}
+\\ $E^3$ \cite{Kearns+Singh:2002}
+\\ LEO \cite{10.5555/2484920.2485088}
+\\ OIM \cite{10.1145/1390156.1390288}
+\\ \cite{10.1016/S0004-3702(98)00002-2}
+\\ \cite{10.5555/2886521.2886686}
+\\ \cite{ISHII2002665}
+\\ \cite{NIPS2012_a0a080f4}
+\\ \cite{10.1145/1553374.1553441}
+\\ \cite{10.1145/1143844.1143932}
+\\ \cite{10.1145/1143844.1143845}
+\\DARLING \citep{AIJ16-leonetti} approximates a deterministic model, which it then produces a partial policy from which $\epsilon$-greedy is performed within. A partial policy is essentially a combination of a selection of plans.  This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Also, DARLING is only suitable for domains where discretisation is possible; it does not scale to continuous state or action spaces. Furthermore, $\epsilon$-greedy introduces randomness into the framework.
+% \subsubsection{PEORL}
+% PEORL \citep{DBLP:journals/corr/abs-1804-07779}
+% \subsubsection{Plan-Q Learning}
+% \citep{10.1007/978-3-540-77949-0_6}
+% \subsubsection{FRAP}
+% \citep{DBLP:journals/corr/abs-2006-15009}
+% \subsubsection{Guided Dyna-Q}
+% \citep{Hayamizu2021GuidingRE}
+% \subsubsection{TMP}
+% \citep{Jiang2019TaskMotionPW}
+% \subsubsection{Simple Model-Based Exploration}
+% For benchmarking and comparison purposes, we present a simple model-based exploration method.
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[max size={\textwidth}{\textheight}]{report/assets/diagram.png}
+%     \caption{Framework}
+%     \label{fig:framework}
+% \end{figure}
 % Randomnes underlies most exploration strategies in RL, from using pure-randomness, to randomly samplin
 % \subsection{Random}
 % \subsubsection{$\epsilon$-greedy}
