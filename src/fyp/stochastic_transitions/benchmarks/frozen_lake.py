@@ -1,6 +1,5 @@
 from ..agents import MetaPRLAgent, PRLAgent, RLAgent
 import gym
-import gym_windy_gridworlds
 import numpy as np
 from ..models import MDP
 from types import SimpleNamespace
@@ -10,10 +9,10 @@ def generate_inaccurate_mdp(env, mdp):
     return mdp
 
 mb_learn_config_dict = {
-    "m": 1,
-    "episodes": 100,
-    "window_size":20,
-    "planning_steps":20,
+    "m": 5,
+    "episodes": 1000,
+    "window_size":1,
+    "planning_steps":100,
     "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
@@ -21,9 +20,9 @@ mb_learn_config_dict = {
 }
 
 mb_config_dict = {
-    "m": 1,
-    "episodes": 300,
-    "window_size":20,
+    "m": 5,
+    "episodes": 50,
+    "window_size":1,
     "planning_steps":100,
     "eps": 0.0,
     "lr": 0.6,
@@ -32,19 +31,19 @@ mb_config_dict = {
 }
 
 mf_config_dict = {
-    "m": 1,
-    "episodes": 300,
-    "window_size":20,
+    "m": 5,
+    "episodes": 1000,
+    "window_size":1,
     "eps": 0.5,
     "eps_min": 0.1,
     "decay": True,
-    "lr": 0.9,
+    "lr": 0.6,
     "df": 1.0,
 }
 
 def make_transition_function(height, width):
     num_states = height * width
-    actions = ["up", "right", "down", "left"]
+    actions = ["left", "down", "right", "up"]
     num_actions = len(actions)
 
     # Define the transition function as a 3D array
@@ -130,7 +129,7 @@ def generate_reasonable_transitions(env):
 
 def benchmark(agent_cls, learn=True):
     np.random.seed(42)
-    env = gym.make("WindyGridWorld-v0")
+    env = gym.make("FrozenLake-v1", is_slippery=True, map_name="4x4")
     env.seed(42)
     T = np.zeros((env.nS, env.nA, env.nS), dtype=np.int64)
     R = np.zeros((env.nS, env.nA, env.nS), dtype=np.float64)
@@ -141,10 +140,13 @@ def benchmark(agent_cls, learn=True):
     #         for next_s in range(env.nS):
     #             # T[s][a][next_s] = env.P[s][a][next_s]
     #             R[s][a][next_s] = -2.
-    R[:, :, :] = -2.
-    env.goal = 37
+    # R[:, :, :] = -2.
+    # R[:, :, :] = -2
+    env.grid_height = env.grid_width = 4
+    env.goal = 15
     T = make_transition_function(env.grid_height, env.grid_width)
-    R[:, :, 37] = 1.0   
+    R[:, :, env.goal] = 1.0
+    # R[:, :, 37] = 1.0   
     # T[30, 1, 31] = 0.8
     # T[30, 1, 30] = 0.2
     # print(R[38, 3, 37])

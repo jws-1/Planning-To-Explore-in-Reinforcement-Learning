@@ -11,7 +11,7 @@ class PRLAgent(RLAgent):
         self.reset()
 
     def reset(self):
-        self.Q = {state : {action : 100. for action in range(self.env.nA)} for state in range(self.env.nS)}
+        self.Q = {state : {action : 0. for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.model = deepcopy(self.initial_model)
         self.N_sa = {state : {action : 0 for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.N_sas = {state : {action : {next_state : 0 for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
@@ -42,12 +42,13 @@ class PRLAgent(RLAgent):
                 else:
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
                 
-                next_state, reward, done, _ = self.env.step(action)
-
-                old_value = self.Q[state][action]
-                next_max = max(self.Q[next_state].values())
-                new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state][action] = new_value
+                next_state, reward, done, info = self.env.step(action)
+                if done and not info.get("TimeLimit.truncated"):
+                    print("Completed ", i)
+                # old_value = self.Q[state][action]
+                # next_max = max(self.Q[next_state].values())
+                # new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
+                self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
 
                 if config.learn_model and planning:
                         self.N_sa[state][action]+=1
