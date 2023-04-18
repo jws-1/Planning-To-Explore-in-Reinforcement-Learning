@@ -144,7 +144,9 @@ def benchmark(agent_cls, learn=True):
     R[:, :, :] = -2.
     env.goal = 37
     T = make_transition_function(env.grid_height, env.grid_width)
-    R[:, :, 37] = 1.0
+    R[:, :, 37] = 1.0   
+    T[30, 1, 31] = 0.3
+    T[30, 1, 30] = 0.7
     # print(R[38, 3, 37])
             # for p, next_s, r, _ in env.P[s][a]:
             #     T[s][a][next_s] = p
@@ -153,6 +155,7 @@ def benchmark(agent_cls, learn=True):
     reasonable = generate_reasonable_transitions(env)
     # print(reasonable)
     mdp = MDP(states=np.array(range(env.nS)),
+                goal=env.goal,
                 actions=np.array(range(env.nA)),
                 transition_function=T,
                 reward_function=R,
