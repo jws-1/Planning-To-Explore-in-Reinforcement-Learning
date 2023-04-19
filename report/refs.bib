@@ -76,18 +76,19 @@ adapts to the environment as it changes.},
   year = 2017
 }
 
-@book{DBLP:books/lib/SuttonB98,
-  author    = {Richard S. Sutton and
-               Andrew G. Barto},
-  title     = {Reinforcement learning - an introduction},
-  series    = {Adaptive computation and machine learning},
-  publisher = {{MIT} Press},
-  year      = {1998},
-  url       = {https://www.worldcat.org/oclc/37293240},
-  isbn      = {978-0-262-19398-6},
-  timestamp = {Fri, 17 Jul 2020 01:00:00 +0200},
-  biburl    = {https://dblp.org/rec/books/lib/SuttonB98.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@book{Sutton1998,
+  added-at = {2019-07-13T10:11:53.000+0200},
+  author = {Sutton, Richard S. and Barto, Andrew G.},
+  biburl = {https://www.bibsonomy.org/bibtex/2f46601cf8b13d39d1378af0d79438b12/lanteunis},
+  edition = {Second},
+  interhash = {ac6b144aaec1819919a2fba9f705c852},
+  intrahash = {f46601cf8b13d39d1378af0d79438b12},
+  keywords = {},
+  publisher = {The MIT Press},
+  timestamp = {2019-07-13T10:11:53.000+0200},
+  title = {Reinforcement Learning: An Introduction},
+  url = {http://incompleteideas.net/book/the-book-2nd.html},
+  year = {2018 }
 }
 
 @article{bams/1183519147,
@@ -103,26 +104,17 @@ doi = {bams/1183519147},
 URL = {https://doi.org/}
 }
 
-@book{russelNorvig2003:aima,
-  abstract = {{The long-anticipated revision of this best-selling book offers the most comprehensive, up-to-date introduction to the theory and practice of artificial intelligence. Intelligent Agents. Solving Problems by Searching. Informed Search Methods. Game Playing. Agents that Reason Logically. First-order Logic. Building a Knowledge Base. Inference in First-Order Logic. Logical Reasoning Systems. Practical Planning. Planning and Acting. Uncertainty. Probabilistic Reasoning Systems. Making Simple Decisions. Making Complex Decisions. Learning from Observations. Learning with Neural Networks. Reinforcement Learning. Knowledge in Learning. Agents that Communicate. Practical Communication in English. Perception. Robotics. For those interested in artificial intelligence.}},
-  added-at = {2010-04-19T01:35:48.000+0200},
-  author = {Russell, Stuart J. and Norvig, Peter},
-  biburl = {https://www.bibsonomy.org/bibtex/2aab790cf69e18d11b87b7fdbb1a0bf9e/franz},
-  citeulike-article-id = {113848},
-  description = {import from cite-u-like},
-  howpublished = {Hardcover},
-  interhash = {2d5e32236d3ab0ad8a224c2de22fcbb7},
-  intrahash = {aab790cf69e18d11b87b7fdbb1a0bf9e},
-  isbn = {0137903952},
-  keywords = {intelligence},
-  month = {December},
-  posted-at = {2007-12-04 01:39:10},
-  priority = {0},
-  publisher = {{Prentice Hall}},
-  timestamp = {2010-04-19T01:35:48.000+0200},
-  title = {Artificial Intelligence: A Modern Approach (2nd Edition)},
-  url = {http://www.amazon.ca/exec/obidos/redirect?tag=citeulike09-20\&amp;path=ASIN/0137903952},
-  year = 2002
+@book{DBLP:books/aw/RN2020,
+  author    = {Stuart Russell and
+               Peter Norvig},
+  title     = {Artificial Intelligence: {A} Modern Approach (4th Edition)},
+  publisher = {Pearson},
+  year      = {2020},
+  url       = {http://aima.cs.berkeley.edu/},
+  isbn      = {9780134610993},
+  timestamp = {Wed, 20 Apr 2022 13:29:51 +0200},
+  biburl    = {https://dblp.org/rec/books/aw/RN2020.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
 @ARTICLE{4082128,
@@ -428,13 +420,13 @@ abstract="We are concerned with feed-forward non-linear networks (multi-layer pe
 isbn="978-3-642-76153-9"
 }
 
-@article{anderson86,
-author = {Anderson, Charles},
-year = {2001},
-month = {11},
-pages = {},
+@phdthesis{anderson86,
+author = {Anderson, Charles William},
+year = {1986},
 title = {Learning and Problem Solving with Multilayer Connectionist Systems}
 }
+
+
 
 @inproceedings{NIPS1989_17000029,
  author = {Mozer, Michael C and Bachrach, Jonathan},
@@ -447,4 +439,969 @@ title = {Learning and Problem Solving with Multilayer Connectionist Systems}
  volume = {2},
  year = {1989}
 }
+
+@article{DBLP:journals/corr/PathakAED17,
+  author    = {Deepak Pathak and
+               Pulkit Agrawal and
+               Alexei A. Efros and
+               Trevor Darrell},
+  title     = {Curiosity-driven Exploration by Self-supervised Prediction},
+  journal   = {CoRR},
+  volume    = {abs/1705.05363},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1705.05363},
+  eprinttype = {arXiv},
+  eprint    = {1705.05363},
+  timestamp = {Mon, 13 Aug 2018 16:48:59 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/PathakAED17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{10.5555/944919.944941,
+author = {Auer, Peter},
+title = {Using Confidence Bounds for Exploitation-Exploration Trade-Offs},
+year = {2003},
+issue_date = {3/1/2003},
+publisher = {JMLR.org},
+volume = {3},
+number = {null},
+issn = {1532-4435},
+abstract = {We show how a standard tool from statistics --- namely confidence bounds --- can be used to elegantly deal with situations which exhibit an exploitation-exploration trade-off. Our technique for designing and analyzing algorithms for such situations is general and can be applied when an algorithm has to make exploitation-versus-exploration decisions based on uncertain information provided by a random process. We apply our technique to two models with such an exploitation-exploration trade-off. For the adversarial bandit problem with shifting our new algorithm suffers only O((ST)1/2) regret with high probability over T trials with S shifts. Such a regret bound was previously known only in expectation. The second model we consider is associative reinforcement learning with linear value functions. For this model our technique improves the regret from O(T3/4) to O(T1/2).},
+journal = {J. Mach. Learn. Res.},
+month = {mar},
+pages = {397–422},
+numpages = {26},
+keywords = {reinforcement learning, online Learning, exploitation-exploration, linear value function, bandit problem}
+}
+
+
+
+@article{DBLP:journals/corr/abs-1709-05380,
+  author    = {Brendan O'Donoghue and
+               Ian Osband and
+               R{\'{e}}mi Munos and
+               Volodymyr Mnih},
+  title     = {The Uncertainty Bellman Equation and Exploration},
+  journal   = {CoRR},
+  volume    = {abs/1709.05380},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1709.05380},
+  eprinttype = {arXiv},
+  eprint    = {1709.05380},
+  timestamp = {Mon, 13 Aug 2018 16:49:09 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1709-05380.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/corr/abs-1810-12162,
+  author    = {Pranav Shyam and
+               Wojciech Jaskowski and
+               Faustino Gomez},
+  title     = {Model-Based Active Exploration},
+  journal   = {CoRR},
+  volume    = {abs/1810.12162},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1810.12162},
+  eprinttype = {arXiv},
+  eprint    = {1810.12162},
+  timestamp = {Thu, 01 Nov 2018 18:03:07 +0100},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1810-12162.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@Book{Bellman:1957,
+  author =       "Bellman, Richard",
+  title =        "Dynamic Programming",
+  publisher =    "Princeton University Press",
+  year =         "1957",
+  address =   "Princeton, NJ, USA",
+  edition =   "1",
+  url = "http://books.google.com/books?id=fyVtp3EMxasC&pg=PR5&dq=dynamic+programming+richard+e+bellman&client=firefox-a#v=onepage&q=dynamic%20programming%20richard%20e%20bellman&f=false",
+  bib2html_rescat = "General RL",
+}
+
+@book{howard:dp,
+  added-at = {2008-03-11T14:52:34.000+0100},
+  address = {Cambridge, MA},
+  author = {Howard, R. A.},
+  biburl = {https://www.bibsonomy.org/bibtex/28b55f737ee6dd7800ffc7952a33bb6bd/idsia},
+  citeulike-article-id = {2380352},
+  interhash = {7eed9f4f6bd1f9ee063d80d0f732e48f},
+  intrahash = {8b55f737ee6dd7800ffc7952a33bb6bd},
+  keywords = {inaki},
+  priority = {2},
+  publisher = {MIT Press},
+  timestamp = {2008-03-11T14:56:12.000+0100},
+  title = {Dynamic Programming and Markov Processes},
+  year = 1960
+}
+@book{DBLP:books/lib/Bertsekas05,
+  author    = {Dimitri P. Bertsekas},
+  title     = {Dynamic programming and optimal control, 3rd Edition},
+  publisher = {Athena Scientific},
+  year      = {2005}
+}
+
+@article{10.1007/BF00992699,
+author = {Lin, Long-Ji},
+title = {Self-Improving Reactive Agents Based on Reinforcement Learning, Planning and Teaching},
+year = {1992},
+issue_date = {May 1992},
+publisher = {Kluwer Academic Publishers},
+address = {USA},
+volume = {8},
+number = {3–4},
+issn = {0885-6125},
+url = {https://doi.org/10.1007/BF00992699},
+doi = {10.1007/BF00992699},
+abstract = {To date, reinforcement learning has mostly been studied solving simple learning tasks. Reinforcement learning methods that have been studied so far typically converge slowly. The purpose of this work is thus two-fold: 1) to investigate the utility of reinforcement learning in solving much more complicated learning tasks than previously studied, and 2) to investigate methods that will speed up reinforcement learning.This paper compares eight reinforcement learning frameworks: adaptive heuristic critic (AHC) learning due to Sutton, Q-learning due to Watkins, and three extensions to both basic methods for speeding up learning. The three extensions are experience replay, learning action models for planning, and teaching. The frameworks were investigated using connectionism as an approach to generalization. To evaluate the performance of different frameworks, a dynamic environment was used as a testbed. The environment is moderately complex and nondeterministic. This paper describes these frameworks and algorithms in detail and presents empirical evaluation of the frameworks.},
+journal = {Mach. Learn.},
+month = {may},
+pages = {293–321},
+numpages = {29},
+keywords = {teaching, Reinforcement learning, planning, connectionist networks}
+}
+
+@TechReport{SCC.Barto.Bradtke.ea1991,
+
+  author      = {Barto, Andrew Gehret and Bradtke, Steven J. and Singh, Satinder P.},
+
+  title       = {Real-time learning and control using asynchronous dynamic programming},
+
+  institution = {University of Massachusetts at Amherst, Department of Computer and Information Science},
+
+  year        = {1991},
+
+  owner       = {rkamalapurkar},
+
+  timestamp   = {2016.05.18},
+
+}
+
+@article{DBLP:journals/corr/abs-1301-3878,
+  author    = {Andrew Y. Ng and
+               Michael I. Jordan},
+  title     = {{PEGASUS:} {A} Policy Search Method for Large MDPs and POMDPs},
+  journal   = {CoRR},
+  volume    = {abs/1301.3878},
+  year      = {2013},
+  url       = {http://arxiv.org/abs/1301.3878},
+  eprinttype = {arXiv},
+  eprint    = {1301.3878},
+  timestamp = {Mon, 13 Aug 2018 16:49:02 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1301-3878.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{MAL-086,
+url = {http://dx.doi.org/10.1561/2200000086},
+year = {2023},
+volume = {16},
+journal = {Foundations and Trends® in Machine Learning},
+title = {Model-based Reinforcement Learning: A Survey},
+doi = {10.1561/2200000086},
+issn = {1935-8237},
+number = {1},
+pages = {1-118},
+author = {Thomas M. Moerland and Joost Broekens and Aske Plaat and Catholijn M. Jonker}
+}
+
+@article{Sutton:1990,
+  added-at = {2009-06-26T15:25:19.000+0200},
+  address = {San Mateo, CA},
+  author = {Sutton, Richard S.},
+  biburl = {https://www.bibsonomy.org/bibtex/246c73a3f5332fd7c87ea2a49b8e30255/butz},
+  description = {diverse cognitive systems bib},
+  interhash = {cb1bb3c7c8656dd4e0e59c4608b6f4e3},
+  intrahash = {46c73a3f5332fd7c87ea2a49b8e30255},
+  journal = {Proceedings of the Seventh International Conference on Machine Learning},
+  keywords = {imported},
+  pages = {216-224},
+  publisher = {Morgan Kaufmann},
+  timestamp = {2009-06-26T15:25:56.000+0200},
+  title = {Integrated architectures for learning, planning, and reacting based
+	on approximating dynamic programming},
+  year = 1990
+}
+
+@article{10.1145/122344.122377,
+author = {Sutton, Richard S.},
+title = {Dyna, an Integrated Architecture for Learning, Planning, and Reacting},
+year = {1991},
+issue_date = {Aug. 1991},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {2},
+number = {4},
+issn = {0163-5719},
+url = {https://doi.org/10.1145/122344.122377},
+doi = {10.1145/122344.122377},
+abstract = {Dyna is an AI architecture that integrates learning, planning, and reactive execution. Learning methods are used in Dyna both for compiling planning results and for updating a model of the effects of the agent's actions on the world. Planning is incremental and can use the probabilistic and ofttimes incorrect world models generated by learning processes. Execution is fully reactive in the sense that no planning intervenes between perception and action. Dyna relies on machine learning methods for learning from examples---these are among the basic building blocks making up the architecture---yet is not tied to any particular method. This paper briefly introduces Dyna and discusses its strengths and weaknesses with respect to other architectures.},
+journal = {SIGART Bull.},
+month = {jul},
+pages = {160–163},
+numpages = {4}
+}
+
+@article{DBLP:journals/corr/cs-AI-9605103,
+  author    = {Leslie Pack Kaelbling and
+               Michael L. Littman and
+               Andrew W. Moore},
+  title     = {Reinforcement Learning: {A} Survey},
+  journal   = {CoRR},
+  volume    = {cs.AI/9605103},
+  year      = {1996},
+  url       = {https://arxiv.org/abs/cs/9605103},
+  timestamp = {Fri, 10 Jan 2020 12:58:17 +0100},
+  biburl    = {https://dblp.org/rec/journals/corr/cs-AI-9605103.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BARTO1994888,
+title = {Reinforcement learning control},
+journal = {Current Opinion in Neurobiology},
+volume = {4},
+number = {6},
+pages = {888-893},
+year = {1994},
+issn = {0959-4388},
+doi = {https://doi.org/10.1016/0959-4388(94)90138-4},
+url = {https://www.sciencedirect.com/science/article/pii/0959438894901384},
+author = {Andrew G. Barto},
+abstract = {Reinforcement learning refers to improving performance through trial-and-error. Despite recent progress in developing artificial learning systems, including new learning methods for artificial neural networks, most of these systems learn under the tutelage of a knowledgeable ‘teacher’ able to tell them how to respond to a set of training stimuli. Learning under these conditions is not adequate, however, when it is costly, or even impossible, to obtain this kind of training information. Reinforcement learning is attracting increasing attention in computer science and engineering because it can be used by autonomous systems to learn from their experiences instead of from knowledgeable teachers, and it is attracting attention in computational neuroscience because it is consonant with biological principles. Recent research has improved the efficiency of reinforcement learning and has provided some striking examples of its capabilities.}
+}
+
+@misc{1606.01540,
+  Author = {Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba},
+  Title = {OpenAI Gym},
+  Year = {2016},
+  Eprint = {arXiv:1606.01540},
+}
+
+@article{barto1990learning,
+  title={Learning and sequential decision making},
+  author={Barto, Andrew G and Sutton, Richard S and Watkins, Christopher JCH},
+  journal={Learning and Computational Neuroscience: Foundations of Adaptive Networks},
+  pages={539--602},
+  year={1990},
+  publisher={MIT Press}
+}
+
+@book{GhallabNauTraverso04,
+  abstract = {Automated planning technology now plays a significant role in a variety of demanding applications, ranging from controlling space vehicles and robots to playing the game of bridge. These real-world applications create new opportunities for synergy between theory and practice: observing what works well in practice leads to better theories of planning, and better theories lead to better performance of practical applications. Automated Planning mirrors this dialogue by offering a comprehensive, up-to-date resource on both the theory and practice of automated planning. The book goes well beyond classical planning, to include temporal planning, resource scheduling, planning under uncertainty, and modern techniques for plan generation, such as task decomposition, propositional satisfiability, constraint satisfaction, and model checking.},
+  added-at = {2017-10-14T20:24:20.000+0200},
+  address = {Amsterdam},
+  author = {Ghallab, Malik and Nau, Dana and Traverso, Paolo},
+  biburl = {https://www.bibsonomy.org/bibtex/282d939e940c148c781f00acfc2a3d062/flint63},
+  file = {ScienceDirect:2000-04/GhallabNauTraverso04.pdf:PDF;Amazon Search inside:http\://www.amazon.de/gp/reader/1558608567/:URL},
+  groups = {public},
+  interhash = {3d4fc1ca9626966df8dfff4e2ba3ecc7},
+  intrahash = {82d939e940c148c781f00acfc2a3d062},
+  isbn = {978-1-55860-856-6},
+  keywords = {01801 105 book shelf elsevier ai plan knowledge processing temporal},
+  publisher = {Morgan Kaufmann},
+  series = {The Morgan Kaufmann Series in Artificial Intelligence},
+  timestamp = {2018-04-16T12:15:22.000+0200},
+  title = {Automated Planning: Theory and Practice},
+  url = {http://www.sciencedirect.com/science/book/9781558608566},
+  username = {flint63},
+  year = 2004
+}
+
+@book{10.5555/528623,
+author = {Puterman, Martin L.},
+title = {Markov Decision Processes: Discrete Stochastic Dynamic Programming},
+year = {1994},
+isbn = {0471619779},
+publisher = {John Wiley &amp; Sons, Inc.},
+address = {USA},
+edition = {1st},
+abstract = {From the Publisher:The past decade has seen considerable theoretical and applied research on Markov decision processes, as well as the growing use of these models in ecology, economics, communications engineering, and other fields where outcomes are uncertain and sequential decision-making processes are needed. A timely response to this increased activity, Martin L. Puterman's new work provides a uniquely up-to-date, unified, and rigorous treatment of the theoretical, computational, and applied research on Markov decision process models. It discusses all major research directions in the field, highlights many significant applications of Markov decision processes models, and explores numerous important topics that have previously been neglected or given cursory coverage in the literature. Markov Decision Processes focuses primarily on infinite horizon discrete time models and models with discrete time spaces while also examining models with arbitrary state spaces, finite horizon models, and continuous-time discrete state models. The book is organized around optimality criteria, using a common framework centered on the optimality (Bellman) equation for presenting results. The results are presented in a "theorem-proof" format and elaborated on through both discussion and examples, including results that are not available in any other book. A two-state Markov decision process model, presented in Chapter 3, is analyzed repeatedly throughout the book and demonstrates many results and algorithms. Markov Decision Processes covers recent research advances in such areas as countable state space models with average reward criterion, constrained models, and models with risk sensitive optimality criteria. It also explores several topics that have received little or no attention in other books, including modified policy iteration, multichain models with average reward criterion, and sensitive optimality. In addition, a Bibliographic Remarks section in each chapter comments on relevant historic}
+}
+
+@article{DBLP:journals/corr/abs-1804-07779,
+  author    = {Fangkai Yang and
+               Daoming Lyu and
+               Bo Liu and
+               Steven Gustafson},
+  title     = {{PEORL:} Integrating Symbolic Planning and Hierarchical Reinforcement
+               Learning for Robust Decision-Making},
+  journal   = {CoRR},
+  volume    = {abs/1804.07779},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1804.07779},
+  eprinttype = {arXiv},
+  eprint    = {1804.07779},
+  timestamp = {Fri, 10 May 2019 11:01:58 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1804-07779.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{Kuvayev1996ModelBasedRL,
+  title={Model-Based Reinforcement Learning with an Approximate, Learned Model},
+  author={Leonid Kuvayev and Richard S. Sutton},
+  year={1996}
+}
+
+@article{SUTTON1999181,
+title = {Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning},
+journal = {Artificial Intelligence},
+volume = {112},
+number = {1},
+pages = {181-211},
+year = {1999},
+issn = {0004-3702},
+doi = {https://doi.org/10.1016/S0004-3702(99)00052-1},
+url = {https://www.sciencedirect.com/science/article/pii/S0004370299000521},
+author = {Richard S. Sutton and Doina Precup and Satinder Singh},
+keywords = {Temporal abstraction, Reinforcement learning, Markov decision processes, Options, Macros, Macroactions, Subgoals, Intra-option learning, Hierarchical planning, Semi-Markov decision processes},
+abstract = {Learning, planning, and representing knowledge at multiple levels of temporal abstraction are key, longstanding challenges for AI. In this paper we consider how these challenges can be addressed within the mathematical framework of reinforcement learning and Markov decision processes (MDPs). We extend the usual notion of action in this framework to include options—closed-loop policies for taking action over a period of time. Examples of options include picking up an object, going to lunch, and traveling to a distant city, as well as primitive actions such as muscle twitches and joint torques. Overall, we show that options enable temporally abstract knowledge and action to be included in the reinforcement learning framework in a natural and general way. In particular, we show that options may be used interchangeably with primitive actions in planning methods such as dynamic programming and in learning methods such as Q-learning. Formally, a set of options defined over an MDP constitutes a semi-Markov decision process (SMDP), and the theory of SMDPs provides the foundation for the theory of options. However, the most interesting issues concern the interplay between the underlying MDP and the SMDP and are thus beyond SMDP theory. We present results for three such cases: (1) we show that the results of planning with options can be used during execution to interrupt options and thereby perform even better than planned, (2) we introduce new intra-option methods that are able to learn about an option from fragments of its execution, and (3) we propose a notion of subgoal that can be used to improve the options themselves. All of these results have precursors in the existing literature; the contribution of this paper is to establish them in a simpler and more general setting with fewer changes to the existing reinforcement learning framework. In particular, we show that these results can be obtained without committing to (or ruling out) any particular approach to state abstraction, hierarchy, function approximation, or the macro-utility problem.}
+}
+
+@article{KORF1990189,
+title = {Real-time heuristic search},
+journal = {Artificial Intelligence},
+volume = {42},
+number = {2},
+pages = {189-211},
+year = {1990},
+issn = {0004-3702},
+doi = {https://doi.org/10.1016/0004-3702(90)90054-4},
+url = {https://www.sciencedirect.com/science/article/pii/0004370290900544},
+author = {Richard E. Korf},
+abstract = {We apply the two-player game assumptions of limited search horizon and commitment to moves in constant time, to single-agent heuristic search problems. We present a variation of minimax lookahead search, and an analog to alpha-beta pruning that significantly improves the efficiency of the algorithm. Paradoxically, the search horizon reachable with this algorithm increases with increasing branching factor. In addition, we present a new algorithm, called Real-Time-A∗, for interleaving planning and execution. We prove that the algorithm makes locally optimal decisions and is guaranteed to find a solution. We also present a learning version of this algorithm that improves its performance over successive problem solving trials by learning more accurate heuristic values, and prove that the learned values converge to their exact values along every optimal path. These algorithms effectively solve significantly larger problems than have previously been solvable using heuristic evaluation functions.}
+}
+
+@ARTICLE{5391906,
+
+  author={Samuel, A. L.},
+
+  journal={IBM Journal of Research and Development}, 
+
+  title={Some Studies in Machine Learning Using the Game of Checkers. II—Recent Progress}, 
+
+  year={1967},
+
+  volume={11},
+
+  number={6},
+
+  pages={601-617},
+
+  doi={10.1147/rd.116.0601}}
+
+
+@InProceedings{10.1007/978-3-540-77949-0_6,
+author="Grounds, Matthew
+and Kudenko, Daniel",
+editor="Tuyls, Karl
+and Nowe, Ann
+and Guessoum, Zahia
+and Kudenko, Daniel",
+title="Combining Reinforcement Learning with Symbolic Planning",
+booktitle="Adaptive Agents and Multi-Agent Systems III. Adaptation and Multi-Agent Learning",
+year="2008",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="75--86",
+isbn="978-3-540-77949-0"
+}
+
+@inCollection{RLSOTA11,
+    author =    {Todd Hester and Peter Stone},
+    title =     {Learning and Using Models},
+    booktitle = {Reinforcement Learning: State of the Art},
+    editor =    {Marco Wiering and Martijn van Otterlo},
+    year =      {2011},
+    address =	 {Berlin, Germany},
+    publisher =	 {Springer Verlag},
+abstract = "As opposed to model-free RL methods, which learn directly from 
+experience in the domain, model-based methods learn a model of the transition 
+and reward functions of the domain on-line and plan a policy using this model.
+Once the method has learned an accurate model, it can plan 
+an optimal policy on this model without any further experience in the world.
+Therefore, when model-based methods are able to learn a good model quickly,
+they frequently have improved sample efficiency over model-free methods, 
+which must continue taking actions in the world for values to 
+propagate back to previous states. 
+Another advantage of model-based methods is that they can use
+their models to plan multi-step exploration trajectories. In particular,
+many methods drive the agent to explore where there is uncertainty in the model,
+so as to learn the model as fast as possible.
+In this chapter, we 
+survey some of the types of models used in model-based methods and ways of learning
+them, as well as methods for planning on these models.
+In addition, we examine the typical architectures for
+combining model learning and planning, which vary depending on whether the
+designer wants the algorithm to run on-line, in batch mode, or in
+real-time. 
+One of the main performance criteria for these algorithms
+is sample complexity, or how many actions the
+algorithm must take to learn. We examine the sample efficiency of a few methods,
+which are highly dependent on having intelligent exploration mechanisms. We 
+survey some approaches to solving the exploration problem, including Bayesian
+methods that maintain a belief distribution over possible models to explicitly
+measure uncertainty in the model. 
+We show some empirical comparisons of various model-based and model-free 
+methods on two example domains before concluding with a survey of current
+research on scaling these methods up to larger domains with
+improved sample and computational complexity.",
+}
+
+@article{DBLP:journals/corr/abs-2006-15009,
+  author    = {Thomas M. Moerland and
+               Joost Broekens and
+               Catholijn M. Jonker},
+  title     = {A Framework for Reinforcement Learning and Planning},
+  journal   = {CoRR},
+  volume    = {abs/2006.15009},
+  year      = {2020},
+  url       = {https://arxiv.org/abs/2006.15009},
+  eprinttype = {arXiv},
+  eprint    = {2006.15009},
+  timestamp = {Wed, 01 Jul 2020 15:21:23 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2006-15009.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@inproceedings{osband2020bsuite,
+    title={Behaviour Suite for Reinforcement Learning},
+    author={Osband, Ian and
+            Doron, Yotam and
+            Hessel, Matteo and
+            Aslanides, John and
+            Sezener, Eren and
+            Saraiva, Andre and
+            McKinney, Katrina and
+            Lattimore, Tor and
+            {Sz}epesv{\'a}ri, Csaba and
+            Singh, Satinder and
+            Van Roy, Benjamin and
+            Sutton, Richard and
+            Silver, David and
+            van Hasselt, Hado},
+    booktitle={International Conference on Learning Representations},
+    year={2020},
+    url={https://openreview.net/forum?id=rygf-kSYwH}
+}
+
+@book{series/synthesis/2010Szepesvari,
+  added-at = {2010-09-04T00:00:00.000+0200},
+  author = {Szepesvári, Csaba},
+  biburl = {https://www.bibsonomy.org/bibtex/2a2877247f9323bac6f51f2ccc231efb5/dblp},
+  booktitle = {Algorithms for Reinforcement Learning},
+  ee = {http://dx.doi.org/10.2200/S00268ED1V01Y201005AIM009},
+  interhash = {46c07bb11e2b5fe91663d461efbc2af1},
+  intrahash = {a2877247f9323bac6f51f2ccc231efb5},
+  keywords = {dblp},
+  publisher = {Morgan & Claypool Publishers},
+  series = {Synthesis Lectures on Artificial Intelligence and Machine Learning},
+  timestamp = {2010-09-07T11:31:49.000+0200},
+  title = {Algorithms for Reinforcement Learning},
+  url = {http://dx.doi.org/10.2200/S00268ED1V01Y201005AIM009},
+  year = 2010
+}
+
+@book{vonneumann.morgenstern47,
+  added-at = {2009-03-22T18:35:23.000+0100},
+  address = {New Jersey},
+  author = {{von Neumann}, John and Morgenstern, Oskar},
+  biburl = {https://www.bibsonomy.org/bibtex/2e1ca690426c45587ad6dc9e9e0086306/mtasdemir},
+  description = {tasdemir_local},
+  edition = {Second},
+  interhash = {43a00d641d5aa16c23ba45ea210b15fc},
+  intrahash = {e1ca690426c45587ad6dc9e9e0086306},
+  keywords = {imported},
+  owner = {murat},
+  publisher = {Princeton University Press},
+  timestamp = {2009-03-22T18:38:05.000+0100},
+  title = {Theory of Games and Economic Behavior},
+  year = 1947
+}
+
+@article{DBLP:journals/corr/abs-1712-01815,
+  author    = {David Silver and
+               Thomas Hubert and
+               Julian Schrittwieser and
+               Ioannis Antonoglou and
+               Matthew Lai and
+               Arthur Guez and
+               Marc Lanctot and
+               Laurent Sifre and
+               Dharshan Kumaran and
+               Thore Graepel and
+               Timothy P. Lillicrap and
+               Karen Simonyan and
+               Demis Hassabis},
+  title     = {Mastering Chess and Shogi by Self-Play with a General Reinforcement
+               Learning Algorithm},
+  journal   = {CoRR},
+  volume    = {abs/1712.01815},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1712.01815},
+  eprinttype = {arXiv},
+  eprint    = {1712.01815},
+  timestamp = {Mon, 13 Aug 2018 16:46:01 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1712-01815.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{DBLP:journals/corr/abs-1911-08265,
+  author    = {Julian Schrittwieser and
+               Ioannis Antonoglou and
+               Thomas Hubert and
+               Karen Simonyan and
+               Laurent Sifre and
+               Simon Schmitt and
+               Arthur Guez and
+               Edward Lockhart and
+               Demis Hassabis and
+               Thore Graepel and
+               Timothy P. Lillicrap and
+               David Silver},
+  title     = {Mastering Atari, Go, Chess and Shogi by Planning with a Learned Model},
+  journal   = {CoRR},
+  volume    = {abs/1911.08265},
+  year      = {2019},
+  url       = {http://arxiv.org/abs/1911.08265},
+  eprinttype = {arXiv},
+  eprint    = {1911.08265},
+  timestamp = {Mon, 02 Dec 2019 17:48:37 +0100},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1911-08265.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{krause1973taxicab,
+  title={Taxicab geometry},
+  author={Krause, Eugene F},
+  journal={The Mathematics Teacher},
+  volume={66},
+  number={8},
+  pages={695--706},
+  year={1973},
+  publisher={JSTOR}
+} 
+
+@ARTICLE{6313077,
+
+  author={Barto, Andrew G. and Sutton, Richard S. and Anderson, Charles W.},
+
+  journal={IEEE Transactions on Systems, Man, and Cybernetics}, 
+
+  title={Neuronlike adaptive elements that can solve difficult learning control problems}, 
+
+  year={1983},
+
+  volume={SMC-13},
+
+  number={5},
+
+  pages={834-846},
+
+  doi={10.1109/TSMC.1983.6313077}}
+
+
+@TECHREPORT{Moore90efficientmemory-based,
+    author = {Andrew William Moore},
+    title = {Efficient Memory-based Learning for Robot Control},
+    institution = {University of Cambridge},
+    year = {1990}
+}
+
+@inproceedings{Hayamizu2021GuidingRE,
+  title={Guiding Robot Exploration in Reinforcement Learning via Automated Planning},
+  author={Yohei Hayamizu and S. Amiri and Kishan Chandan and Keiki Takadama and Shiqi Zhang},
+  booktitle={International Conference on Automated Planning and Scheduling},
+  year={2021}
+}
+
+@article{Jiang2019TaskMotionPW,
+  title={Task-Motion Planning with Reinforcement Learning for Adaptable Mobile Service Robots},
+  author={Yuqian Jiang and Fangkai Yang and Shiqi Zhang and Peter Stone},
+  journal={2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  year={2019},
+  pages={7529-7534}
+}
+
+@article{scott1996,
+author = {Scott, Paul and Markovitch, Shaul},
+year = {1996},
+month = {09},
+pages = {},
+title = {Learning Novel Domains Through Curiosity and Conjecture}
+}
+
+
+@InProceedings{pmlr-v97-jinnai19b,
+  title = 	 {Discovering Options for Exploration by Minimizing Cover Time},
+  author =       {Jinnai, Yuu and Park, Jee Won and Abel, David and Konidaris, George},
+  booktitle = 	 {Proceedings of the 36th International Conference on Machine Learning},
+  pages = 	 {3130--3139},
+  year = 	 {2019},
+  editor = 	 {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  volume = 	 {97},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--15 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v97/jinnai19b/jinnai19b.pdf},
+  url = 	 {https://proceedings.mlr.press/v97/jinnai19b.html},
+  abstract = 	 {One of the main challenges in reinforcement learning is solving tasks with sparse reward. We show that the difficulty of discovering a distant rewarding state in an MDP is bounded by the expected cover time of a random walk over the graph induced by the MDP’s transition dynamics. We therefore propose to accelerate exploration by constructing options that minimize cover time. We introduce a new option discovery algorithm that diminishes the expected cover time by connecting the most distant states in the state-space graph with options. We show empirically that the proposed algorithm improves learning in several domains with sparse rewards.}
+}
+
+@inproceedings{
+Jinnai2020Exploration,
+title={Exploration in Reinforcement Learning with Deep Covering Options},
+author={Yuu Jinnai and Jee Won Park and Marlos C. Machado and George Konidaris},
+booktitle={International Conference on Learning Representations},
+year={2020},
+url={https://openreview.net/forum?id=SkeIyaVtwB}
+}
+
+@inproceedings{10.1145/1390156.1390288,
+author = {Szita, Istv\'{a}n and L\H{o}rincz, Andr\'{a}s},
+title = {The Many Faces of Optimism: A Unifying Approach},
+year = {2008},
+isbn = {9781605582054},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1390156.1390288},
+doi = {10.1145/1390156.1390288},
+abstract = {The exploration-exploitation dilemma has been an intriguing and unsolved problem within the framework of reinforcement learning. "Optimism in the face of uncertainty" and model building play central roles in advanced exploration methods. Here, we integrate several concepts and obtain a fast and simple algorithm. We show that the proposed algorithm finds a near-optimal policy in polynomial time, and give experimental evidence that it is robust and efficient compared to its ascendants.},
+booktitle = {Proceedings of the 25th International Conference on Machine Learning},
+pages = {1048–1055},
+numpages = {8},
+location = {Helsinki, Finland},
+series = {ICML '08}
+}
+
+@article{10.1162/153244303765208377,
+author = {Brafman, Ronen I. and Tennenholtz, Moshe},
+title = {R-Max - a General Polynomial Time Algorithm for near-Optimal Reinforcement Learning},
+year = {2003},
+issue_date = {3/1/2003},
+publisher = {JMLR.org},
+volume = {3},
+number = {null},
+issn = {1532-4435},
+url = {https://doi.org/10.1162/153244303765208377},
+doi = {10.1162/153244303765208377},
+abstract = {R-MAX is a very simple model-based reinforcement learning algorithm which can attain near-optimal average reward in polynomial time. In R-MAX, the agent always maintains a complete, but possibly inaccurate model of its environment and acts based on the optimal policy derived from this model. The model is initialized in an optimistic fashion: all actions in all states return the maximal possible reward (hence the name). During execution, it is updated based on the agent's observations. R-MAX improves upon several previous algorithms: (1) It is simpler and more general than Kearns and Singh's E3 algorithm, covering zero-sum stochastic games. (2) It has a built-in mechanism for resolving the exploration vs. exploitation dilemma. (3) It formally justifies the ``optimism under uncertainty'' bias used in many RL algorithms. (4) It is simpler, more general, and more efficient than Brafman and Tennenholtz's LSG algorithm for learning in single controller stochastic games. (5) It generalizes the algorithm by Monderer and Tennenholtz for learning in repeated games. (6) It is the only algorithm for learning in repeated games, to date, which is provably efficient, considerably improving and simplifying previous algorithms by Banos and by Megiddo.},
+journal = {J. Mach. Learn. Res.},
+month = {mar},
+pages = {213–231},
+numpages = {19},
+keywords = {Markov decision processes, stochastic games, provably efficient learning, reinforcement learning, learning in games}
+}
+
+@inproceedings{NIPS2008_d5cfead9,
+ author = {Nouri, Ali and Littman, Michael},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {D. Koller and D. Schuurmans and Y. Bengio and L. Bottou},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Multi-resolution Exploration in Continuous Spaces},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2008/file/d5cfead94f5350c12c322b5b664544c1-Paper.pdf},
+ volume = {21},
+ year = {2008}
+}
+
+@inproceedings{Littman2011EfficientME,
+  title={Efficient model-based exploration in continuous state-space environments},
+  author={Michael L. Littman and Ali Nouri},
+  year={2011}
+}
+
+@inproceedings{Epshteyn2008ActiveRL,
+  title={Active reinforcement learning},
+  author={Arkady Epshteyn and Adam Vogel and Gerald DeJong},
+  booktitle={International Conference on Machine Learning},
+  year={2008}
+}
+
+@article{JORDAN1992307,
+title = {Forward models: Supervised learning with a distal teacher},
+journal = {Cognitive Science},
+volume = {16},
+number = {3},
+pages = {307-354},
+year = {1992},
+issn = {0364-0213},
+doi = {https://doi.org/10.1016/0364-0213(92)90036-T},
+url = {https://www.sciencedirect.com/science/article/pii/036402139290036T},
+author = {Michael I. Jordan and David E. Rumelhart},
+abstract = {Internal models of the environment have an important role to play in adaptive systems, in general, and are of particular importance for the supervised learning paradigm. In this article we demonstrate that certain classical problems associated with the notion of the “teacher” in supervised learning can be solved by judicious use of learned internal models as components of the adaptive system. In particular, we show how supervised learning algorithms can be utilized in cases in which an unknown dynamical system intervenes between actions and desired outcomes. Our approach applies to any supervised learning algorithm that is capable of learning in multilayer networks.}
+}
+
+@ARTICLE{4082128,
+
+  author={Hart, Peter E. and Nilsson, Nils J. and Raphael, Bertram},
+
+  journal={IEEE Transactions on Systems Science and Cybernetics}, 
+
+  title={A Formal Basis for the Heuristic Determination of Minimum Cost Paths}, 
+
+  year={1968},
+
+  volume={4},
+
+  number={2},
+
+  pages={100-107},
+
+  doi={10.1109/TSSC.1968.300136}}
+
+
+@article{fikes1972strips,
+  title={{STRIPS}: a new approach to the application of theorem proving to problem solving},
+  author={Fikes, Richard E. and Nilsson, Nils J.},
+  journal={Artificial Intelligence},
+  volume={2},
+  number={3},
+  pages={189--208},
+  year={1972},
+  publisher={Elsevier}
+}
+
+@inproceedings{kautz,
+author = {Kautz, Henry and Selman, Bart},
+year = {1992},
+month = {01},
+pages = {359-363},
+title = {Planning as Satisfiability.}
+}
+
+@article{lattimore,
+  added-at = {2020-02-13T11:18:48.000+0100},
+  author = {Lattimore, Tor and Szepesvari, Csaba},
+  biburl = {https://www.bibsonomy.org/bibtex/2085393a34f90b608a76dd1a4998a5369/kirk86},
+  description = {Bandit Algorithms},
+  interhash = {e5571f0a85ff77ab750e5eecc6c45106},
+  intrahash = {085393a34f90b608a76dd1a4998a5369},
+  keywords = {bandits book},
+  timestamp = {2020-02-13T11:20:19.000+0100},
+  title = {Bandit Algorithms},
+  url = {https://tor-lattimore.com/downloads/book/book.pdf},
+  year = 2017
+}
+
+@inproceedings{10.1007/11871842_29,
+author = {Kocsis, Levente and Szepesv\'{a}ri, Csaba},
+title = {Bandit Based Monte-Carlo Planning},
+year = {2006},
+isbn = {354045375X},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+url = {https://doi.org/10.1007/11871842_29},
+doi = {10.1007/11871842_29},
+abstract = {For large state-space Markovian Decision Problems Monte-Carlo planning is one of the few viable approaches to find near-optimal solutions. In this paper we introduce a new algorithm, UCT, that applies bandit ideas to guide Monte-Carlo planning. In finite-horizon or discounted MDPs the algorithm is shown to be consistent and finite sample bounds are derived on the estimation error due to sampling. Experimental results show that in several domains, UCT is significantly more efficient than its alternatives.},
+booktitle = {Proceedings of the 17th European Conference on Machine Learning},
+pages = {282–293},
+numpages = {12},
+location = {Berlin, Germany},
+series = {ECML'06}
+}
+
+@article{auer2002finite,
+  added-at = {2012-12-29T01:24:39.000+0100},
+  author = {Auer, P. and Cesa-Bianchi, N. and Fischer, P.},
+  biburl = {https://www.bibsonomy.org/bibtex/270f73d7c42196ff8ad40101312a0564e/chsivic},
+  interhash = {d9ed352509aceb102cbb43c4127a7b30},
+  intrahash = {70f73d7c42196ff8ad40101312a0564e},
+  journal = {Machine learning},
+  keywords = {imported},
+  number = 2,
+  pages = {235--256},
+  publisher = {Springer},
+  timestamp = {2012-12-29T01:24:40.000+0100},
+  title = {Finite-time analysis of the multiarmed bandit problem},
+  volume = 47,
+  year = 2002
+}
+
+
+
+@article{10.1162/153244303765208377,
+author = {Brafman, Ronen I. and Tennenholtz, Moshe},
+title = {R-Max - a General Polynomial Time Algorithm for near-Optimal Reinforcement Learning},
+year = {2003},
+issue_date = {3/1/2003},
+publisher = {JMLR.org},
+volume = {3},
+number = {null},
+issn = {1532-4435},
+url = {https://doi.org/10.1162/153244303765208377},
+doi = {10.1162/153244303765208377},
+abstract = {R-MAX is a very simple model-based reinforcement learning algorithm which can attain near-optimal average reward in polynomial time. In R-MAX, the agent always maintains a complete, but possibly inaccurate model of its environment and acts based on the optimal policy derived from this model. The model is initialized in an optimistic fashion: all actions in all states return the maximal possible reward (hence the name). During execution, it is updated based on the agent's observations. R-MAX improves upon several previous algorithms: (1) It is simpler and more general than Kearns and Singh's E3 algorithm, covering zero-sum stochastic games. (2) It has a built-in mechanism for resolving the exploration vs. exploitation dilemma. (3) It formally justifies the ``optimism under uncertainty'' bias used in many RL algorithms. (4) It is simpler, more general, and more efficient than Brafman and Tennenholtz's LSG algorithm for learning in single controller stochastic games. (5) It generalizes the algorithm by Monderer and Tennenholtz for learning in repeated games. (6) It is the only algorithm for learning in repeated games, to date, which is provably efficient, considerably improving and simplifying previous algorithms by Banos and by Megiddo.},
+journal = {J. Mach. Learn. Res.},
+month = {mar},
+pages = {213–231},
+numpages = {19},
+keywords = {stochastic games, reinforcement learning, Markov decision processes, provably efficient learning, learning in games}
+}
+
+@Article{Kearns+Singh:2002,
+  author =       "Kearns, Michael and Singh, Satinder",
+  title =        "Near-Optimal Reinforcement Learning in Polynomial Time",
+  journal =      "Machine Learning",
+  year =         "2002",
+  volume =    "49",
+  number =    "2--3",
+  pages =     "209--232",
+  publisher = "Kluwer Academic",
+  address = "Hingham, MA, USA",
+  url = "http://www.eecs.umich.edu/~baveja/Papers/ICML98_KS.ps.gz",
+  bib2html_rescat = "General RL",
+}
+
+@inproceedings{10.5555/2484920.2485088,
+author = {Hester, Todd and Lopes, Manuel and Stone, Peter},
+title = {Learning Exploration Strategies in Model-Based Reinforcement Learning},
+year = {2013},
+isbn = {9781450319935},
+publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+address = {Richland, SC},
+abstract = {Reinforcement learning (RL) is a paradigm for learning sequential decision making tasks. However, typically the user must hand-tune exploration parameters for each different domain and/or algorithm that they are using. In this work, we present an algorithm called LEO for learning these exploration strategies on-line. This algorithm makes use of bandit-type algorithms to adaptively select exploration strategies based on the rewards received when following them. We show empirically that this method performs well across a set of five domains. In contrast, for a given algorithm, no set of parameters is best across all domains. Our results demonstrate that the LEO algorithm successfully learns the best exploration strategies on-line, increasing the received reward over static parameterizations of exploration and reducing the need for hand-tuning exploration parameters.},
+booktitle = {Proceedings of the 2013 International Conference on Autonomous Agents and Multi-Agent Systems},
+pages = {1069–1076},
+numpages = {8},
+keywords = {reinforcement learning, exploration},
+location = {St. Paul, MN, USA},
+series = {AAMAS '13}
+}
+
+  
+
+
+
+
+@InProceedings{pmlr-v120-seyde20a,
+  title = 	 {Learning to Plan via Deep Optimistic Value Exploration},
+  author =       {Seyde, Tim and Schwarting, Wilko and Karaman, Sertac and Rus, Daniela},
+  booktitle = 	 {Proceedings of the 2nd Conference on Learning for Dynamics and Control},
+  pages = 	 {815--825},
+  year = 	 {2020},
+  editor = 	 {Bayen, Alexandre M. and Jadbabaie, Ali and Pappas, George and Parrilo, Pablo A. and Recht, Benjamin and Tomlin, Claire and Zeilinger, Melanie},
+  volume = 	 {120},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--11 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v120/seyde20a/seyde20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v120/seyde20a.html},
+  abstract = 	 {Deep exploration requires coordinated long-term planning. We present a model-based reinforcement learning algorithm that guides policy learning through a value function that exhibits optimism in the face of uncertainty. We capture uncertainty over values by combining predictions from an ensemble of models and formulate an upper confidence bound (UCB) objective to recover optimistic estimates. Training the policy on ensemble rollouts with the learned value function as the terminal cost allows for projecting long-term interactions into a limited planning horizon, thus enabling deep optimistic exploration. We do not assume a priori knowledge of either the dynamics or reward function. We demonstrate that our approach can accommodate both dense and sparse reward signals, while improving sample complexity on a variety of benchmarking tasks.}
+}
+
+@article{10.1016/S0004-3702(98)00002-2,
+author = {Tadepalli, Prasad and Ok, DoKyeong},
+title = {Model-Based Average Reward Reinforcement Learning},
+year = {1998},
+issue_date = {April 1998},
+publisher = {Elsevier Science Publishers Ltd.},
+address = {GBR},
+volume = {100},
+number = {1–2},
+issn = {0004-3702},
+url = {https://doi.org/10.1016/S0004-3702(98)00002-2},
+doi = {10.1016/S0004-3702(98)00002-2},
+journal = {Artif. Intell.},
+month = {apr},
+pages = {177–224},
+numpages = {48},
+keywords = {reinforcement learning, Bayesian networks, average reward, exploration, linear regression, machine learning, model-based, AGV scheduling}
+}
+
+@inproceedings{10.5555/2886521.2886686,
+author = {Guo, Zhaohan and Brunskill, Emma},
+title = {Concurrent PAC RL},
+year = {2015},
+isbn = {0262511290},
+publisher = {AAAI Press},
+abstract = {In many real-world situations a decision maker may make decisions across many separate reinforcement learning tasks in parallel, yet there has been very little work on concurrent RL. Building on the efficient exploration RL literature, we introduce two new concurrent RL algorithms and bound their sample complexity. We show that under some mild conditions, both when the agent is known to be acting in many copies of the same MDP, and when they are not the same but are taken from a finite set, we can gain linear improvements in the sample complexity over not sharing information. This is quite exciting as a linear speedup is the most one might hope to gain. Our preliminary experiments confirm this result and show empirical benefits.},
+booktitle = {Proceedings of the Twenty-Ninth AAAI Conference on Artificial Intelligence},
+pages = {2624–2630},
+numpages = {7},
+location = {Austin, Texas},
+series = {AAAI'15}
+}
+
+@article{ISHII2002665,
+title = {Control of exploitation–exploration meta-parameter in reinforcement learning},
+journal = {Neural Networks},
+volume = {15},
+number = {4},
+pages = {665-687},
+year = {2002},
+issn = {0893-6080},
+doi = {https://doi.org/10.1016/S0893-6080(02)00056-4},
+url = {https://www.sciencedirect.com/science/article/pii/S0893608002000564},
+author = {Shin Ishii and Wako Yoshida and Junichiro Yoshimoto},
+keywords = {Reinforcement learning, Exploitation–exploration problem, Neuromodulator, Attention, Partially observable Markov decision process},
+abstract = {In reinforcement learning (RL), the duality between exploitation and exploration has long been an important issue. This paper presents a new method that controls the balance between exploitation and exploration. Our learning scheme is based on model-based RL, in which the Bayes inference with forgetting effect estimates the state-transition probability of the environment. The balance parameter, which corresponds to the randomness in action selection, is controlled based on variation of action results and perception of environmental change. When applied to maze tasks, our method successfully obtains good controls by adapting to environmental changes. Recently, Usher et al. [Science 283 (1999) 549] has suggested that noradrenergic neurons in the locus coeruleus may control the exploitation–exploration balance in a real brain and that the balance may correspond to the level of animal's selective attention. According to this scenario, we also discuss a possible implementation in the brain.}
+}
+
+@inproceedings{NIPS2012_a0a080f4,
+ author = {Lopes, Manuel and Lang, Tobias and Toussaint, Marc and Oudeyer, Pierre-yves},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {F. Pereira and C.J. Burges and L. Bottou and K.Q. Weinberger},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Exploration in Model-based Reinforcement Learning by Empirically Estimating Learning Progress},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2012/file/a0a080f42e6f13b3a2df133f073095dd-Paper.pdf},
+ volume = {25},
+ year = {2012}
+}
+
+@inproceedings{10.1145/1553374.1553441,
+author = {Kolter, J. Zico and Ng, Andrew Y.},
+title = {Near-Bayesian Exploration in Polynomial Time},
+year = {2009},
+isbn = {9781605585161},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1553374.1553441},
+doi = {10.1145/1553374.1553441},
+abstract = {We consider the exploration/exploitation problem in reinforcement learning (RL). The Bayesian approach to model-based RL offers an elegant solution to this problem, by considering a distribution over possible models and acting to maximize expected reward; unfortunately, the Bayesian solution is intractable for all but very restricted cases. In this paper we present a simple algorithm, and prove that with high probability it is able to perform ε-close to the true (intractable) optimal Bayesian policy after some small (polynomial in quantities describing the system) number of time steps. The algorithm and analysis are motivated by the so-called PAC-MDP approach, and extend such results into the setting of Bayesian RL. In this setting, we show that we can achieve lower sample complexity bounds than existing algorithms, while using an exploration strategy that is much greedier than the (extremely cautious) exploration of PAC-MDP algorithms.},
+booktitle = {Proceedings of the 26th Annual International Conference on Machine Learning},
+pages = {513–520},
+numpages = {8},
+location = {Montreal, Quebec, Canada},
+series = {ICML '09}
+}
+
+@inproceedings{10.1145/1143844.1143932,
+author = {Poupart, Pascal and Vlassis, Nikos and Hoey, Jesse and Regan, Kevin},
+title = {An Analytic Solution to Discrete Bayesian Reinforcement Learning},
+year = {2006},
+isbn = {1595933832},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1143844.1143932},
+doi = {10.1145/1143844.1143932},
+abstract = {Reinforcement learning (RL) was originally proposed as a framework to allow agents to learn in an online fashion as they interact with their environment. Existing RL algorithms come short of achieving this goal because the amount of exploration required is often too costly and/or too time consuming for online learning. As a result, RL is mostly used for offline learning in simulated environments. We propose a new algorithm, called BEETLE, for effective online learning that is computationally efficient while minimizing the amount of exploration. We take a Bayesian model-based approach, framing RL as a partially observable Markov decision process. Our two main contributions are the analytical derivation that the optimal value function is the upper envelope of a set of multivariate polynomials, and an efficient point-based value iteration algorithm that exploits this simple parameterization.},
+booktitle = {Proceedings of the 23rd International Conference on Machine Learning},
+pages = {697–704},
+numpages = {8},
+location = {Pittsburgh, Pennsylvania, USA},
+series = {ICML '06}
+}
+
+
+@inproceedings{10.1145/1143844.1143845,
+author = {Abbeel, Pieter and Quigley, Morgan and Ng, Andrew Y.},
+title = {Using Inaccurate Models in Reinforcement Learning},
+year = {2006},
+isbn = {1595933832},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1143844.1143845},
+doi = {10.1145/1143844.1143845},
+abstract = {In the model-based policy search approach to reinforcement learning (RL), policies are found using a model (or "simulator") of the Markov decision process. However, for high-dimensional continuous-state tasks, it can be extremely difficult to build an accurate model, and thus often the algorithm returns a policy that works in simulation but not in real-life. The other extreme, model-free RL, tends to require infeasibly large numbers of real-life trials. In this paper, we present a hybrid algorithm that requires only an approximate model, and only a small number of real-life trials. The key idea is to successively "ground" the policy evaluations using real-life trials, but to rely on the approximate model to suggest local changes. Our theoretical results show that this algorithm achieves near-optimal performance in the real system, even when the model is only approximate. Empirical results also demonstrate that---when given only a crude model and a small number of real-life trials---our algorithm can obtain near-optimal performance in the real system.},
+booktitle = {Proceedings of the 23rd International Conference on Machine Learning},
+pages = {1–8},
+numpages = {8},
+location = {Pittsburgh, Pennsylvania, USA},
+series = {ICML '06}
+}
+
+  
 

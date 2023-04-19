@@ -7,12 +7,27 @@
 \usepackage{textcomp}
 \usepackage{epsfig,graphics}
 \usepackage{graphicx}
+\graphicspath{ {./report/assets/} }
 \usepackage{titlesec}
 \usepackage{amsmath,amsfonts,amssymb,amsthm}
 \usepackage{hyperref}
 % \usepackage{natlib}
 \usepackage[printonlyused,withpage]{acronym}
 \usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[export]{adjustbox}
+\usepackage[section]{placeins}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Details of your dissertation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,10 +78,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Bibliography style: choose one and make sure you have the relevant .bst file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \usepackage[round]{natbib}
-% \bibliographystyle{plainnat}
-% \setcitestyle{numbers}
-\bibliographystyle{ieeetr}
+\usepackage[round]{natbib}
+\bibliographystyle{plainnat}
+% \setcitestyle{}
+% \bibliographystyle{ieeetr}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Layout for the front cover !!!!! YOU SHOULD NOT HAVE TO CHANGE THIS!!!!!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

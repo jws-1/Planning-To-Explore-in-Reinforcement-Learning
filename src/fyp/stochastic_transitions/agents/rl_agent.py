@@ -15,7 +15,7 @@ class RLAgent():
         self.reset()
 
     def reset(self):
-        self.Q = {state : {action : 100. for action in range(self.env.nA)} for state in range(self.env.nS)}
+        self.Q = np.zeros((self.env.nS, self.env.nA))
 
     def learn(self, config):
         self.reset()
@@ -31,25 +31,25 @@ class RLAgent():
         eps = config.eps
 
         for i in range(config.episodes):
-            # if i % (config.episodes // 100) == 0:
-            print(f"RL-AGENT: episode {i}")
+            if i % (config.episodes // 100) == 0:
+                print(f"RL-AGENT: episode {i}")
 
             done = False
             state = self.env.reset()
+            
 
             while not done:
-                
                 if random.uniform(0, 1) < eps:
                     action = self.env.action_space.sample()
                 else:
-                    action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
+                    max_Q = np.max(self.Q[state])
+                    max_actions = [a for a in range(self.env.nA) if self.Q[state][a] == max_Q]
+                    action = np.random.choice(max_actions)
 
-                next_state, reward, done, _ = self.env.step(action)
-
-                old_value = self.Q[state][action]
-                next_max = max(self.Q[next_state].values())
-                new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state][action] = new_value
+                next_state, reward, done, info = self.env.step(action)
+                if done and not info.get("TimeLimit.truncated"):
+                    print("Completed ", i)
+                self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + np.max(self.Q[next_state])) - self.Q[state][action])
 
                 if state != next_state:
                     states[i][state]+=1
