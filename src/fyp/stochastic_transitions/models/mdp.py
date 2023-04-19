@@ -140,21 +140,6 @@ class MDP:
             action, next_state = meta_action.action, self.simulate_action_sequence(start, meta_action.action_sequence)
             candidate_changes_t[(start, action, meta_action, next_state)] = -np.inf
         
-        # """
-        # Learn the depth
-        #     If we normally expect to get to a state through n transitions from the current state
-        #     but it actually takes m transitions,
-        #     then we learn that meta action
-        # """
-        # candidate_changes_r = {(start, a, next_state, np.max(self.reward_function)) : -np.inf for (a, next_state) in product(self.actions, self.states)}
-        # candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
-
-        # for (s, a, s_, r) in candidate_changes_r.keys():
-        #     if not observed_sas[s][a][s_] and not meta_sas[s][a][s_][MetaAction.INCREASE_REWARD]:
-        #         candidate_MDP = deepcopy(self)
-        #         candidate_MDP.update_reward(s, a, s_, r)
-        #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=10)
-        #         candidate_changes_r[(s,a,s_,r)] = V_[s]
 
         for (s, a, m_a, s_) in candidate_changes_t.keys():
             if not observed_sa[s][a] and not meta_sa[s][a].get(m_a, False) and self.transition_function[s, a, s_] < 1.0:
@@ -164,21 +149,10 @@ class MDP:
 
                 candidate_changes_t[(s, a, m_a, s_)] = V_[s]
 
-        # best_max_r = max(candidate_changes_r.values())
-        # best_change_r = random.choice([c_r for c_r in candidate_changes_r.keys() if candidate_changes_r[c_r] == best_max_r])
-        # print(candidate_changes_t, self.V[start])
         best_max_t = max(candidate_changes_t.values())
         best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
-        # print(best_max_t, best_change_t, self.V[start])
         if self.V[start] > candidate_changes_t[best_change_t]:
+            
             return self.pi[start]
         else:
             return best_change_t
-        # if self.V[start] > candidate_changes_r[best_change_r] and self.V[start] > candidate_changes_t[best_change_t]:
-        #     return self.pi[start]
-        # elif candidate_changes_r[best_change_r] > candidate_changes_t[best_change_t] and candidate_changes_r[best_change_r] > self.V[start]:
-        #     _, target_action, target_state, _ = best_change_r
-        #     return MetaAction.INCREASE_REWARD, target_action, target_state
-        # else:
-        #     _, target_action, target_state = best_change_t
-        #     return MetaAction.INCREASE_TRANSITION_PROBABILITY, target_action, target_state
