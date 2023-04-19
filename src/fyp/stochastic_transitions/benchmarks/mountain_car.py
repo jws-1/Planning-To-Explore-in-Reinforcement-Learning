@@ -8,11 +8,13 @@ from collections import defaultdict
 
 mb_learn_config_dict = {
     "m": 1,
-    "episodes": 1000,
+    "episodes": 10000,
     "window_size":1,
-    "planning_steps":100,
+    "planning_steps":1000,
     "eps": 0.0,
-    "lr": 0.6,
+    "lr": 0.7,
+    "min_lr":0.1,
+    "decay_lr": True,
     "df": 1.0,
     "learn_model":True,
 }
@@ -40,74 +42,69 @@ mf_config_dict = {
 }
 
 class MountainCarDiscretized(gym.Env):
-    def __init__(self, min_position=-1.2, max_position=0.6, min_velocity=-0.07, max_velocity=0.07, goal_position=0.5):
+    def __init__(self, n_bins=40):
         self.env = gym.make("MountainCar-v0")
-        self.action_space = self.env.action_space
         self.nA = self.env.action_space.n
+        self.n_bins = n_bins
+        self.nS = n_bins**2
 
-        self.nP = 100
-        self.nV = 100
-
-        nS = (self.env.observation_space.high - self.env.observation_space.low)*np.array([self.nP, self.nV])
-        self.nSP, self.nsV = np.round(nS, 0).astype(int) + 1
-        self.nS = self.nSP * self.nsV
-
-
-        self.min_position = min_position
-        self.max_position = max_position
-        self.min_velocity = min_velocity
-        self.max_velocity = max_velocity
-        self.goal_position = goal_position
-        
     def discretize(self, obs):
-        state = (obs - self.env.observation_space.low)*np.array([self.nP, self.nV])
-        pos, vel =  np.round(state, 0).astype(int) + 1
-        s  = pos * self.nsV + vel
-        return min(s, self.nS-1)
+        env_low = self.env.observation_space.low
+        env_high = self.env.observation_space.high
+        env_dx = (env_high - env_low) / self.n_bins
+        a = int((obs[0] - env_low[0])/env_dx[0])
+        b = int((obs[1] - env_low[1])/env_dx[1])
+        return a*self.n_bins + b
 
-    def from_flat_index(self, flat_index):
-        pos = flat_index // self.nV
-        vel = flat_index % self.nV
-        return pos, vel
+    def undiscretize(self, obs):
+        a, b = obs // self.n_bins, obs % self.n_bins
+        env_low = self.env.observation_space.low
+        env_high = self.env.observation_space.high
+        env_dx = (env_high - env_low) / self.n_bins
+        x = env_low[0] + (b + 0.5) * env_dx[0]
+        y = env_low[1] + (a + 0.5) * env_dx[1]
+        return x, y
 
-    def step(self, action):
-        obs, reward, done, info = self.env.step(action)
+    def step(self, a):
+        obs, reward, done, info = self.env.step(a)
         return self.discretize(obs), reward, done, info
-    
+
     def reset(self):
         obs = self.env.reset()
         return self.discretize(obs)
 
-    def render(self):
-        return self.env.render()
+    def render(self, mode="human"):
+        return self.env.render(mode=mode)
+
+import math
 
 def create_mdp(env): 
     """
     Returns an instance of MDP, which corresponds to the env.
     """
-    goal_positions = np.arange(0.5, env.max_position+0.1, 0.1)
-    goal_states = np.array([env.discretize((pos, 0)) for pos in goal_positions])
-    print(goal_states)
+    import itertools
+    max_position, max_velocity = env.env.observation_space.high
+    goal_positions = np.arange(0.5, max_position+0.1, 0.1)
+    goal_velocities = np.arange(0, max_velocity, 0.01)
+    goal_states = np.array([env.discretize((pos, vel)) for pos, vel in itertools.product(goal_positions, goal_velocities)])
+
     transition_function = np.zeros((env.nS, env.nA, env.nS))
-    reward_function = np.full((env.nS, env.nA, env.nS), 0.0)
-
+    reward_function = np.full((env.nS, env.nA, env.nS), -1.0)
+    # reward_function[:, :, goal_states] = 0.0
     for s in range(env.nS):
         for a in range(env.nA):
-            for next_s in range(env.nS):
-                reward = -1.0
-                if next_s in goal_states:
-                    reward = 0.0
-                reward_function[s, a, next_s] = reward
 
-    # print(reward_function)
-    for s in range(env.nS):
-        for a in range(env.nA):
-            env.reset()
-            env.env.state = np.array(env.from_flat_index(s))
-            next_s, _, _, _ = env.step(a)
+            position, velocity = env.undiscretize(s)
+
+            velocity += (a - 1) * env.env.force - math.cos(3 * position) * (env.env.gravity)
+            velocity = np.clip(velocity, -env.env.max_speed, env.env.max_speed)
+            position += velocity
+            position = np.clip(position, env.env.min_position, env.env.max_position)
+
+            next_s = env.discretize((position, velocity))
+    
             transition_function[s, a, next_s] = 1.0
-    # row_sums = np.sum(transition_function, axis=2)
-    # print(row_sums)
+
     return MDP(np.array(range(env.nS)), goal_states, np.array(range(env.nA)), transition_function, reward_function)
 
 def benchmark(agent_cls, learn=True):
@@ -115,10 +112,12 @@ def benchmark(agent_cls, learn=True):
     # Create an instance of the Mountain Car environment
     env = MountainCarDiscretized()
 
+
     if agent_cls in [MetaPRLAgent, PRLAgent]:
         inaccurate_mdp = create_mdp(env)
         agent = agent_cls(env, inaccurate_mdp)
-        env.reset()
+        obs = env.reset()
+        print(obs, env.undiscretize(obs))
         if learn:
             config = SimpleNamespace(**mb_learn_config_dict)
         else:

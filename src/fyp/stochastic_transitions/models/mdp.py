@@ -17,89 +17,34 @@ class MetaAction(Enum):
 def value_iteration(V, goal_states, states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-10, max_iter=1000):
 
     pi = np.zeros(len(states), dtype=np.int64)
-    for lp in range(max_iter):
+
+    for _ in range(max_iter):
         delta = 0
-        for s in states:
-            
-            if s in goal_states:
-                V[s] = 0.0
+
+        for i in range(len(states)):
+            state = states[i]
+            if state in goal_states:
+                V[i] = 0.0
                 continue
+            v = V[i]
 
-            Q = np.zeros_like(actions)
-            initalised = np.zeros_like(actions)
-            for a in actions:
-                for n_s in states:
-                    p = transition_function[s, a, n_s]
-                    r = reward_function[s, a, n_s]
-
+            Q = np.full(len(actions), -np.inf)
+            for j in range(len(actions)):
+                action = actions[j]
+                for k in range(len(states)):
+                    next_state = states[k]
+                    p = transition_function[state, action, next_state]
                     if p > 0.0:
-                        Q[a]+= p * (r + V[n_s])
-                        initalised[a]+=1
-                if initalised[a] == 0:
-                    Q[a] = -np.inf
+                        q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
+                        if Q[j] == -np.inf: Q[j] = 0.0
+                        Q[j]+=q
 
-            best_max = np.max(Q)
-            pi[s] = np.argmax(Q)
-            delta = max(delta, abs(best_max - V[s]))
-            V[s] = best_max
+            V[i] = np.max(Q)
+            pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V[i]]))
+            delta = max(delta, abs(v - V[i]))
+
         if delta < theta:
             break
-        # print(V)
-        # delta = 0
-
-        # for i in range(len(states)):
-        #     state = states[i]
-        #     is_goal = False
-        #     for l in range(len(goal_states)):
-        #         if goal_states[l] == state:
-        #             # V[i] = 0.0        
-        #             is_goal = True
-        #             break
-        #     if is_goal:
-        #         is_goal = False
-        #         continue
-
-        #     v = V[i]
-
-        #     # Q = np.full(len(actions), -np.inf, dtype=float)
-        #     best_action = None
-        #     best_max = -np.inf
-        #     for j in range(len(actions)):
-        #         action = actions[j]
-        #         if np.sum(transition_function[state, action]) == 0.0:
-        #             E = -np.inf
-        #         else:
-        #             E = 0
-        #             for k in range(len(states)):
-        #                 next_state = states[k]
-        #                 p = transition_function[state, action ,next_state]
-        #                 r = reward_function[state, action, next_state]
-        #                 E += p * (r + V[next_state])
-        #         if E > best_max:
-        #             best_max = E
-        #             best_action = action
-            
-
-
-        #             # next_v = V[next_state]
-        #             # p = transition_function[state, action, next_state]
-        #             # if p > 0.0:
-        #             #     if Q[j] == -np.inf: Q[j]= 0.0
-        #             #     r = reward_function[state, action, next_state]
-        #             #     Q[j]+= p * (r + next_v)
-        #                 # print(r + (p * V[next_state]))
-        #             #     # r-=0.000001
-        #             #     q = r + p * V[next_state]
-        #             #     if Q[j] == -np.inf: Q[j] = 0.0
-        #             #     Q[j]+=q
-        #     V[i] = best_max
-        #     pi[i] = best_action
-        #     # pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V_new[i]]))
-        #     delta = max(delta, abs(v - V[i]))
-
-        # if delta < theta:
-        #     break
-        # # print(V)
     return V, pi
 
 
@@ -116,7 +61,6 @@ class MDP:
         self.updated = False
         if run_VI:
             self.V, self.pi = value_iteration(np.zeros(len(self.states)), self.goal_states, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
-            print(self.V)
         else:
             self.V = np.zeros(len(self.states))
             self.pi = np.zeros(len(self.states))
@@ -132,12 +76,15 @@ class MDP:
             self.transition_function[state, action] /= np.sum(self.transition_function[state, action])
     
     def update_transition_probs(self, state, action, N_sa, N_sas):
+        self.updated = False
         for next_state in self.states:
-            if  N_sas[next_state] / N_sa != self.transition_function[state, action, next_state]:
-                self.transition_function[state, action, next_state] = N_sas[next_state] / N_sa
+            new_p = N_sas[next_state] / N_sa
+            if new_p != self.transition_function[state, action, next_state]:
+                self.transition_function[state, action, next_state] = new_p
                 self.updated = True
 
     def update_reward(self, state, action, next_state, reward):
+        self.updated = False
         if reward != self.reward_function[state, action, next_state]:
             self.reward_function[state, action, next_state] = reward
             self.updated = True
@@ -155,6 +102,7 @@ class MDP:
 
     def plan_VI(self, start, observed_sas=None, meta=None, meta_sas=None):
         if self.updated:
+            print("updated!")
             self.V, self.pi = value_iteration(self.V, self.goal_states, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
             self.updated = False
         if not meta or not self.reasonable_meta_transitions:
