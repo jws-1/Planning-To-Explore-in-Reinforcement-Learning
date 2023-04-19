@@ -107,23 +107,6 @@ class MDP:
             self.updated = False
         if not meta or not self.reasonable_meta_transitions:
             return self.pi[start]
-        # print(self.V)
-        """
-        Learn the depth
-            If we normally expect to get to a state through n transitions from the current state
-            but it actually takes m transitions,
-            then we learn that meta action
-        """
-        # candidate_changes_r = {state : {a : {next_state : }}}
-        # candidate_changes_r = {(state, a, next_state, np.max(self.reward_function)+1) : -np.inf for (state, a, next_state) in product(self.states, self.actions, self.states)}
-        # candidate_changes_t = {(state, a, next_state) : -np.inf for (state, a, next_state) in product(self.states, self.actions, self.states)}
-
-        # candidate_changes_r = {state : (a, next_state) for (state, a, next_state) in product(self.states, self.actions, self.states)}
-        # candidate_changes_t = {state : (a, next_state) for (state, a, next_state) in product(self.states, self.actions, self.states)}
-        
-        # candidate_changes_t = {state : {action : next_state for next_state in self.states} for action in self.actions for state in self.states}
-        # candidate_changes_t = {state : (a, next_state) for  a in self.actions for next_state in self.states for state in self.states}
-        # candidate_changes_r = {state : {action : next_state for next_state in self.states} for action in self.actions for state in self.states}
 
         changes_t = defaultdict(None)
         changes_r = defaultdict(None)
@@ -132,29 +115,21 @@ class MDP:
         state = start
         current_pi = self.pi
         current_V = self.V
-        # print(current_V)
         while state != self.goal:
             best_change = None
             for action in self.actions:
                 for next_state in np.argsort(self.transition_function[state][action])[::-1]:
-                # for next_state in self.states:
                     if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state][MetaAction.INCREASE_TRANSITION_PROBABILITY] and next_state in self.reasonable_meta_transitions[state] and candidate_MDP.transition_function[state][action][next_state] < 1.0:
-                        # print(f"Trying {state} {action} {next_state}, new T = 1")
                         temp_MDP = deepcopy(candidate_MDP)
                         temp_MDP.update_transition_prob(state, action, next_state, 1.0)
                         V_, pi_ = value_iteration(deepcopy(current_V), self.goal, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-                        # print(V_)
-                        # # print(state, action, next_state, V_[state], current_V[state])
-                        # if next_state == 31:
-                        #     print(V_[state], current_V[state])
+
                         if V_[state] > current_V[state]:
-                            # print("better")
                             best_change = (state, action, next_state, 1.0)
                             current_pi = pi_
                             current_V = V_
 
             if best_change is not None:
-                # print(f"Change! {best_change}")
                 candidate_MDP.update_transition_prob(*best_change)
                 changes_t[state] = best_change
             
@@ -166,7 +141,6 @@ class MDP:
             for action in self.actions:
                 for next_state in np.argsort(self.transition_function[state][action])[::-1]:
                     if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state][MetaAction.INCREASE_REWARD] and next_state in self.reasonable_meta_transitions[state]:
-                        # print(f"Trying {state} {action} {next_state}, new T = +1")
                         temp_MDP = deepcopy(candidate_MDP)
                         temp_MDP.update_reward(state, action, next_state, max(temp_MDP.reward_function[state, action, next_state], np.max(candidate_MDP.reward_function)-1))
                         V_, pi_ = value_iteration(deepcopy(current_V), self.goal, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=10)
