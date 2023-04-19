@@ -1,5 +1,9 @@
 \chapter{Evaluation / Discussion}
 \label{chapter6}
+\section{Sample Efficiency}
+Sample Efficiency refers 
+\subsection{Simulated}
+\subsection{Real}
 \begin{itemize}
     \item Sample efficiency (simulated, real, exploratory).
     \item Complexity analysis?
@@ -10,4 +14,4 @@ The main limitation of the implementations proposed of our framework relate to i
 \section{Conclusions}
 We proposed a framework that 
 \section{Ideas for future work}
-The ideas we have for future work mostly begin by solving the limitations outlined above. Most issues regarding scalability can be overcome by moving from exact to approximate solutions through function approximation methods; this would allow scaling to continuous, partially  observable domains. Furthermore, our method could be easily extended to domains with stochastic rewards, however in stateless domains such as Bandits, the criteria for calling a Meta Action that would increase reward needs to be further considered; this could be done by count-based methods or uncertainty based methods. Furthermore, more suitable planning algorithms could be explored, such as UCT \citep{10.1007/11871842_29}; which is the UCB algorithm \citep{auer2002finite} applied to tree search; this would offer a scalable, faster solution than Value Iteration.
+The ideas we have for future work mostly begin by solving the limitations outlined above. Most issues regarding scalability can be overcome by moving from exact to approximate solutions through function approximation methods; this would allow scaling to continuous, partially  observable domains. Furthermore, our method could be easily extended to domains with stochastic rewards, however in stateless domains such as Bandits, the criteria for calling a Meta Action that would increase reward needs to be further considered; this could be done by count-based methods or uncertainty based methods. Furthermore, more suitable planning algorithms could be explored, such as UCT \cite{10.1007/11871842_29}; which is the UCB algorithm \cite{auer2002finite} applied to tree search; this would offer a scalable, faster solution than Value Iteration. Consider generalization?

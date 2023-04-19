@@ -2,8 +2,9 @@
 \label{chapter2}
 \section{Markov Decision Processes}
 The Markov Property states that the future is conditionally independent of the past given the present. A sequential decision-making problem that satisfies the Markov Property is known as a Markov Decision Problem, and can be modelled by a Markov Decision Process (MDP) \citep{10.5555/528623}. Where an agent is able to fully observe its state, the problem can be modelled as an MDP. Conversely, where an agent can only partially observe its state, the problem can be modelled by a Partially Observable Markov Decision Process (POMDP).
-Consider an agent playing a perfect information game \citep{vonneumann.morgenstern47}, such as Chess or Go, the agent (and its opponent) are able to fully observe the state of the game with ease. However, a robot navigating through a maze may not be able to observe its exact state due to uncertainty in its sensors.
-\\Within this work we assume that the agent is fully able to observe its state. Furthermore that the environment can be discretised, through approximations, and tasks are episodic (there exist some terminal states which indicate the end of a task); hence we consider \textbf{finite}, \textbf{undiscounted} MDPs.
+Consider an agent playing a perfect information game \cite{vonneumann.morgenstern47}, such as Chess or Go, the agent (and its opponent) are able to fully observe the state of the game with ease. However, a robot navigating through a maze may not be able to observe its exact state due to uncertainty in its sensors.
+Furthermore, an MDP can be stationary or non-stationary which refer to whether its dynamics stay the same, or change temporally.
+\\Within this work we assume that the agent is fully able to observe its state. Furthermore that the environment is stationary and can be discretised, through approximations, and tasks are episodic (there exist some terminal states which indicate the end of a task); hence we consider \textbf{stationary}, \textbf{finite}, \textbf{undiscounted} MDPs.
 Thus, an MDP is a 4-tuple: $\text{MDP} = (S,A,T,R)$ where:
 \begin{itemize}
     \item $S$ is a finite set of states.
@@ -37,7 +38,7 @@ Q^*(s,a) = \sum_{s'}T(s,a,s')[R(s,a,s')+\max_{a'}Q^*(s',a')]
 % Where $V^{\pi*}$ is the value function of the optimal policy.
 
 \section{Planning}
-Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a specified goal whilst satisfying some constraints or achieving some objectives, such as minimising cost \citep{DBLP:books/aw/RN2020, Lav06, GhallabNauTraverso04}. 
+Planning involves reasoning on a model of an environment in order to produce a sequence of actions that will achieve a specified goal whilst satisfying some constraints or achieving some objectives, such as minimising cost \cite{DBLP:books/aw/RN2020, Lav06, GhallabNauTraverso04}. 
 Planning has been a widely studied topic in AI for many years, as such there exist many planning methods and algorithms. However, although planning is central to this work, planning methods and algorithms are not; therefore, we only consider heuristic search methods and planning by Dynamic Programming.
 
 % plannning methods and algorithms are not the main topic of this work
@@ -53,18 +54,18 @@ Planning has been a widely studied topic in AI for many years, as such there exi
 Heuristic search (or informed search) is a class of search algorithms that use problem specific knowledge in the form of heuristics to guide the search. A heuristic, denoted $h(s)$, is a function that estimates the cost of transitioning from the current state, $s$, to the goal state. We consider best-first search algorithms, which aim at expanding states that appear best according to an evaluation function, denoted $f(s)$. 
 % Heuristic search uses heuristic functions to guide the exploration of possible solutions. A heuristic is a function that estimates the cost of transitioning from the current state to the goal state. The choice of heuristic can vary, depending on the problem; and in some domains it can be impossible to design a good heuristic.
 \subsubsection{A* Search}
-A* Search (or just A*) \citep{4082128} is a heuristic search algorithm that is a form of best-first search. A cost function, $g(s)$, is introduced, which indicates the cost to get from the start state to a state $s$. The main idea is that the evaluation function can be a combination of the cost to get to the state being evaluated, $g(s)$, and the estimated cost to get from the state being evaluated to the goal state, thus $f(s) = g(s) + h(s)$. This evaluation function indicates the estimated cost of the minimum cost solution that passes through $s$ \citep{DBLP:books/aw/RN2020}. A* works by guiding the search to expand states with the lowest value for $f(s)$ first, in order to determine a sequence of states which is the path (or in our case, the plan). A* is a complete algorithm; it will always find a solution if one exists. However, the optimality of A* depends on the choice of the heuristic: the heuristic must be admissible, which means that it must never overestimate the cost of getting from the current state to the goal state; in this sense, the heuristic must always be optimistic.
+A* Search (or just A*) \cite{4082128} is a heuristic search algorithm that is a form of best-first search. A cost function, $g(s)$, is introduced, which indicates the cost to get from the start state to a state $s$. The main idea is that the evaluation function can be a combination of the cost to get to the state being evaluated, $g(s)$, and the estimated cost to get from the state being evaluated to the goal state, thus $f(s) = g(s) + h(s)$ and indicates the estimated cost of the minimum cost solution that passes through $s$ \cite{DBLP:books/aw/RN2020}. A* works by guiding the search to expand states with the lowest value for $f(s)$ first, in order to determine a sequence of states which is the path (or in our case, the plan). A* is a complete algorithm; it will always find a solution if one exists. However, the optimality of A* depends on the choice of the heuristic: the heuristic must be admissible, which means that it must never overestimate the cost of getting from the current state to the goal state; in this sense, the heuristic must always be optimistic.
 % The idea is that the evaluation function can be a combination of the cost to reach the state, $s$, being evaluated, denoted $g(s)$, and the estimated cost to get from 
-% A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \citep{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \citep{KORF1990189}, which is akin to model-based RL.
+% A* search is a heuristic search algorithm, which is limited to discrete state and action spaces. It can be difficult to choose the heuristic, the heuristic must be admissable \cite{DBLP:books/aw/RN2020}; this means that it must always underestimate the cost of getting from the current state to the goal, and never overestimate it. An interesting extension of this is LRTA* \cite{KORF1990189}, which is akin to model-based RL.
 \subsection{Dynamic Programming}
-Dynamic Programming (DP) \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} can be used to compute an optimal policy given a perfect model of the environment, embedded in an MDP \citep{Sutton1998}. If the model is not perfect, then the computed policy is only optimal for the model, not for the real environment; however this can still be useful. The two main algorithms that we consider are Policy Iteration \citep{Bellman:1957, howard:dp} and Value Iteration \citep{Bellman:1957}; both of which are forms of Generalised Policy Iteration (GPI). GPI refers to any process that involves Policy Evaluation and Policy Improvement acting with each other. As it happens, most DP and RL methods are forms of GPI \citep{Sutton1998}.
-% Dynamic Programming \citep{Bellman:1957, DBLP:books/lib/Bertsekas05} is a problem-solving method which involves breaking down problems into smaller sub-problems, solving them, storing the solutions, and combining them to solve the original problem. Given a perfect model of the environment, embedded in an MDP, an optimal policy can be computed using Dynamic Programming, through both Policy Iteration  and Value Iteration.
+Dynamic Programming (DP) \cite{Bellman:1957, DBLP:books/lib/Bertsekas05} can be used to compute an optimal policy given a perfect model of the environment, embedded in an MDP \cite{Sutton1998}. If the model is not perfect, then the computed policy is only optimal for the model, not for the real environment; however this can still be useful. The two main algorithms that we consider are Policy Iteration \cite{Bellman:1957, howard:dp} and Value Iteration \cite{Bellman:1957}; both of which are forms of Generalised Policy Iteration (GPI). GPI refers to any process that involves Policy Evaluation and Policy Improvement acting with each other. As it happens, most DP and RL methods are forms of GPI \cite{Sutton1998}.
+% Dynamic Programming \cite{Bellman:1957, DBLP:books/lib/Bertsekas05} is a problem-solving method which involves breaking down problems into smaller sub-problems, solving them, storing the solutions, and combining them to solve the original problem. Given a perfect model of the environment, embedded in an MDP, an optimal policy can be computed using Dynamic Programming, through both Policy Iteration  and Value Iteration.
 \subsubsection{Policy Evaluation and Improvement}
-Policy Improvement \citep{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \citep{DBLP:books/lib/Bertsekas05}. One way to improve a policy $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
+Policy Improvement \cite{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \cite{DBLP:books/lib/Bertsekas05}. One way to improve a policy $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
 \subsubsection{Policy Iteration}
-Policy Iteration (PI) \citep{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V_\pi$ (or a Quality Function $Q_\pi$). The policy is then updated greedily with respect to $V_\pi$ (or $Q_\pi$).
+Policy Iteration (PI) \cite{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V_\pi$ (or a Quality Function $Q_\pi$). The policy is then updated greedily with respect to $V_\pi$ (or $Q_\pi$).
 \subsubsection{Value Iteration}
-Value Iteration (VI) \cite{Bellman:1957} is a method for computing the optimal estimate for the Value or Quality Function of an MDP. As the estimate approaches optimality, the policy that is greedy with respect to the Value or Quality Function also approaches optimality \citep{series/synthesis/2010Szepesvari}.
+Value Iteration (VI) \cite{Bellman:1957} is a method for computing the optimal estimate for the Value or Quality Function of an MDP. As the estimate approaches optimality, the policy that is greedy with respect to the Value or Quality Function also approaches optimality \cite{series/synthesis/2010Szepesvari}.
 In the context of Value Functions, assuming an arbitrary initial estimate, $V$, at each step $V$ is updates as such:
 \begin{equation}
 \label{eqn:vupdate}
@@ -82,8 +83,8 @@ for all $s \in S$, $a \in A$. These update rules originate from the Bellman opti
 % $$V(s) = \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]$$
 % VI 
 \section{Reinforcement Learning}
-Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal, as seen in Figure \ref{fig:rl}. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \citep{barto1990learning}. This gives rise to the (temporal) credit assignment problem \citep{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
-The goal of the agent is to learn a policy, $\pi^*$, that maximises the expected cumulative long-term reward \citep{Sutton1998}.
+Within an RL setting, formalised by an MDP, an agent learns how to behave in an environment by interacting with it through actions, at discrete, sequential, time steps, and observing the affects through its new state and a scalar reward signal, as seen in Figure \ref{fig:rl}. The reward signal may be delayed, meaning that the consequences of actions may not be known until long after they are taken \cite{barto1990learning}. This gives rise to the (temporal) credit assignment problem \cite{Minsky:1961:ire}, the problem of determining which actions led to an outcome and assigning credit among them; it's often the case that a sequence of actions led to an outcome, rather than a single action.
+The goal of the agent is to learn a policy, $\pi^*$, that maximises the expected cumulative long-term reward \cite{Sutton1998}.
 \begin{figure}[h!]
     \centering
     \includegraphics[max size={\textwidth}{\textheight}]{report/assets/rl.png}
@@ -93,30 +94,37 @@ The goal of the agent is to learn a policy, $\pi^*$, that maximises the expected
 \subsection{Model-Free Learning}
 Model-free (or direct) RL is the traditional instantiation of RL, where the agent learns a policy directly from experience gained by interacting with the environment; it is purely trial-and-error. Model-free learning tends to be quite flexible to varying problems, since no assumptions are made about the environment's dynamics. Furthermore, since the environment's dynamics do not need to be stored, learned or considered, model-free learning is scalable and does not suffer from the \textit{curse of dimensionality} (in the non-tabular cases) and can be computationally efficient, as there is generally no lookahead deliberation process involved. However, model-free learning can be sample-inefficient; the agent may need to take many actions before discovering the optimal policy.
 \subsection{Model-Based Learning}
-Model-based (or indirect) RL is where an agent uses a known or learned model of the environments dynamics (in the form of an MDP) in order to learn the optimal policy \citep{MAL-086}. The agent may learn the model and policy at the same time, as in the Dyna family \citep{Sutton:1990, 10.1145/122344.122377} or learn a policy by planning over a known model, as in AlphaZero \citep{DBLP:journals/corr/abs-1712-01815} or learn a policy by planning over a learned model, as in MuZero \citep{DBLP:journals/corr/abs-1911-08265}.
-Model-based learning tends to provide better sample efficiency than model-free approaches, since learning can occur from simulation rather than directly from experience \citep{RLSOTA11} and the number of exploratory actions can be reduced by using targeted exploration \citep{Thrun-1992-15850}. However, this comes at a computational cost; planning can be expensive, especially if the state and action spaces are large.
+Model-based (or indirect) RL is where an agent uses a known or learned model of the environments dynamics (in the form of an MDP) in order to learn the optimal policy \cite{MAL-086}. The agent may learn the model and policy at the same time, as in the Dyna family \cite{Sutton:1990, 10.1145/122344.122377} or learn a policy by planning over a known model, as in AlphaZero \cite{DBLP:journals/corr/abs-1712-01815} or learn a policy by planning over a learned model, as in MuZero \cite{DBLP:journals/corr/abs-1911-08265}.
+Model-based learning tends to provide better sample efficiency than model-free approaches, since learning can occur from simulation rather than directly from experience \cite{RLSOTA11} and the number of exploratory actions can be reduced by using targeted exploration \cite{Thrun-1992-15850}. However, this comes at a computational cost; planning can be expensive, especially if the state and action spaces are large.
 % \\Comparison
 % \begin{itemize}
 %     \item model-free RL is more scalable, simpler to program
 %     \item model-based RL can be more efficient, can overcome delayed rewards, however comes at a cost: planning takes time and computational power.
 % \end{itemize}
 \subsubsection{Model Learning}
-Model learning can be viewed as a supervised learning problem \citep{JORDAN1992307}. In discrete environments, exact models of the environment's dynamics can be learned in the form of a \textit{tabular maximum likelihood model} \citep{10.1145/122344.122377} which essentially maintains a table storing every possible transition. In the stochastic case, for each transition the table will store:
+Model Learning can be a difficult problem due to stochasticity, partial observability and uncertainty due to limited data (experience). We omit the problem of partial observability here, since we are not considering POMDPs, however stochasticity and uncertainty are very relevant to us. Stochasticity and uncertainty can be overcome through sufficient exploration; sampling a transition multiple times can give a better estimate of the probability distribution which reduces uncertainty.
+\\Model learning can be viewed as a supervised learning problem \cite{JORDAN1992307}. In discrete environments, exact models of the environment's dynamics can be learned in the form of a \textit{tabular maximum likelihood model} \cite{10.1145/122344.122377} which  maintains a table with an entry for every possible transition.
+In the stochastic case, for each transition the table will store:
 \begin{equation}
 \label{eqn:tmlmupdate}
 T(s, a, s') = \frac{n(s, a, s')}{\sum_{s'}n(s,a,s')}
 \end{equation}
 Where $n(s,a,s')$ represents the number of times the transition has been observed.
-The same can be used for the deterministic case, which will result in all transitions mapping to either 0 or 1. It should be noted that an environment could be discretised in order to learn an exact model, but in-fact this model will be approximate due to this discretisation.
-% However, as with all tabular methods, this doesn't scale well.
-A key drawback of this approach is the lack of scalability.
-In continuous environments, tabular approaches are not possible due to the infinite number of states. The environment's dynamics can be approximately learned using Function Approximation.
+% The same can be used for the deterministic case, which will result in all transitions mapping to either 0 or 1. It should be noted that an environment could be discretised in order to learn an exact model, but in-fact this model will be approximate due to this discretisation.
+A key drawback to this approach is the lack of scalability to large state spaces.
+\\In continuous domains an exact model cannot be learned, due to the infinite number of states (and potentially actions). An approximate model can be learned by using state aggregation (which discretises the state space) and a tabular maximum likelihood model \cite{Kuvayev1996ModelBasedRL}.
+However, more commonly an approximate model is learned through Function Approximation methods such as Linear Regression \cite{DBLP:journals/corr/abs-1206-3285, NIPS2007_b7bb35b9} and Gaussian Processes \cite{10.5555/3104482.3104541}.
+% % However, as with all tabular methods, this doesn't scale well.
+% A key drawback of this approach is the lack of scalability to large state and action spaces.
+% In continuous environments, tabular approaches are not possible due to the infinite number of states and actions. However, a continuous environment's dynamics can be approximately learned using Function Approximation.
+
+
 % The agent learns to act in the environment by either learning or being provided with a representation of the dynamics of the environment.
-% Model-based RL is where the agent learns to act in an environment, and has some understanding of the dynamics of the environment in the form of a model. By the nature of models, the model is inaccurate, more often than not. \citep{Sutton:1990, MAL-086, 10.1145/122344.122377, Kuvayev1996ModelBasedRL, RLSOTA11}
+% Model-based RL is where the agent learns to act in an environment, and has some understanding of the dynamics of the environment in the form of a model. By the nature of models, the model is inaccurate, more often than not. \cite{Sutton:1990, MAL-086, 10.1145/122344.122377, Kuvayev1996ModelBasedRL, RLSOTA11}
 \subsection{Temporal Difference Learning}
-Temporal Difference (TD) Learning \citep{10.5555/911176, 5392560, 5391906} aims at solving the problem of temporal credit assignment by combining ideas from Monte Carlo methods, which learn directly from experience in the environment, and Dynamic Programming methods, which bootstrap estimates from other previously learned estimates. It is a form of Generalised Policy Iteration, in that it aims to produce an optimal estimate of the Value Function, $V_\pi^*$, starting from an initial estimate, $V_\pi$, for a given policy, $\pi$,\citep{Sutton1998}.
+Temporal Difference (TD) Learning \cite{10.5555/911176, 5392560, 5391906} aims at solving the problem of temporal credit assignment by combining ideas from Monte Carlo methods, which learn directly from experience in the environment, and Dynamic Programming methods, which bootstrap estimates from other previously learned estimates. It is a form of Generalised Policy Iteration, in that it aims to produce an optimal estimate of the Value Function, $V_\pi^*$, starting from an initial estimate, $V_\pi$, for a given policy, $\pi$,\cite{Sutton1998}.
 \\The core idea of TD Learning is to update the estimate of the Value Function, $V_\pi$, whenever there is a difference between temporally successive predictions \cite{Sutton:1988}. This difference is known as the TD error. The updated estimate is bootstrapped from the previous estimate, meaning that TD learning essentially learns a prediction from another prediction.
-\\The simplest TD Learning algorithm is TD(0) \citep{Sutton:1988}, which updates it's estimates as such:
+\\The simplest TD Learning algorithm is TD(0) \cite{Sutton:1988}, which updates it's estimates as such:
 \begin{equation}
 \label{eqn:td0update}
 V(s_t) \leftarrow V(s_t) + \alpha[r_{t+1} + V(s_{t+1}) - V(s_t)]
@@ -127,14 +135,14 @@ $0 \le \alpha \le 1$ is the learning rate, which is used to control how much wei
 % \\Starting from an initial estimate of the Value Function, $V_\pi$, for the current policy being followed, $\pi$, the goal of TD Learning is 
 % \\The core idea of TD learning is to learn the optimal estimate of the Value Function of the current policy being followed. The estimate is updated whenever there is a difference between the expected reward and actual reward received at each discrete time step; learning occurs whenever there is a difference between temporally successive predictions.
 % The core idea of TD learning is to maintain an estimate of the Value Function of the current policy being followed, this estimate is updated whenever there is a difference between temporally successive predictions; this difference is known as the TD error.
-% TD Learning algorithms can be on-policy, such as SARSA \citep{rummery:cuedtr94}, where the value of the policy being currently carried out by the agent is learnt, or off-policy, such as Q-Learning \citep{Watkins:1989, journals/ml/WatkinsD92}, where the value of the optimal policy is learnt independently of the agent's actions following the current policy.
-% \citep{PooleMackworth17}.
+% TD Learning algorithms can be on-policy, such as SARSA \cite{rummery:cuedtr94}, where the value of the policy being currently carried out by the agent is learnt, or off-policy, such as Q-Learning \cite{Watkins:1989, journals/ml/WatkinsD92}, where the value of the optimal policy is learnt independently of the agent's actions following the current policy.
+% \cite{PooleMackworth17}.
 
 
-% Within Temporal Difference (TD) \citep{10.5555/911176, 5392560, 5391906}, learning is driven by the error/difference between temporally successive predictions, so learning occurs whenever there is a change in prediction over time. It's a method for learning to predict; learning a prediction from another later learned prediction.
-% The problem of temporal credit assignment gives rise to Temporal Difference (TD) Learning \citep{10.5555/911176, 5392560, 5391906}. TD Learning maintains an estimate of the Value Function, which is updated whenever there is a change in prediction over time.
+% Within Temporal Difference (TD) \cite{10.5555/911176, 5392560, 5391906}, learning is driven by the error/difference between temporally successive predictions, so learning occurs whenever there is a change in prediction over time. It's a method for learning to predict; learning a prediction from another later learned prediction.
+% The problem of temporal credit assignment gives rise to Temporal Difference (TD) Learning \cite{10.5555/911176, 5392560, 5391906}. TD Learning maintains an estimate of the Value Function, which is updated whenever there is a change in prediction over time.
 \subsubsection{Q-Learning}
-Q-Learning \citep{Watkins:1989, journals/ml/WatkinsD92} is an off-policy TD Learning method that learns a Quality function. It is off-policy, as the update rule assumes a greedy policy - this means that the value of the optimal policy is learned independently of the agent's actions following the current policy. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
+Q-Learning \cite{Watkins:1989, journals/ml/WatkinsD92} is an off-policy TD Learning method that learns a Quality function. It is off-policy, as the update rule assumes a greedy policy - this means that the value of the optimal policy is learned independently of the agent's actions following the current policy. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
 \begin{equation}
 \label{eqn:qlearningupdate}
 Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \alpha[r_{t+1} + \max_aQ(s_{t+1}, a) -Q(s_t,a_t)]
@@ -143,7 +151,7 @@ Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly lea
 % \\Clearly Q-Learning comes from Dynamic Programming, and in that sense it is a tabular method; a Q-table is maintained which stores the Q-values for each state-action pair. For this reason, it doesn't scale too well to large state/action spaces - however it is suitable for the domains that we consider within this work.
 % \\The result of Q-Learning is that a deterministic, greedy policy is learned.
 \subsubsection{SARSA}
-SARSA (State Action Reward State Action) \citep{rummery:cuedtr94} is an on-policy TD Learning method that learns a Quality function. It is on-policy, as the update rule assumes that the current policy continues being followed - this means that the value of the current policy being followed is learned. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
+SARSA (State Action Reward State Action) \cite{rummery:cuedtr94} is an on-policy TD Learning method that learns a Quality function. It is on-policy, as the update rule assumes that the current policy continues being followed - this means that the value of the current policy being followed is learned. Q-values are iteratively updated using the Bellman equation, the update rule is as follows:
 \begin{equation}
 \label{eqn:sarsaupdate}
 Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t, a_t)]
@@ -153,33 +161,33 @@ Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly lea
 \cite{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. More recently, \cite{DBLP:journals/corr/abs-2109-00157} presented a comprehensive survey on exploration in RL, which distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration. We consider this taxonomy of exploration methods.
 \subsection{Random Exploration}
 % Due to simplicity of implementation and ease of generalisation, random exploration is the most popular form of exploration, and is widely seen in the literature; even where some other exploration method is used, there is often some underlying randomness.
-A Random Walk, or unguided random search \citep{anderson86}, arises from randomly sampling actions with uniform probability. Exploration occurs when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions.
+A Random Walk, or unguided random search \cite{anderson86}, arises from randomly sampling actions with uniform probability. Exploration occurs when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions.
 This is perhaps the most naive method of exploration, since it is entirely random.
 % The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
-\\$\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy. Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima.
-\\$\epsilon z$-greedy \citep{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence. The agent follows a temporally-extended sequence of actions with probability $\epsilon$ and with probability $1-\epsilon$ exploits by taking the best action, which is selected greedily with respect to the current policy. The temporally-extended sequences of actions are called options \citep{SUTTON1999181}). The options consist of actions repeated $n$ times, where $n$ is chosen from a distribution. Whilst this overcomes some of the issues with $\epsilon$-greedy, it can suffer in complex MDPs, where long exploratory trajectories which result in nothing informative being learned can be a very big waste of time and resources.
+\\$\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy. Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima.
+\\$\epsilon z$-greedy \cite{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence. The agent follows a temporally-extended sequence of actions with probability $\epsilon$ and with probability $1-\epsilon$ exploits by taking the best action, which is selected greedily with respect to the current policy. The temporally-extended sequences of actions are called options \cite{SUTTON1999181}). The options consist of actions repeated $n$ times, where $n$ is chosen from a distribution. Whilst this overcomes some of the issues with $\epsilon$-greedy, it can suffer in complex MDPs, where long exploratory trajectories which result in nothing informative being learned can be a very big waste of time and resources.
 
 
 
 
-% $\epsilon$-greedy that uses temporal persistence; the agent follows a temporally-extended sequence of actions (an option \citep{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
+% $\epsilon$-greedy that uses temporal persistence; the agent follows a temporally-extended sequence of actions (an option \cite{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
 % \begin{itemize}
 %     \item Pure random exploration: Random Walk
-%     \item $\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95}
-%     \item $\epsilon z$-geedy \citep{dabney2021temporallyextended, SUTTON1999181}
+%     \item $\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95}
+%     \item $\epsilon z$-geedy \cite{dabney2021temporallyextended, SUTTON1999181}
 %     \item Softmax
-%     \item Boltzmann \citep{Watkins:1989, 10.1007/BF00992699, SCC.Barto.Bradtke.ea1991}
+%     \item Boltzmann \cite{Watkins:1989, 10.1007/BF00992699, SCC.Barto.Bradtke.ea1991}
 % \end{itemize}
 % \subsection{Intrinsically Motivated Exploration}
-% \citep{scott1996, pmlr-v97-jinnai19b, Jinnai2020Exploration}
+% \cite{scott1996, pmlr-v97-jinnai19b, Jinnai2020Exploration}
 % \subsection{Optimistic}
-% \citep{10.1145/1390156.1390288, NIPS2006_c1b70d96, 10.1162/153244303765208377, NIPS2008_d5cfead9}
+% \cite{10.1145/1390156.1390288, NIPS2006_c1b70d96, 10.1162/153244303765208377, NIPS2008_d5cfead9}
 \subsection{Model-Based}
 We refer to Model-Based exploration as any method of exploration that uses a model to influence exploration.
 % \cite{SARA07-jong}
 
 % For instance, a simple form of model-based RL where an agent plans on an initial model, and performs model-learning concurrently is an exploration method; although a naive one, that doesn't work in practice.\\
-% \citep{SARA07-jong, Littman2011EfficientME, Epshteyn2008ActiveRL}
+% \cite{SARA07-jong, Littman2011EfficientME, Epshteyn2008ActiveRL}
 % \subsubsection{DARLING}
 \\ R-MAX \cite{10.1162/153244303765208377}, fitted R-MAX \cite{SARA07-jong}
 \\ MAX \cite{DBLP:journals/corr/abs-1810-12162}
@@ -195,17 +203,17 @@ We refer to Model-Based exploration as any method of exploration that uses a mod
 \\ \cite{10.1145/1553374.1553441}
 \\ \cite{10.1145/1143844.1143932}
 \\ \cite{10.1145/1143844.1143845}
-\\DARLING \citep{AIJ16-leonetti} approximates a deterministic model, which it then produces a partial policy from which $\epsilon$-greedy is performed within. A partial policy is essentially a combination of a selection of plans.  This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Also, DARLING is only suitable for domains where discretisation is possible; it does not scale to continuous state or action spaces. Furthermore, $\epsilon$-greedy introduces randomness into the framework.
+\\DARLING \cite{AIJ16-leonetti} approximates a deterministic model, which it then produces a partial policy from which $\epsilon$-greedy is performed within. A partial policy is essentially a combination of a selection of plans.  This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Also, DARLING is only suitable for domains where discretisation is possible; it does not scale to continuous state or action spaces. Furthermore, $\epsilon$-greedy introduces randomness into the framework.
 % \subsubsection{PEORL}
-% PEORL \citep{DBLP:journals/corr/abs-1804-07779}
+% PEORL \cite{DBLP:journals/corr/abs-1804-07779}
 % \subsubsection{Plan-Q Learning}
-% \citep{10.1007/978-3-540-77949-0_6}
+% \cite{10.1007/978-3-540-77949-0_6}
 % \subsubsection{FRAP}
-% \citep{DBLP:journals/corr/abs-2006-15009}
+% \cite{DBLP:journals/corr/abs-2006-15009}
 % \subsubsection{Guided Dyna-Q}
-% \citep{Hayamizu2021GuidingRE}
+% \cite{Hayamizu2021GuidingRE}
 % \subsubsection{TMP}
-% \citep{Jiang2019TaskMotionPW}
+% \cite{Jiang2019TaskMotionPW}
 % \subsubsection{Simple Model-Based Exploration}
 % For benchmarking and comparison purposes, we present a simple model-based exploration method.
 % \begin{figure}[h!]
@@ -217,9 +225,9 @@ We refer to Model-Based exploration as any method of exploration that uses a mod
 % Randomnes underlies most exploration strategies in RL, from using pure-randomness, to randomly samplin
 % \subsection{Random}
 % \subsubsection{$\epsilon$-greedy}
-% $\epsilon$-greedy \citep{Watkins:1989, conf/nips/Sutton95} aims to balance exploration and exploitation through an $\epsilon$ factor, such that the agent exploits its learned knowledge, taking the current best action, with probability $1-\epsilon$ and explores randomly with probability $\epsilon$. It's common to decay $\epsilon$ temporally, so that the agent explores a lot early on and then exploits more after it has learnt for a while. Whilst this method offers a nice balance between the two extremes of pure exploration and pure exploitation, it only provably converges to an optimal policy with an infinite number of observations, so in-fact it is quite inefficient. Furthermore, due to the random nature, it results in continually evaluating sub-optimal actions. A key drawback to $\epsilon$-greedy is that without infinite observations, it can easily get stuck in a local optima.
+% $\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} aims to balance exploration and exploitation through an $\epsilon$ factor, such that the agent exploits its learned knowledge, taking the current best action, with probability $1-\epsilon$ and explores randomly with probability $\epsilon$. It's common to decay $\epsilon$ temporally, so that the agent explores a lot early on and then exploits more after it has learnt for a while. Whilst this method offers a nice balance between the two extremes of pure exploration and pure exploitation, it only provably converges to an optimal policy with an infinite number of observations, so in-fact it is quite inefficient. Furthermore, due to the random nature, it results in continually evaluating sub-optimal actions. A key drawback to $\epsilon$-greedy is that without infinite observations, it can easily get stuck in a local optima.
 % \subsubsection{$\epsilon z$-greedy}
-% Dabney, et al., \citep{dabney2021temporallyextended} stated that another key problem with $\epsilon$-greedy is its lack of temporal persistence; actions are only performed for one time-step. They proposed $\epsilon z$-greedy, or temporally extended $\epsilon$-greedy, where the agent takes the current best action with probability $1-\epsilon$ and follows an "option" until termination with probability $\epsilon$. An "option" is a sequence of actions, akin to a "plan" in the planning literature.
+% Dabney, et al., \cite{dabney2021temporallyextended} stated that another key problem with $\epsilon$-greedy is its lack of temporal persistence; actions are only performed for one time-step. They proposed $\epsilon z$-greedy, or temporally extended $\epsilon$-greedy, where the agent takes the current best action with probability $1-\epsilon$ and follows an "option" until termination with probability $\epsilon$. An "option" is a sequence of actions, akin to a "plan" in the planning literature.
 % \subsubsection{Boltzmann}
 % \subsubsection{Thompson Sampling}
 % \subsubsection{UCB}
@@ -230,4 +238,6 @@ We refer to Model-Based exploration as any method of exploration that uses a mod
 % \subsubsection{Curiosity Driven}
 % \subsection{Model-Based Exploration}
 % \subsubsection{DARLING}
-% Leonetti et al \citep{AIJ16-leonetti}, developed DARLING (Domain Approximation for Reinforcement Learning), where given a model, a planner is used to produce a "partial policy", which is a set of reasonable choices the agent can make in each state. Exploration is then constrained to this partial policy, and performed using $\epsilon$-greedy. This work showed that whilst planning and RL take two different approches to decision making, on on their own each struggle in stochastic, high-dimensional domains, integrating them can overcome each of their weaknesses. This work was successful in carrying out complex robotics tasks, even with an inaccurate model, and moreover, it showed that the region of the environment that is explored by the agent is more reasonable and is goal-directed.
+% Leonetti et al \cite{AIJ16-leonetti}, developed DARLING (Domain Approximation for Reinforcement Learning), where given a model, a planner is used to produce a "partial policy", which is a set of reasonable choices the agent can make in each state. Exploration is then constrained to this partial policy, and performed using $\epsilon$-greedy. This work showed that whilst planning and RL take two different approches to decision making, on on their own each struggle in stochastic, high-dimensional domains, integrating them can overcome each of their weaknesses. This work was successful in carrying out complex robotics tasks, even with an inaccurate model, and moreover, it showed that the region of the environment that is explored by the agent is more reasonable and is goal-directed.
+\subsection{Evaluating RL}
+PAC, Regret \cite{lattimore}, Learning curve
