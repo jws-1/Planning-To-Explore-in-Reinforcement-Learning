@@ -1,49 +1,41 @@
 \chapter{Benchmarking and Experiments}
 \label{chapter5}
-Introduce each domain, what makes it difficult, why it was chosen, etc. Show results from each domain, and discuss.
-\cite{osband2020bsuite, 1606.01540}
-\section{Deterministic Gridworld}
+We benchmarked over a range of domains, from self-designed domains to classic-control tasks. Most benchmarks were performed using OpenAI Gym \cite{1606.01540} and \cite{osband2020bsuite}. We split up these benchmarks into deterministic and stochastic domains.
+\section{Deterministic Domains}
+\subsection{Deterministic Gridworld}
 A simple gridworld, with a door that is open. The model embedded has a closed door.
-\section{Stochastic Gridworld}
-A simple gridworld, with a door that is open with probability 0.5, closed otherwise. The model embedded suggests that the door is closed with probability 1.0.
-\section{Cliff-Walking}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff-walking.png}
-    \caption{Cliff-Walking Environment \cite{Sutton1998}}
-    \label{fig:cliff-walking}
-\end{figure}
-\cite{1606.01540, Sutton1998}
-\section{Windy Gridworld}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/windy.png}
-    \caption{Windy GridWorld Environment \cite{Sutton1998}}
-    \label{fig:windy}
-\end{figure}
+
+\subsection{Cliff-Walking}
+The Cliff-Walking domain \cite{Sutton1998} is a deterministic gridworld, where the agent begins in the bottom left corner and needs to navigate to the goal state in the bottom right corner. However, there is a cliff along the bottom of the grid. The goal of the agent is to reach the goal state whilst avoiding the cliff, as stepping into the cliff returns the agent to the start state. The actions available enable the agent to move up, down, left and right.
+\subsubsection{Reward Formulation}
+At each time step, the agent receives a reward of -1. However, stepping into the cliff incurs a reward of -100.
+% \cite{1606.01540}
+
+\subsection{Windy Gridworld}
 \cite{Sutton1998}
-\section{Stochastic Windy Gridworld}
-\section{Frozen Lake}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/frozen-lake.png}
-    \caption{Frozen Lake Environment \cite{1606.01540}}
-    \label{fig:frozen}
-\end{figure}
-\cite{1606.01540}
-\section{Discrete Cart-Pole}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cartpole.png}
-    \caption{CartPole Environment \cite{1606.01540, 6313077}}
-    \label{fig:cartpole}
-\end{figure}
+
+\subsection{Cart-Pole}
 \cite{1606.01540, 6313077}
-\section{Discrete Mountain Car}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/mountaincar.png}
-    \caption{Mountain Car Environment \cite{1606.01540, Moore90efficientmemory-based}}
-    \label{fig:cartpole}
-\end{figure}
+
+\subsection{Mountain Car}
+A car is placed stochastically in between two mountains. The goal of the agent is to reach a goal state at the top of the hill. 
+
+\begin{equation}
+\label{eqn:mc_dynamics}
+\text{velocity}_{t+1} = \text{velocity}_t + 
+\end{equation}
+
 \cite{1606.01540, Moore90efficientmemory-based}
+
+\section{Stochastic Domains}
+
+
+\subsection{Stochastic Gridworld}
+A simple gridworld, with a door that is open with probability 0.5, closed otherwise. The model embedded suggests that the door is closed with probability 1.0.
+
+\subsection{Stochastic Windy Gridworld}
+\cite{Sutton1998}
+
+\subsection{Stochastic Windy Gridworld}
+\subsection{Frozen Lake}
+\cite{1606.01540}
