@@ -7,13 +7,13 @@ from typing import Optional
 from itertools import product
 import heapq
 from collections import defaultdict
-from ..actions import BaseMetaActions
+from ..actions import BaseMetaActions, MetaActionT, MetaActionR     
 from watchpoints import watch
 @numba.jit()
 def value_iteration(V, goal_states, states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-10, max_iter=1000):
 
     pi = np.zeros(len(states), dtype=np.int64)
-    while True:
+    for _ in range(max_iter):
         delta = 0
 
         for i in range(len(states)):
@@ -190,42 +190,63 @@ class MDP:
             else:
                 return current_pi[start]         
         else:
-            #TODO: use meta actions
-            pass
-            # changes_t = defaultdict(None)
+            changes_t = defaultdict(None)
+            changes_r = defaultdict(None)
+            candidate_MDP = deepcopy(self)
 
-            # candidate_MDP = deepcopy(self)
+            meta_actions_t, meta_actions_r = meta_actions
 
-            # state = start
-            # current_pi = self.pi
-            # current_V = self.V
+            state = start
+            current_pi = self.pi
+            current_V = self.V
 
-            # while state not in self.goal_states:
-            #     best_change = None
-            #     for action in meta_actions:
-            #         for next_state in np.argsort(self.transition_function[state][action.action])[::-1]:
+            while state not in self.goal_states:
+                best_change = None
+                for meta_action in meta_actions_t:
+                    action, next_state = meta_action.action, self.simulate_action_sequence(state, meta_action.action_sequence)
+                    if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state].get(meta_action, False):
+                        temp_MDP = deepcopy(candidate_MDP)
+                        temp_MDP.update_transition_prob(state, action, next_state, 1.0)
+                        V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
 
+                        if V_[state] > current_V[state]:
+                            best_change = meta_action, action, next_state
+                            current_pi = pi_
+                            current_V = V_
+                if best_change is not None:
+                    meta_action, action, next_state = best_change
+                    candidate_MDP.update_transition_prob(state, action, next_state, 1.0)
+                    changes_t[state] = best_change
+                    print(f"Meta Action {meta_action} useful for {state, action, next_state}")
+                state, _ = candidate_MDP.step(state, current_pi[state])
 
+            state = start
+            while state not in self.goal_states:
+                best_change = None
+                for meta_action in meta_actions_r:
+                    for action in self.actions:
+                        for next_state in self.states:
+                            if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state].get(meta_action, False):
+                                temp_MDP = deepcopy(candidate_MDP)
+                                temp_MDP.update_reward(state, action, next_state, meta_action.reward)
+                                V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
 
+                                if V_[state] > current_V[state]:
+                                    best_change = meta_action, action, next_state
+                                    current_pi = pi_
+                                    current_V = V_
 
-            # for meta_action in meta_actions:
-            #     action, next_state = meta_action.action, self.simulate_action_sequence(start, meta_action.action_sequence)
-                
-                # candidate_changes_t[(start, action, meta_action, next_state)] = -np.inf
+                if best_change is not None:
+                    meta_action, action, next_state = best_change
+                    candidate_MDP.update_reward(state, action, next_state, meta_action.reward)
+                    changes_r[state] = best_change
+                state, _ = candidate_MDP.step(state, current_pi[state])
             
-
-            # for (s, a, m_a, s_) in candidate_changes_t.keys():
-            #     if not observed_sa[s][a] and not meta_sa[s][a].get(m_a, False) and self.transition_function[s, a, s_] < 1.0:
-            #         candidate_MDP = deepcopy(self)
-            #         candidate_MDP.update_transition_prob(s, a, s_, 1.0)
-            #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, goal, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor)
-
-            #         candidate_changes_t[(s, a, m_a, s_)] = V_[s]
-
-            # best_max_t = max(candidate_changes_t.values())
-            # best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
-            # if self.V[start] > candidate_changes_t[best_change_t]:
-                
-            #     return self.pi[start]
-            # else:
-            #     return best_change_t
+            if changes_t.get(start, None):
+                # meta_action, target_action, next_state = changes_t[start]
+                return changes_t[start]
+            elif changes_r.get(start, None):
+                # meta_action, target_action, next_state = changes_r[start]
+                return changes_r[start]
+            else:
+                return current_pi[start]

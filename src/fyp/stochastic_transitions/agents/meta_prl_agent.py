@@ -17,7 +17,8 @@ class MetaPRLAgent(RLAgent):
         self.model = deepcopy(self.initial_model)
         self.N_sa = {state : {action : 0 for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.N_sas = {state : {action : {next_state : 0 for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
-        self.meta_actions = []
+        self.meta_actions_r = []
+        self.meta_actions_t = []
         # self.meta_sas = {state : {action : {next_state: {meta_action : False for meta_action in BaseMetaActions} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
         print("Reset!")
         print(self.model.transition_function)
@@ -31,7 +32,6 @@ class MetaPRLAgent(RLAgent):
         expected_next_state = next_action = prev_reward = None
 
         for i in range(config.episodes):
-
             self.meta_sas = {state : {action : {next_state: {meta_action : False for meta_action in BaseMetaActions} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
             self.observed_sas = {state : {action : {next_state: False for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
 
@@ -51,7 +51,7 @@ class MetaPRLAgent(RLAgent):
 
                 elif planning:
                     if config.learn_meta_actions:
-                        plan = self.model.plan_VI(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas, meta_actions = self.meta_actions)
+                        plan = self.model.plan_VI(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas, meta_actions = [self.meta_actions_t, self.meta_actions_r])
                     else:
                         plan = self.model.plan_VI(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas)
 
@@ -66,7 +66,7 @@ class MetaPRLAgent(RLAgent):
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
                 
                 if isinstance(action, BaseMetaActions):
-                       print(state, action, target_action, target_state)
+                    #    print(state, action, target_action, target_state)
                        if action == BaseMetaActions.INCREASE_REWARD:
                             prev_reward = self.model.reward_function[state, target_action, target_state]
                             self.model.update_reward(state, target_action, target_state, np.max(self.model.reward_function[state, target_action, target_state])-1)
@@ -75,16 +75,17 @@ class MetaPRLAgent(RLAgent):
                        self.meta_sas[state][target_action][target_state][action] = True
                        next_action = target_action
                 elif isinstance(action, MetaAction):
-                    print(state, action, target_action, target_state)
+                    # print(state, action, target_action, target_state)
                     if isinstance(action, MetaActionR):
                         prev_reward = self.model.reward_function[state, target_action, target_state]
-                        self.model.update_reward(state, action, target_state, action.reward)
+                        self.model.update_reward(state, target_action, target_state, action.reward)
+
                     elif isinstance(action, MetaActionT):
                         self.model.update_transition_prob(state, target_action, target_state, 1.0)
-                    
                     self.meta_sas[state][target_action][target_state][action] = True
                     next_action = target_action
                 else:
+                    # print(state, action)
                     next_state, reward, done, info = self.env.step(action)
                     # print(state, action, next_state)
                     self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
@@ -97,11 +98,14 @@ class MetaPRLAgent(RLAgent):
                                     action_sequence = self.model.action_sequence(state, next_state)
                                     if action_sequence != [action]:
                                         meta_action = MetaActionT(action, action_sequence)
-                                        if not meta_action in self.meta_actions:
-                                            self.meta_actions.append(meta_action)
+                                        if not meta_action in self.meta_actions_t:
+                                            print(f"Learned: {meta_action}")
+                                            self.meta_actions_t.append(meta_action)
                                 if reward != self.model.reward_function[state, action, next_state]:
                                     meta_action = MetaActionR(reward)
-                                    self.meta_actions.append(meta_action)
+                                    if not meta_action in self.meta_actions_r:
+                                        print(f"Learned: {meta_action}")
+                                        self.meta_actions_r.append(meta_action)
                             else:
                                 follows_meta_action = False
                         self.N_sa[state][action]+=1
@@ -124,6 +128,7 @@ class MetaPRLAgent(RLAgent):
 
                     states[i][state]+=1
         with open("learnt_actions.txt", "w+") as fp:
-            fp.write("\n".join([str(m) for m in list(set(self.meta_actions))]))
+            fp.write("\n".join([str(m) for m in list(set(self.meta_actions_r))]))
+            fp.write("\n".join([str(m) for m in list(set(self.meta_actions_t))]))
         print(rewards)
         return rewards, states
