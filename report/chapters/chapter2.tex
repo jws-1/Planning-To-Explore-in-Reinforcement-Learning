@@ -157,11 +157,10 @@ SARSA (State Action Reward State Action) \cite{rummery:cuedtr94} is an on-policy
 Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t, a_t)]
 \end{equation}
 Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly learning occurs.
-\section{Exploration in Reinforcement Learning}
+\subsection{Exploration in Reinforcement Learning}
 Thrun \cite{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. More recently, Amin, et al. \cite{DBLP:journals/corr/abs-2109-00157} presented a comprehensive survey on exploration in RL, which distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration. However, we prefer to distinguish between model-free and model-based exploration. Model-free exploration can be directed or undirected, as well as reward-free or reward based. Model-based exploration is directed, but can be reward-free or reward-based.
-\subsection{Model-Free Exploration}
+\subsubsection{Model-Free Exploration}
 Model-free approaches to exploration are often chosen, due to their simplicity of implementation, scalability and robustness to diverse domains. Generally, no modifications need to be made to a model-free exploration approach when deploying it in different domains.
-\subsubsection{Random}
 Purely random exploration comes in the form of a Random Walk, or unguided random search \cite{anderson86}, which arises from randomly sampling actions with uniform probability. Exploration occurs when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions. This is perhaps the most naive method of exploration, since it is entirely random.
 \\$\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy. Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima. $\epsilon$ may be decayed temporally, to ensure that lots of exploration happens early on, and then exploitation occurs more when learning has occurred.
 \\$\epsilon z$-greedy \cite{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence. The agent follows a temporally-extended sequence of actions with probability $\epsilon$ and with probability $1-\epsilon$ exploits by taking the best action, which is selected greedily with respect to the current policy. The temporally-extended sequences of actions are called options \cite{SUTTON1999181}). The options consist of actions repeated $n$ times, where $n$ is chosen from a distribution. Whilst this overcomes some of the issues with $\epsilon$-greedy, it can suffer in complex MDPs, where long exploratory trajectories which result in nothing informative being learned can be a very big waste of time and resources.
@@ -171,14 +170,15 @@ Purely random exploration comes in the form of a Random Walk, or unguided random
 \pi(a|s) = \frac{e^{Q(s,a)/\tau}}{\sum_{a' \in A}e^{Q(s,a')/\tau}}
 \end{equation}
 Where $\tau$ is the temperature, and determines how frequently random actions are chosen. As $\tau$ decreases, the policy approaches greediness \cite{DBLP:journals/corr/cs-AI-9605103, DBLP:journals/corr/abs-2109-00157}. Therefore, $\tau$ may be decreased temporally to encourage exploration early on, and exploitation later on. Here we gave the definition in the context of a $Q$-function, however this can be replaced with any value that estimates the reward received from taking action $a$.
-\subsection{Model-Based Exploration}
-Explicit Explore or Exploit ($E^3$) \cite{Kearns+Singh:2002} maintains a distinction between \textit{known} and \textit{unknown} states; a state is \textit{known} after it has been visited an arbitrary number of times, $m$.
+\subsubsection{Model-Based Exploration}
+Explicit Explore or Exploit ($E^3$) \cite{Kearns+Singh:2002} maintains a partial model of the environment through collecting statistics, akin to the \textit{tabular maximum likelihood} approach. A distinguishement is made between \textit{known}, \textit{unknown} and \textit{unvisited} states; a state is \textit{known} after it has been visited an arbitrary number of times. At each time step, the agent plans to an \textit{unknown} state to explore or exploits its \textit{known} states. Whilst $E^3$ achieves near-optimal performance in polynomial time, it does this under the assumptions of full-observability and discrete environments.
+\\ R-MAX \cite{10.1162/153244303765208377} is an extension of $E^3$. It begins with an initial model such that every transition leads to some imaginary state that returns the maximal reward, denotes $R_{max}$. It explores by acting optimally with respect to the current model. R-MAX uses the same concept of  \textit{known}, \textit{unknown} and \textit{unvisited} states as in $E^3$; after a state becomes known, then the model is updated with the collected statistics regarding that state. Whilst R-MAX also achieves near-optimal performance in polynomial time, it also assumes full-observability and discrete environments, as well as assuming that the maximal reward, $R_{max}$ is something that can be known as a prior. Jong and Stone extended R-MAX to continuous state spaces using function approximation with Fitted R-MAX \cite{SARA07-jong}.
+\\ OIM \cite{10.1145/1390156.1390288} also starts with an optimisitic initial model. It maintains two Q-functions; one which represents the extrinsic rewards, and one which represents the intrinsic exploration rewards. At every time step, the agent choose an action greedily with respect to the combination of the two Q-functions. The model is updated through observations, and the Q-functions are updated through dynamic programming. The policy according to the model will either explore new information or follow a near-optimal path.
+\\DARLING \cite{AIJ16-leonetti} approximates a deterministic model, which it then produces a partial policy from which $\epsilon$-greedy is performed within. A partial policy is essentially a combination of a selection of plans.  This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Also, DARLING is only suitable for domains where discretisation is possible; it does not scale to continuous state or action spaces. Furthermore, $\epsilon$-greedy introduces randomness into the framework.
+\\ MAX \cite{DBLP:journals/corr/abs-1810-12162} is a purely an exploration framework, which pure exploitation can follow from. It uses an ensemble of models which are used to derive uncertainty which indicates novel states, and then planning is used to explore to those novel states. Something particularly interesting is that exploration is task-agnostic, which may enable task generalisation.
+\\ Plan2Explore \cite{plan2explore} is a task-agnostic framework that separates learning in to two separate phases. During the first phase, the agent explores via planning and intrinsic motivation in order to learn an accurate model. In the second phase, the agent uses extrinsic reward to adapt to a specific task.
 
-\\ R-Max \cite{10.1162/153244303765208377}, Fitted R-Max \cite{SARA07-jong}
-\\ OIM \cite{10.1145/1390156.1390288}
-\\ DARLING \cite{AIJ16-leonetti}
-\\ MAX \cite{DBLP:journals/corr/abs-1810-12162}
-\\ Plan2Explore \cite{plan2explore}
+\subsubsection{What is "Efficient Exploration"?}
 
 % \section{Exploration in Reinforcement Learning}
 
@@ -264,7 +264,19 @@ Explicit Explore or Exploit ($E^3$) \cite{Kearns+Singh:2002} maintains a distinc
 % \subsection{Model-Based Exploration}
 % \subsubsection{DARLING}
 % Leonetti et al \cite{AIJ16-leonetti}, developed DARLING (Domain Approximation for Reinforcement Learning), where given a model, a planner is used to produce a "partial policy", which is a set of reasonable choices the agent can make in each state. Exploration is then constrained to this partial policy, and performed using $\epsilon$-greedy. This work showed that whilst planning and RL take two different approches to decision making, on on their own each struggle in stochastic, high-dimensional domains, integrating them can overcome each of their weaknesses. This work was successful in carrying out complex robotics tasks, even with an inaccurate model, and moreover, it showed that the region of the environment that is explored by the agent is more reasonable and is goal-directed.
-\section{Evaluating RL}
-\subsection{Learning Curves}
-\subsection{Varying Domains}
-PAC, Regret \cite{lattimore}, Learning curve
+% \subsection{Evaluating RL}
+% When studying and developing algorithms, its important that firstly they work but secondly that they work efficiently. Generally, the efficiency of algorithms is measured by their time and space complexity; which indicates how the time and space requirements of the algorithm increase as the size of the input increases. In RL, we are mostly interested in sample complexity, which refers to how many interactions are required with the environment in order to effectively learn \cite{Kakade2003OnTS}. The sample complexity of exploration refers to how many sub-optimal actions are followed during learning.
+
+
+% \\In the context of RL, sample complexity refers to how much data (how many interactions with the environment) we need to collect in order to learn, and the computational complexity refers to how much computation needs to be performed using this data to learn .
+
+
+
+
+% \subsection{Learning Curves}
+% \subsection{Varying Domains}
+\\
+\\
+\\PAC, Regret \cite{lattimore}, Learning curve
+
+\cite{10.5555/1867270.1867286, 10.5555/1577069.1755867, Kakade2003OnTS}

@@ -68,9 +68,9 @@ The planning phase has three distinct steps: planning, acting and learning, whic
 \subsubsection{Planning}
 The planner constructs a temporary model, $M'$, which is identical to $M$. It then plans on $M'$ to produce a plan, $P$, from the current state $s$ to some goal, terminal, state $s_g$. The planner has access to the action space, $A$, as well as the additional Meta Actions. Whilst considering the Meta Actions, the planner may create additional temporary models, in order to evaluate the benefit of calling a particular Meta Action. If a Meta Action is chosen, then the temporary model $M'$ is updated, and planning continues. $P$ is maintained by the planner until $M$ is updated, when re-planning occurs. This ensures that unnecessary planning does not take place, saving on computational costs. However, this means that some mechanism needs to be in place for determining if the model has been altered since the last plan was generated; this can be a simple Boolean flag. $P$ is stored in a first-in, first-out (FIFO) data structure, such as a Queue. Thus, when the planner is invoked by the agent it simply removes and returns the top action.
 \subsubsection{Acting}
-At discrete time steps, $t$, the agent samples an action $a$ from the Planner, and executes it. At time $t+1$ it observes its new state $s'$ and the scalar reward signal.
+At discrete time steps, $t$, the agent samples an action $a$ from the Planner, and executes it. If the action is a Meta Action, then it did not result in any interactions with the environment, and thus no observations are "time steps" are made. Otherwise, at time $t+1$ it observes its new state $s'$ and the scalar reward signal
 \subsubsection{Learning}
-The observation table is updated with the observed transition: $n(s, a, s') \leftarrow n(s, a, s')+1$, and if necessary the transition function, $T'$ of $M$ is updated by Equation \ref{eqn:tmlmupdate}. Furthermore, the reward function, $R'$, of $M$ is updated with the received reward, if necessary. $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}.
+Learning only occurs of the action taken was not a Meta Action. The observation table is updated with the observed transition: $n(s, a, s') \leftarrow n(s, a, s')+1$, and if necessary the transition function, $T'$ of $M$ is updated by Equation \ref{eqn:tmlmupdate}. Furthermore, the reward function, $R'$, of $M$ is updated with the received reward, if necessary. $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}.
 % We begin by updating the observation table $n$ with the observed transition. Then, we update the model, $M$ (if necessary). Furthermore, the $Q$-Function is updated according to the new state and reward received.
 \subsection{The Model-Free Phase}
 The model-free phase has two distinct steps: acting and learning, which can be seen in Figure \ref{fig:model_free_phase}. The goal of the model-free phase is to use pure model-free learning to bootstrap from the Q values learned during exploration, and get as close as possible to $Q^*$, so that $\pi^*$ can be derived.
@@ -91,14 +91,14 @@ Consider the deterministic domain in Figure \ref{fig:cliff-real}. This is a modi
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_real.png}
+    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_real.png}
     \caption{Modified Cliff-Walking Domain}
     \label{fig:cliff-real}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_model.png}
+    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_model.png}
     \caption{Agent's Model}
     \label{fig:cliff-model}
 \end{figure}
@@ -109,7 +109,8 @@ Initially, the most beneficial changes to the model would be to remove the cliff
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_hypothesis_1.png}
+    \includegraphics[max size={200}{200}]
+    {report/assets/envs/cliff_hypothesis_1.png}
     \caption{Hypothesised Model}
     \label{fig:cliff-hyp-1}
 \end{figure}
