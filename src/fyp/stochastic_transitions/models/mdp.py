@@ -132,7 +132,7 @@ class MDP:
         if self.updated:
             self.V, self.pi = value_iteration(self.V, self.goal_states, self.states,  self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
             self.updated = False
-        if not meta or (not self.reasonable_meta_transitions and len(meta_actions) == 0):
+        if not meta or (not self.reasonable_meta_transitions and (len(meta_actions[0]) == 0 and len(meta_actions[1]) == 0)):
             return self.pi[start]
         
         if self.reasonable_meta_transitions is not None:
@@ -162,6 +162,7 @@ class MDP:
                     changes_t[state] = best_change
                 
                 state, _ = candidate_MDP.step(state, current_pi[state])
+                print(f"T {state}")
             state = start
             while state not in self.goal_states:
                 best_change = None
@@ -180,6 +181,7 @@ class MDP:
                         candidate_MDP.update_reward(*best_change)
                         changes_r[state] = best_change
                 state, _ = candidate_MDP.step(state, current_pi[state])
+                print(f"R {state}")
 
             if changes_t.get(start, None):
                 state, action, next_state, p = changes_t[start]
@@ -203,6 +205,7 @@ class MDP:
             while state not in self.goal_states:
                 best_change = None
                 for meta_action in meta_actions_t:
+                    print(meta_action)
                     action, next_state = meta_action.action, self.simulate_action_sequence(state, meta_action.action_sequence)
                     if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state].get(meta_action, False):
                         temp_MDP = deepcopy(candidate_MDP)
@@ -219,6 +222,7 @@ class MDP:
                     changes_t[state] = best_change
                     print(f"Meta Action {meta_action} useful for {state, action, next_state}")
                 state, _ = candidate_MDP.step(state, current_pi[state])
+                # print(f"T {state}")
 
             state = start
             while state not in self.goal_states:
@@ -241,7 +245,8 @@ class MDP:
                     candidate_MDP.update_reward(state, action, next_state, meta_action.reward)
                     changes_r[state] = best_change
                 state, _ = candidate_MDP.step(state, current_pi[state])
-            
+                # print(f"R {state}")
+
             if changes_t.get(start, None):
                 # meta_action, target_action, next_state = changes_t[start]
                 return changes_t[start]

@@ -19,6 +19,7 @@ class RLAgent():
 
     def learn(self, config):
         self.reset()
+        actions = {i: [] for i in range(config.episodes)}
 
         rewards = np.zeros(config.episodes)
         states = np.zeros((config.episodes, self.env.nS))
@@ -31,13 +32,12 @@ class RLAgent():
         eps = config.eps
 
         for i in range(config.episodes):
-            if i % (config.episodes // 100) == 0:
-                print(f"RL-AGENT: episode {i}")
+            # if i % (config.episodes // 100) == 0:
+            #     print(f"RL-AGENT: episode {i}")
 
             done = False
             state = self.env.reset()
             
-
             while not done:
                 if random.uniform(0, 1) < eps:
                     action = self.env.action_space.sample()
@@ -45,10 +45,10 @@ class RLAgent():
                     max_Q = np.max(self.Q[state])
                     max_actions = [a for a in range(self.env.nA) if self.Q[state][a] == max_Q]
                     action = np.random.choice(max_actions)
-
+                actions[i].append(action)
                 next_state, reward, done, info = self.env.step(action)
-                if done and not info.get("TimeLimit.truncated"):
-                    print("Completed ", i)
+                # if done and not info.get("TimeLimit.truncated"):
+                #     print("Completed ", i)
                 self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + np.max(self.Q[next_state])) - self.Q[state][action])
 
                 if state != next_state:
@@ -58,6 +58,12 @@ class RLAgent():
                 
             states[i][state]+=1
             eps = eps * decay_factor
+        
+
+        print("*"*20, "e","*"*20)
+        print(self.Q)
+        print(actions[config.episodes-1])
+        print("*"*20, "e","*"*20)
         return rewards, states
 
     def learn_and_aggregate(self, config):

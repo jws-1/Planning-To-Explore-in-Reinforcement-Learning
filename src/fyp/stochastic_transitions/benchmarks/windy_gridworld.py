@@ -9,33 +9,72 @@ from collections import defaultdict
 def generate_inaccurate_mdp(env, mdp):
     return mdp
 
-mb_learn_config_dict = {
-    "m": 1,
-    "episodes": 100,
-    "window_size":20,
+mb_learn_dc_config_dict = {
+    "m": 10,
+    "episodes": 200,
+    "window_size":10,
     "planning_steps":20,
     "eps": 0.0,
-    "lr": 0.6,
+    "lr": 1.0,
+    "min_lr": 0.1,
+    "decay_lr": True,
     "df": 1.0,
     "learn_model":True,
     "learn_meta_actions" : True
 }
 
+mb_learn_ma_config_dict = {
+    "m": 10,
+    "episodes": 200,
+    "window_size":10,
+    "planning_steps":20,
+    "eps": 0.0,
+    "lr": 0.6,
+    "df": 1.0,
+    "decay_lr": False,
+    "learn_model":True,
+    "learn_meta_actions" : True
+}
+
+mb_learn_config_dict = {
+    "m": 10,
+    "episodes": 200,
+    "window_size":10,
+    "planning_steps":20,
+    "eps": 0.0,
+    "lr": 0.6,
+    "df": 1.0,
+    "decay_lr": False,
+    "learn_model":True,
+    "learn_meta_actions" : False
+}
+
 mb_config_dict = {
-    "m": 1,
-    "episodes": 300,
-    "window_size":20,
-    "planning_steps":100,
+    "m": 10,
+    "episodes": 200,
+    "window_size":5,
+    "planning_steps":20,
     "eps": 0.0,
     "lr": 0.6,
     "df": 1.0,
     "learn_model":False,
 }
 
+mf_config_dc_dict = {
+    "m": 10,
+    "episodes": 200,
+    "window_size":10,
+    "eps": 1.0,
+    "eps_min": 0.1,
+    "decay": True,
+    "lr": 0.6,
+    "df": 1.0,
+}
+
 mf_config_dict = {
-    "m": 1,
-    "episodes": 100,
-    "window_size":20,
+    "m": 10,
+    "episodes": 200,
+    "window_size":5,
     "eps": 0.5,
     "eps_min": 0.1,
     "decay": False,
@@ -129,10 +168,10 @@ def generate_reasonable_transitions(env):
     
     return reasonable
 
-def benchmark(agent_cls, learn=True):
-    np.random.seed(42)
-    env = gym.make("WindyGridWorld-v0")
-    env.seed(42)
+def benchmark(agent_cls, learn=True, decay=False,learn_ma=False):
+    np.random.seed(56)
+    env = gym.make("StochWindyGridWorld-v0")
+    env.seed(56)
     T = np.zeros((env.nS, env.nA, env.nS), dtype=np.int64)
     R = np.zeros((env.nS, env.nA, env.nS), dtype=np.float64)
     # print(env.nA)
@@ -145,7 +184,7 @@ def benchmark(agent_cls, learn=True):
     R[:, :, :] = -2.
     env.goal = 37
     T = make_transition_function(env.grid_height, env.grid_width)
-    R[:, :, 37] = 1.0   
+    R[:, :, 37] = 1.0
     # T[30, 1, 31] = 0.8
     # T[30, 1, 30] = 0.2
     # print(R[38, 3, 37])
@@ -155,23 +194,41 @@ def benchmark(agent_cls, learn=True):
     # print(T[31])
     reasonable = generate_reasonable_transitions(env)
     # print(reasonable)
-    mdp = MDP(states=np.array(range(env.nS)),
-                goal_states=np.array([env.goal]),
-                actions=np.array(range(env.nA)),
-                transition_function=T,
-                reward_function=R,
-                discount_factor=1.0, reasonable_meta_transitions=reasonable)
-    
+    if learn_ma:
+        mdp = MDP(states=np.array(range(env.nS)),
+                    goal_states=np.array([env.goal]),
+                    actions=np.array(range(env.nA)),
+                    transition_function=T,
+                    reward_function=R,
+                    discount_factor=1.0,) #reasonable_meta_transitions=reasonable)
+    else:
+        mdp = MDP(states=np.array(range(env.nS)),
+                    goal_states=np.array([env.goal]),
+                    actions=np.array(range(env.nA)),
+                    transition_function=T,
+                    reward_function=R,
+                    discount_factor=1.0, reasonable_meta_transitions=reasonable)
+        
     if agent_cls in [MetaPRLAgent, PRLAgent]:
         inaccurate_mdp = generate_inaccurate_mdp(env, mdp)
         agent = agent_cls(env, inaccurate_mdp)
         if learn:
-            config = SimpleNamespace(**mb_learn_config_dict)
+            if learn_ma:
+                config = SimpleNamespace(**mb_learn_ma_config_dict)
+            else:
+                config = SimpleNamespace(**mb_learn_config_dict)
+            # if decay:
+            #     config = SimpleNamespace(**mb_learn_dc_config_dict)
+            # else:
+            #     config = SimpleNamespace(**mb_learn_config_dict)
         else:
             config = SimpleNamespace(**mb_config_dict)
     else:
+        if decay:
+            config = SimpleNamespace(**mf_config_dc_dict)
+        else:
+            config = SimpleNamespace(**mf_config_dict)
         agent = agent_cls(env)
-        config = SimpleNamespace(**mf_config_dict)
     
     rewards, rewards_95pc, states = agent.learn_and_aggregate(config)
 
@@ -179,15 +236,22 @@ def benchmark(agent_cls, learn=True):
 
 if __name__ == "__main__":
     results = {
-        "MetaPRL" : benchmark(MetaPRLAgent),
-        "PRL" : benchmark(PRLAgent),
-        "RL" : benchmark(RLAgent)
+        # "MetaPRL_DC" : benchmark(MetaPRLAgent, True, True),
+
+        # "MetaPRL_learn" : benchmark(MetaPRLAgent, True, False, True),
+        "MetaPRL" : benchmark(MetaPRLAgent, True, False),
+        # "PRL_DC" : benchmark(PRLAgent, True, True),
+        "PRL" : benchmark(PRLAgent, True, False),
+        "RL_decay" : benchmark(RLAgent, False, True),
+        # "RL" : benchmark(RLAgent, False, False)
     }
     plot_results(results, "stochastic_transition_results", optimal_reward=-15.)
     # plot_states_heatmap(results)
     for agent, (rewards, rewards_95pc, states) in results.items():
-        if agent in ["MetaPRL", "PRL", "DumbPRL"]:
+        np.save(f"{agent}_rewards", np.array(rewards))
+        np.save(f"{agent}_rewards95pc", np.array(rewards_95pc))
+        np.save(f"{agent}_states", np.array(states))
+        if agent in ["MetaPRL", "MetaPRL_DC", "PRL", "DumbPRL", "PRL_DC", "MetaPRL_learn"]:
             print(f"{agent} min, max, mean, final planning, final model-free rewards: {min(rewards), max(rewards), np.mean(rewards), rewards[mb_learn_config_dict['planning_steps']-mb_learn_config_dict['window_size']], rewards[-1]}")
         else:
             print(f"{agent} min, max, mean, final model-free rewards: {min(rewards), max(rewards), np.mean(rewards), rewards[-1]}")
-    

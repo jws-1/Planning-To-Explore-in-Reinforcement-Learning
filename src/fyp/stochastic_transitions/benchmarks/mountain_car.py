@@ -8,15 +8,16 @@ from collections import defaultdict
 
 mb_learn_config_dict = {
     "m": 1,
-    "episodes": 10000,
+    "episodes": 1000,
     "window_size":1,
-    "planning_steps":1000,
+    "planning_steps":100,
     "eps": 0.0,
     "lr": 0.7,
     "min_lr":0.1,
     "decay_lr": True,
     "df": 1.0,
     "learn_model":True,
+    "learn_meta_actions" : False
 }
 
 mb_config_dict = {
@@ -45,6 +46,7 @@ class MountainCarDiscretized(gym.Env):
     def __init__(self, n_bins=40):
         self.env = gym.make("MountainCar-v0")
         self.nA = self.env.action_space.n
+        self.action_space = self.env.action_space
         self.n_bins = n_bins
         self.nS = n_bins**2
 
@@ -90,10 +92,15 @@ def create_mdp(env):
 
     transition_function = np.zeros((env.nS, env.nA, env.nS))
     reward_function = np.full((env.nS, env.nA, env.nS), -1.0)
+
+
+    reasonable = defaultdict(list)
+
     # reward_function[:, :, goal_states] = 0.0
     for s in range(env.nS):
+        reasonable[s] = [max(s-1, 0), min(s+1, env.nS-1)]
         for a in range(env.nA):
-
+            
             position, velocity = env.undiscretize(s)
 
             velocity += (a - 1) * env.env.force - math.cos(3 * position) * (env.env.gravity)
@@ -105,13 +112,14 @@ def create_mdp(env):
     
             transition_function[s, a, next_s] = 1.0
 
-    return MDP(np.array(range(env.nS)), goal_states, np.array(range(env.nA)), transition_function, reward_function)
+
+
+    return MDP(np.array(range(env.nS)), goal_states, np.array(range(env.nA)), transition_function, reward_function, reasonable_meta_transitions=reasonable)
 
 def benchmark(agent_cls, learn=True):
     np.random.seed(42)
     # Create an instance of the Mountain Car environment
     env = MountainCarDiscretized()
-
 
     if agent_cls in [MetaPRLAgent, PRLAgent]:
         inaccurate_mdp = create_mdp(env)
@@ -132,7 +140,7 @@ def benchmark(agent_cls, learn=True):
 
 if __name__ == "__main__":
     results = {
-        # "MetaPRL" : benchmark(MetaPRLAgent),
+        "MetaPRL" : benchmark(MetaPRLAgent),
         "PRL" : benchmark(PRLAgent),
         # "RL" : benchmark(RLAgent)
     }

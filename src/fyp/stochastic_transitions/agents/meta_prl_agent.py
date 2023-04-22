@@ -87,6 +87,8 @@ class MetaPRLAgent(RLAgent):
                 else:
                     # print(state, action)
                     next_state, reward, done, info = self.env.step(action)
+                    if done and not info.get("TimeLimit.truncated"):
+                        print("Completed ", i)
                     # print(state, action, next_state)
                     self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
 
@@ -94,7 +96,7 @@ class MetaPRLAgent(RLAgent):
                         if config.learn_meta_actions:
                             if not follows_meta_action:
                                 if state != next_state:
-                                
+                                    print(state, next_state)
                                     action_sequence = self.model.action_sequence(state, next_state)
                                     if action_sequence != [action]:
                                         meta_action = MetaActionT(action, action_sequence)
