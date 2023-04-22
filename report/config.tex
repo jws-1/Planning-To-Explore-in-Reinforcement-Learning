@@ -6,7 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{epsfig,graphics}
-\usepackage{graphicx}
+\usepackage{graphicx, wrapfig}
 \graphicspath{ {./report/assets/} }
 \usepackage{titlesec}
 \usepackage{amsmath,amsfonts,amssymb,amsthm}
@@ -78,10 +78,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Bibliography style: choose one and make sure you have the relevant .bst file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[round]{natbib}
+\usepackage[square, numbers]{natbib}
+% \setcitestyle{square}
+% \bibliographystyle{numeric}
 \bibliographystyle{plainnat}
-% \setcitestyle{}
-% \bibliographystyle{ieeetr}
+% \bibliographystyle{}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Layout for the front cover !!!!! YOU SHOULD NOT HAVE TO CHANGE THIS!!!!!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -3,9 +3,11 @@
 
 When human's make decisions, they are often driven by previous experiences and some form of internal model of the world that we maintain. However, sometimes we question ourselves and think "what if this other decision is better?"; this leads to us making different decisions, which are driven by reasoning. As an example, consider the route that you travel to work everyday. At some point you might question yourself and think "what if there is a faster route?", which may lead to you taking a longer route, by distance, because you think that there is a possibility that it could be faster. It might turn out that the longer route is indeed slower, and you may never try it again. However, it might be that you realise that the longer route is much faster, due to lack of congestion for example, and thereafter you follow it. This is the decision-making and reasoning process that we try to emulate.
 \\Therefore, we propose a framework that synthesises planning and reinforcement learning which aims to overcome the inherent inaccuracies of models whilst constraining exploration  and improving sample efficiency by hypothesising, through reasoning, changes to the model that would be most beneficial to the planner and then planning on this temporary model to guide exploration. The correctness of these changes is then realised through experience in the real environment, and the model is updated.
-This is an optimistic approach, and is based on the principle of \textit{optimism in the face of uncertainty}; until we have actually verified the correctness of the model through experience in the real environment, we are in a state of uncertainty due to the inevitable inaccuracies.
+
+This approach means that exploration is driven by the intrinsic motivation of the agent, as it believes one policy might be better than another. This is also an optimistic approach, based on the principle of \textit{optimism in the face of uncertainty} \cite{lai-allocation}; until we have actually verified the correctness of the model through experience in the real environment, we are in a state of uncertainty due to the inevitable inaccuracies.
 To enable the planner to make these hypotheses we equip it with additional actions which we denote Meta Actions.
 \section{Meta Actions}
+\label{sec:31}
 These actions do not cause the agent to act in the environment, and thus do not return any observation in terms of a new state and a reward, but rather cause changes directly to the model when called upon. An important factor and one of the main difficulties is deciding what Meta Actions should be exposed to the planner and when the planner should be able to invoke the Meta Actions. Therefore, we state three conditions which all must hold for a Meta Action to be invoked: a Meta Action must be admissible, feasible and reasonable.
 \\A Meta Action is admissible if applying it to the model leads to what seems like a better plan: it must be optimistic. If applying the Meta Action does not result in any benefit to the planner, but rather it negatively affects the planner, then it should not be called. In-fact due to the nature of planning, an inadmissible Meta Action would never be called.\\Feasibility is important, since it ensures that we don't contradict observations and don't infinitely hypothesise changes to the model. However, the definition of feasibility depends on the transition dynamics of the domain. In the deterministic case, a Meta Action is feasible if the state or state-action pair that it affects has not been previously observed, and changes to to that state or state-action pair have not been previously hypothesised.
 For stochastic domains, the latter condition of deterministic domains is sufficient for a Meta Action to be feasible, since we can never really be certain that our model is exactly correct hypothesising changes to things we have already experienced is valid.
@@ -68,9 +70,9 @@ The planning phase has three distinct steps: planning, acting and learning, whic
 \subsubsection{Planning}
 The planner constructs a temporary model, $M'$, which is identical to $M$. It then plans on $M'$ to produce a plan, $P$, from the current state $s$ to some goal, terminal, state $s_g$. The planner has access to the action space, $A$, as well as the additional Meta Actions. Whilst considering the Meta Actions, the planner may create additional temporary models, in order to evaluate the benefit of calling a particular Meta Action. If a Meta Action is chosen, then the temporary model $M'$ is updated, and planning continues. $P$ is maintained by the planner until $M$ is updated, when re-planning occurs. This ensures that unnecessary planning does not take place, saving on computational costs. However, this means that some mechanism needs to be in place for determining if the model has been altered since the last plan was generated; this can be a simple Boolean flag. $P$ is stored in a first-in, first-out (FIFO) data structure, such as a Queue. Thus, when the planner is invoked by the agent it simply removes and returns the top action.
 \subsubsection{Acting}
-At discrete time steps, $t$, the agent samples an action $a$ from the Planner, and executes it. At time $t+1$ it observes its new state $s'$ and the scalar reward signal.
+At discrete time steps, $t$, the agent samples an action $a$ from the Planner, and executes it. If the action is a Meta Action, then it did not result in any interactions with the environment, and thus no observations are "time steps" are made. Otherwise, at time $t+1$ it observes its new state $s'$ and the scalar reward signal
 \subsubsection{Learning}
-The observation table is updated with the observed transition: $n(s, a, s') \leftarrow n(s, a, s')+1$, and if necessary the transition function, $T'$ of $M$ is updated by Equation \ref{eqn:tmlmupdate}. Furthermore, the reward function, $R'$, of $M$ is updated with the received reward, if necessary. $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}.
+Learning only occurs of the action taken was not a Meta Action. The observation table is updated with the observed transition: $n(s, a, s') \leftarrow n(s, a, s')+1$, and if necessary the transition function, $T'$ of $M$ is updated by Equation \ref{eqn:tmlmupdate}. Furthermore, the reward function, $R'$, of $M$ is updated with the received reward, if necessary. $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}.
 % We begin by updating the observation table $n$ with the observed transition. Then, we update the model, $M$ (if necessary). Furthermore, the $Q$-Function is updated according to the new state and reward received.
 \subsection{The Model-Free Phase}
 The model-free phase has two distinct steps: acting and learning, which can be seen in Figure \ref{fig:model_free_phase}. The goal of the model-free phase is to use pure model-free learning to bootstrap from the Q values learned during exploration, and get as close as possible to $Q^*$, so that $\pi^*$ can be derived.
@@ -87,18 +89,18 @@ At discrete time steps, $t$, the agent greedily selections an action $a$ with re
 \subsubsection{Learning}
 $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}. Eventually, the updates will not result in changes to the policy, $\pi$, and therefore it will be continually followed until termination.
 \section{An Illustrative Example}
-Consider the deterministic domain in Figure \ref{fig:cliff-real}. This is a modified version of the cliff-walking domain \citep{Sutton1998}. The red circle located at (0,0) is the agent; the goal is located in the bottom right corner, (0, 7). If the agent transitions into one of the "cliff" states, they are returned to the start state. Let's suppose that for some reason, perhaps due to changes in the environment, the agent is seeded with the inaccurate model shown in Figure \ref{fig:cliff-model}. A pure planning approach would fail, as it would continually plan a path that goes through the cliff, due to the inaccurate model. A pure model-free learning approach would probably be successful, as this is a very simple domain, however in reality domains can be much more complicated than this; which is where model-free methods begin to struggle.
+Consider the deterministic domain in Figure \ref{fig:cliff-real}. This is a modified version of the cliff-walking domain \cite{Sutton1998}. The red circle located at (0,0) is the agent; the goal is located in the bottom right corner, (0, 7). If the agent transitions into one of the "cliff" states, they are returned to the start state. Let's suppose that for some reason, perhaps due to changes in the environment, the agent is seeded with the inaccurate model shown in Figure \ref{fig:cliff-model}. A pure planning approach would fail, as it would continually plan a path that goes through the cliff, due to the inaccurate model. A pure model-free learning approach would probably be successful, as this is a very simple domain, however in reality domains can be much more complicated than this; which is where model-free methods begin to struggle.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_real.png}
+    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_real.png}
     \caption{Modified Cliff-Walking Domain}
     \label{fig:cliff-real}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_model.png}
+    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_model.png}
     \caption{Agent's Model}
     \label{fig:cliff-model}
 \end{figure}
@@ -109,7 +111,8 @@ Initially, the most beneficial changes to the model would be to remove the cliff
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/envs/cliff_hypothesis_1.png}
+    \includegraphics[max size={200}{200}]
+    {report/assets/envs/cliff_hypothesis_1.png}
     \caption{Hypothesised Model}
     \label{fig:cliff-hyp-1}
 \end{figure}
@@ -130,6 +133,7 @@ f(s,a,s') = -R(s, a, s') + h(s')
 The choice of heuristic, $h$, relies on domain specific knowledge, therefore we do not define it here. However,  it remains that the heuristic must be admissible. The transition function was treated as a graph, which A* search was then performed on.
 \\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state triples, reasonable meta actions were embedded in the model by-hand. To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples - this was used to ensure that each Meta Action can only be called once on each state-action-state triple. 
 \subsection{RL-A* Meta with short-term memory}
+\label{sec:342}
 This implementation was an extension of RL-A* Meta, which aimed to scale to stochastic domains. The stochastic nature means that the evaluation function once again needed to be modified, as such:
 \begin{equation}
 \label{eqn:astarevalsast}
@@ -143,7 +147,7 @@ This implementation aims to deal with varying domains. We opted for planning by 
 \\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state tuples, reasonable meta actions were embedded in the model by-hand. Starting from an initial estimate of the optimal value function, $V$, the planner constructs a plan that is greedy with respect to $V$, however at each state, $s$, changes are hypothesised and verified to be beneficial by performing a few steps of value iteration to produce a temporary value function $V_h$. If $V_h(s) > V(s)$, then the change is accepted and the Meta Action is added to the plan.
 To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of those called within the current episode. A brief overview of the planner implementation can be seen in Algorithm \ref{alg:vi_planner}.
 \subsection{RL-VI Meta, with learned Meta Actions}
-The overall implementation is the same as RL-VI Meta, except Meta Actions are learned and obtained through experience, rather than embedded by-hand in the model. A Meta Action is learned when a discrepancy is noticed between the model and the real environment; this change that was applied to the model through model-learning becomes an action that can be invoked later on.
+The overall implementation is the same as RL-VI Meta, except Meta Actions are learned and obtained through experience, rather than embedded by-hand in the model. A Meta Action is learned when a discrepancy is noticed between the model and the real environment; this change that was applied to the model through model-learning becomes an action that can be invoked later on. For example, if an action "UP" is taken, which the model expects to move the agent a single state in the upward direction, but actually mvoes the agent two states upwards, then the agent learns the Meta Action that adds a transition to move two states upwards on the "UP" action.
 
 
 \begin{algorithm}
