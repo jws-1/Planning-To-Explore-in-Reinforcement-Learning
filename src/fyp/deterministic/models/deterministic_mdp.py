@@ -6,6 +6,7 @@ import numba
 from typing import Optional
 from collections import defaultdict
 from itertools import permutations, combinations, product
+from ..actions.meta_actions import BaseMetaActions
 
 class MetaAction(Enum):
     ADD_TRANSITION = 0
@@ -15,7 +16,7 @@ class MetaAction(Enum):
 
 
 @numba.jit(nopython=True)
-def value_iteration(V, states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-7, max_iter=1000):
+def value_iteration(V, states, goal_states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-7, max_iter=1000):
 
     pi = np.zeros(len(states), dtype=np.int64)
 
@@ -24,6 +25,11 @@ def value_iteration(V, states, actions, transition_function, reward_function, di
 
         for i in range(len(states)):
             state = states[i]
+
+            if state in goal_states:
+                V[i] = 0
+                continue
+
             v = V[i]
 
             Q = np.full(len(actions), -np.inf)
@@ -43,15 +49,18 @@ def value_iteration(V, states, actions, transition_function, reward_function, di
 
 class D_MDP:
 
-    def __init__(self, states, actions, transition_function, reward_function, discount_factor=1.0, run_VI=True):
+    def __init__(self, states, goal_states, actions, transition_function, reward_function, discount_factor=1.0, run_VI=True, planner="VI", reasonable_meta_transitions=None):
         self.states = states
         self.actions = actions
         self.transition_function = transition_function
         self.reward_function = reward_function
         self.discount_factor = discount_factor
+        self.reasonable_meta_transitions = reasonable_meta_transitions
+        self.updated = False
+        self.goal_states = goal_states
 
         if run_VI:
-            self.V, self.pi = value_iteration(np.zeros(len(self.states)), self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
+            self.V, self.pi = value_iteration(np.zeros(len(self.states)), self.goal_states, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
         else:
             self.V = np.zeros(len(self.states))
             self.pi = np.zeros(len(self.states))
@@ -61,10 +70,14 @@ class D_MDP:
         return self.transition_function[state, action]
 
     def update_transition(self, state, action, next_state):
-        self.transition_function[state, action] = next_state
+        if next_state != self.transition_function[state, action]:
+            self.transition_function[state, action] = next_state
+            self.updated = True
     
     def update_reward(self, state, action, reward):
-        self.reward_function[state, action] = reward
+        if reward != self.reward_function[state, action]:
+            self.reward_function[state, action] = reward
+            self.updated = True
 
     def get_reward(self, state, action):
         return self.reward_function[state, action]
@@ -74,41 +87,108 @@ class D_MDP:
 
     def plan_VI(self, start, observed_sa=None, meta=None, meta_sa=None):
 
-        self.V, self.pi = value_iteration(self.V, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=100)
-        if not meta:
+        if self.updated:
+            self.V, self.pi = value_iteration(self.V, self.goal_states, self.states, self.actions, self.transition_function, self.reward_function, self.discount_factor)
+            self.updated = False
+        
+        if not meta or not self.reasonable_meta_transitions:
             return self.pi[start]
-
-        candidate_changes_r = {(start, a, self.get_reward(start, a)+1.0) : -np.inf for a in self.actions}
-        candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
-
-        for (s, a, r) in candidate_changes_r.keys():
-            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_REWARD]:
-                candidate_MDP = deepcopy(self)
-                candidate_MDP.update_reward(s, a, r)
-                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
-                candidate_changes_r[(s,a,r)] = V_[s]
         
-        for (s, a, s_) in candidate_changes_t.keys():
-            if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.ADD_TRANSITION]:
-                candidate_MDP = deepcopy(self)
-                candidate_MDP.update_transition(s, a, s_)
-                V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
+        candidate_MDP = deepcopy(self)
+        changes_t = defaultdict(None)
+        changes_r = defaultdict(None)
+        state = start
+        current_pi = self.pi
+        current_V = self.V
 
-                candidate_changes_t[(s,a,s_)] = V_[s]
+        while state not in self.goal_states:
+            best_change = None
+
+            for action in self.actions:
+
+                for next_state in self.states:
+
+                    if not observed_sa[state][action] and not meta_sa[state][action][BaseMetaActions.ADD_TRANSITION] and next_state in self.reasonable_meta_transitions[state]:
+                        temp_MDP = deepcopy(candidate_MDP)
+                        temp_MDP.update_transition(state, action, next_state)
+                        V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
+
+                        if V_[state] > current_V[state]:
+                            best_change = (state, action, next_state)
+                            current_pi = pi_
+                            current_V = V_
+            if best_change is not None:
+                candidate_MDP.update_transition(*best_change)
+                changes_t[state] = best_change
         
-        best_max_r = max(candidate_changes_r.values())
-        best_change_r = random.choice([c_r for c_r in candidate_changes_r.keys() if candidate_changes_r[c_r] == best_max_r])
-        best_max_t = max(candidate_changes_t.values())
-        best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
+            state, _ = candidate_MDP.step(state, current_pi[state])
+
+        while state not in self.goal_states:
+            best_change = None
+
+            for action in self.actions:
+
+                for next_state in self.states:
+
+                    if not observed_sa[state][action] and not meta_sa[state][action][BaseMetaActions.INCREASE_REWARD] and next_state in self.reasonable_meta_transitions[state]:
+                        temp_MDP = deepcopy(candidate_MDP)
+                        temp_MDP.update_reward(state, action, candidate_MDP.reward_function[state, action]+1)
+                        V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
+
+                        if V_[state] > current_V[state]:
+                            best_change = (state, action, candidate_MDP.reward_function[state, action]+1)
+                            current_pi = pi_
+                            current_V = V_
+
+            if best_change is not None:
+                candidate_MDP.update_reward(*best_change)
+                changes_t[state] = best_change
         
-        if self.V[start] > candidate_changes_r[best_change_r] and self.V[start] > candidate_changes_t[best_change_t]:
-            return self.pi[start]
-        elif candidate_changes_r[best_change_r] > candidate_changes_t[best_change_t] and candidate_changes_r[best_change_r] > self.V[start]:
-            _, target_action, _ = best_change_r
-            return MetaAction.INCREASE_REWARD, target_action
+            state, _ = candidate_MDP.step(state, current_pi[state])
+
+        if changes_t.get(start, None):
+            # meta_action, target_action, next_state = changes_t[start]
+            return changes_t[start]
+        elif changes_r.get(start, None):
+            # meta_action, target_action, next_state = changes_r[start]
+            return changes_r[start], None
         else:
-            _, target_action, target_state = best_change_t
-            return MetaAction.ADD_TRANSITION, target_action, target_state
+            return current_pi[start]        
+
+        # if not meta:
+        #     return self.pi[start]
+
+        # candidate_changes_r = {(start, a, self.get_reward(start, a)+1.0) : -np.inf for a in self.actions}
+        # candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
+
+        # for (s, a, r) in candidate_changes_r.keys():
+        #     if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_REWARD]:
+        #         candidate_MDP = deepcopy(self)
+        #         candidate_MDP.update_reward(s, a, r)
+        #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
+        #         candidate_changes_r[(s,a,r)] = V_[s]
+        
+        # for (s, a, s_) in candidate_changes_t.keys():
+        #     if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.ADD_TRANSITION]:
+        #         candidate_MDP = deepcopy(self)
+        #         candidate_MDP.update_transition(s, a, s_)
+        #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
+
+        #         candidate_changes_t[(s,a,s_)] = V_[s]
+        
+        # best_max_r = max(candidate_changes_r.values())
+        # best_change_r = random.choice([c_r for c_r in candidate_changes_r.keys() if candidate_changes_r[c_r] == best_max_r])
+        # best_max_t = max(candidate_changes_t.values())
+        # best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
+        
+        # if self.V[start] > candidate_changes_r[best_change_r] and self.V[start] > candidate_changes_t[best_change_t]:
+        #     return self.pi[start]
+        # elif candidate_changes_r[best_change_r] > candidate_changes_t[best_change_t] and candidate_changes_r[best_change_r] > self.V[start]:
+        #     _, target_action, _ = best_change_r
+        #     return MetaAction.INCREASE_REWARD, target_action
+        # else:
+        #     _, target_action, target_state = best_change_t
+        #     return MetaAction.ADD_TRANSITION, target_action, target_state
 
         # for s in self.states:
         #     for a in self.actions:

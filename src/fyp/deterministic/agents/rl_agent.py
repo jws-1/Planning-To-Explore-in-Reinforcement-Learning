@@ -46,10 +46,8 @@ class RLAgent():
 
                 next_state, reward, done, _ = self.env.step(action)
 
-                old_value = self.Q[state][action]
-                next_max = max(self.Q[next_state].values())
-                new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state][action] = new_value
+                self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
+
 
                 if state != next_state:
                     states[i][state]+=1
