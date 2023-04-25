@@ -4,14 +4,40 @@
 When human's make decisions, they are often driven by previous experiences and some form of internal model of the world that we maintain. However, sometimes we question ourselves and think "what if this other decision is better?"; this leads to us making different decisions, which are driven by reasoning. As an example, consider the route that you travel to work everyday. At some point you might question yourself and think "what if there is a faster route?", which may lead to you taking a longer route, by distance, because you think that there is a possibility that it could be faster. It might turn out that the longer route is indeed slower, and you may never try it again. However, it might be that you realise that the longer route is much faster, due to lack of congestion for example, and thereafter you follow it. This is the decision-making and reasoning process that we try to emulate.
 \\Therefore, we propose a framework that synthesises planning and reinforcement learning which aims to overcome the inherent inaccuracies of models whilst constraining exploration  and improving sample efficiency by hypothesising, through reasoning, changes to the model that would be most beneficial to the planner and then planning on this temporary model to guide exploration. The correctness of these changes is then realised through experience in the real environment, and the model is updated.
 
-This approach means that exploration is driven by the intrinsic motivation of the agent, as it believes one policy might be better than another. This is also an optimistic approach, based on the principle of \textit{optimism in the face of uncertainty} \cite{lai-allocation}; until we have actually verified the correctness of the model through experience in the real environment, we are in a state of uncertainty due to the inevitable inaccuracies.
+This approach means that exploration is driven by both the intrinsic motivation of the agent and extrinsic rewards; the agent explores with the goal of finding the optimal policy, whilst optimistically contemplating that there might be better policies. This is based on the principle of \textit{optimism in the face of uncertainty} \cite{lai-allocation}; until we have actually verified the correctness of the model through experience in the real environment, we are in a state of uncertainty due to the inevitable inaccuracies.
 To enable the planner to make these hypotheses we equip it with additional actions which we denote Meta Actions.
 \section{Meta Actions}
 \label{sec:31}
-These actions do not cause the agent to act in the environment, and thus do not return any observation in terms of a new state and a reward, but rather cause changes directly to the model when called upon. An important factor and one of the main difficulties is deciding what Meta Actions should be exposed to the planner and when the planner should be able to invoke the Meta Actions. Therefore, we state three conditions which all must hold for a Meta Action to be invoked: a Meta Action must be admissible, feasible and reasonable.
-\\A Meta Action is admissible if applying it to the model leads to what seems like a better plan: it must be optimistic. If applying the Meta Action does not result in any benefit to the planner, but rather it negatively affects the planner, then it should not be called. In-fact due to the nature of planning, an inadmissible Meta Action would never be called.\\Feasibility is important, since it ensures that we don't contradict observations and don't infinitely hypothesise changes to the model. However, the definition of feasibility depends on the transition dynamics of the domain. In the deterministic case, a Meta Action is feasible if the state or state-action pair that it affects has not been previously observed, and changes to to that state or state-action pair have not been previously hypothesised.
-For stochastic domains, the latter condition of deterministic domains is sufficient for a Meta Action to be feasible, since we can never really be certain that our model is exactly correct hypothesising changes to things we have already experienced is valid.
-\\Often, the change to the model that would be of most benefit the planner, is to simply add a transition from the current state to the goal state. However, this is almost never going to be a change that is realised to be correct; and instead would lead to behaviour akin to taking a random-walk through the state space until the goal is reached and the Meta Actions have been exhausted. Hence, it's key that an additional constraint exists, that ensures Meta Actions which are called hypothesise reasonable changes to the model. We consider two key ways of determining reasonability: through embedding reasonable Meta Actions in the model by-hand and through learning Meta Actions directly from experience.
+These actions do not cause the agent to act in and affect the environment, and thus do not return any observation in terms of a new state and a reward, but rather cause changes directly to the model when called upon. An important factor and one of the main difficulties is deciding what Meta Actions should be exposed to the planner and when the planner should be able to invoke the Meta Actions. Therefore, we state three conditions which all must hold for a Meta Action to be invoked: a Meta Action must be admissible, feasible and reasonable.
+
+\begin{defn}
+\label{defn:admissible}
+    A Meta Action is admissible if applying it to the model leads to a better policy with respect to the model.
+\end{defn}
+It's important that hypothesised changes are optimistic; that they benefit the planner in some way, otherwise they are not very useful. Thus, admissibility is important, as defined in Definition \ref{defn:admissible}, if applying a Meta Action does not result in any benefit to the planner, but rather it negatively affects the planner, then it should not be called. This means that planning must be done with finding the sequence of actions that maximises reward in mind.
+\begin{defn}
+\label{defn:feasible_deterministic}
+In a deterministic domain, a Meta Action is feasible if the target state-action pair that it is to be applied to has not been previously observed nor has that Meta Action been previously called on it.
+\end{defn}
+\begin{defn}
+\label{defn:feasible_stochastic}
+In a stochastic domain, a Meta Action is feasible if either:
+\begin{itemize}
+    \item The target state-action pair that it is to be applied to has not been previously observed within the current episode nor has that Meta Action been called on it within the current episode.
+    \item The target state-action pair that it is to be applied to has not been previously observed within the current or previous $N$ episodes, nor has that Meta Action been called on it within the current or previous $N$ episodes.
+\end{itemize}
+\end{defn}
+If the agent were to make hypothesises that contradict its own observations, it would induce hallucinatory behaviour. Furthermore, by the optimistic nature of our approach, its possible that the agent could infinitely hypothesise changes to the model, namely in the form of increased rewards. Therefore, feasibility is important, as defined in Definitions \ref{defn:feasible_deterministic} and \ref{defn:feasible_stochastic}. Within deterministic settings the transitions and rewards that the agent observes are the true ones; thus we can be certain that the model is correct with respect to the observations of the agent, hence Definition \ref{defn:feasible_deterministic} ensures that observations in the entire lifetime of the agent are not contradicted. Definition \ref{defn:feasible_stochastic} gives two alternate conditions for feasibility in stochastic settings, each of which are explored throughout the implementations to see which is stronger. This definition ensures that the agent cannot contradict recent observations (those within the current or previous $N$ inclusive episodes), and thus hallucinate, whilst ensuring that changes to the model cannot be infinitely hypothesised. It allows Meta Actions to be called multiple times on state action pairs, including those of which have been previously observed, this is because we can never be completely certain of the correctness of the model due to the aleatoric uncertainity introduced due to the stochasticity.
+
+% Definition \ref{defn:feasible_deterministic} ensures that in deterministic settings the agent cannot contradict its observations, and thus hallucinate, whilst ensuring that changes to the model cannot be infinitely hypothesised.
+
+\\
+\begin{defn}
+\label{defn:reasonable}
+A Meta Action is reasonable if it has been embedded by-hand or learned through experience.
+\end{defn}
+Often, the change to the model that would be of most benefit the planner, is to simply add a transition from the current state to the goal state. However, this is almost never going to be a change that is realised to be correct, it is too optimistic, and instead would lead to behaviour akin to taking a random-walk through the state space until the goal is reached and the Meta Actions have been exhausted, or perhaps it would induce exploration that is akin to R-MAX or OIM. Hence, reasonability, as defined in Definition \ref{defn:reasonable} is key.
+
 \section{The Framework}
 We assume that the environment has a discrete state space, $S$, or a state space that can be discretised, a finite action space, $A$, with deterministic or stochastic dynamics which can be described by a transition function, $T$, and deterministic rewards which can be described by a reward function, $R$. Therefore, we assume that the environment can be modelled as an MDP $E = (S, A, T, R)$, within which the agent acts at discrete time steps. The goal of the framework is to produce a policy, $\pi^*$ which maximises the cumulative reward received when acting in the environment $E$.
 Additionally, we assume that an attempt at modelling the environment has been made and embedded in an MDP $M = (S, A, T', R')$, where the same conditions hold for $T'$ and $R'$ as for $T$ and $R$. We do not expect or require $M$ to be accurate. 
@@ -79,7 +105,7 @@ The model-free phase has two distinct steps: acting and learning, which can be s
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/model_free_phase.png}
+    \includegraphics[max size={300}{300}]{report/assets/model_free_phase.png}
     \caption{Model-Free Phase}
     \label{fig:model_free_phase}
 \end{figure}
@@ -118,9 +144,10 @@ Initially, the most beneficial changes to the model would be to remove the cliff
 \end{figure}
 
 \section{Implementations}
-The description of the framework above led to various implementations. The underlying concept of allowing the planner to hypothesise changes to the model through Meta Actions is present throughout all of the implementations. However, the choice of planning algorithm differs. Each implementation will be presented and highlighted here. Since in general the implementations follow the high-level overview provided in Algorithm \ref{alg:framework_pc}, we will not provide pseudocodes for each individual implementation, but we will however note where implementations differ.
+The high-level ideas of the framework led to various implementations. The main differences between the implementations lie in the choice of planning algorithm, thus how the planning algorithm hypothesises changes, the available Meta Actions and the source of reasonable Meta Actions, for example learned versus embedded. Furthermore, some implementations had simplifications applied to them to deal with specific domains. All implementations were developed in Python. Whilst C or C++ would have been a better choice for computational reasons, various RL benchmarking suites are available for Python.
+% The description of the framework above led to various implementations. The underlying concept of allowing the planner to hypothesise changes to the model through Meta Actions is present throughout all of the implementations. However, the choice of planning algorithm differs. Each implementation will be presented and highlighted here. Since in general the implementations follow the high-level overview provided in Algorithm \ref{alg:framework_pc}, we will not provide pseudocodes for each individual implementation, but we will however note where implementations differ.
 \subsection{RL-A* Meta}
-This was the initial implementation of the framework, and therefore the planner used was based on a simple heuristic search algorithm, A*; due to this choice, the implementation was limited to deterministic domains. This decision was made, as this implementation aimed at discovering if and when Meta Actions were useful. A* in particular was chosen due to ease of implementation. Furthermore A* maintains an evaluation function, $f$, which provided a good means of evaluating hypothetical changes made through Meta Actions.
+This was the intial implementation of the framework, and we developed with the goal of realising if Meta Actions are useful, and if so, when they are useful. The chosen planner was a basic A* planner, which limited the implementation to deterministic domains. A* was chosen due to ease of implementation and its use of an evaluation function, $f$, which provided a good means of evaluating Meta Actions. As discussed in Section \ref{sec:astar}, the evaluation function, $f$, is the combination of the heuristic function, $h$, and the cost function.
 For the cost function,  it was intuitive to use the inverted reward function, namely $-R'$, this ensured that states with very negative reward were assigned a high cost and vice versa, leading to the following definition:
 \begin{equation}
 \label{eqn:astareval}
@@ -128,13 +155,13 @@ f : S \times A \times S \rightarrow \mathbb{R}
 \end{equation}
 \begin{equation}
 \label{eqn:astarevalsas}
-f(s,a,s') = -R(s, a, s') + h(s')
+f(s,a,s') = -R'(s, a, s') + h(s')
 \end{equation}
-The choice of heuristic, $h$, relies on domain specific knowledge, therefore we do not define it here. However,  it remains that the heuristic must be admissible. The transition function was treated as a graph, which A* search was then performed on.
-\\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state triples, reasonable meta actions were embedded in the model by-hand. To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples - this was used to ensure that each Meta Action can only be called once on each state-action-state triple. 
+The choice of heuristic, $h$, relies on domain specific knowledge, therefore we do not define it here. However,  it remains that the heuristic must be admissible.
+\\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state triples, reasonable meta actions were embedded in the model by-hand. The transition function was treated as a graph, which A* search was then performed on. To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples - this was used to ensure that each Meta Action can only be called once on each state-action-state triple. 
 \subsection{RL-A* Meta with short-term memory}
 \label{sec:342}
-This implementation was an extension of RL-A* Meta, which aimed to scale to stochastic domains. The stochastic nature means that the evaluation function once again needed to be modified, as such:
+This implementation was an extension of RL-A* Meta, which aimed to scale to stochastic domains. The stochastic nature meant that the evaluation function once again needed to be modified, as such:
 \begin{equation}
 \label{eqn:astarevalsast}
 f(s, a, s') = (1-T(s, a, s'))(-R(s,a, s')) + h(s')
@@ -143,48 +170,49 @@ Since transitions were not guaranteed, the cost was weighted using the probabili
 \\ The Meta Actions that were available to the planner allowed it to increase/decrease transition probabilities and increase/decrease rewards for state-action-state triples. Reasonable meta actions were embedded in the model by-hand. 
 By the definition of feasibility in RL-A* Meta, if we hypothesise a change which would be beneficial, and then follow a path that utilises that change but realise that the change didn't come to fruition due to the agent getting unlucky with stochasticity, we would never try that path again. Therefore, we needed to alter this definition to still ensure that Meta Actions are not infinitely called but also to ensure that they can be tried multiple times, in case the agent got unlucky due to stochasticity. Hence, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples in the previous $N$ episodes, this was referred to as the short term memory. This encouraged the agent to try Meta Actions again that it had tried in the past, but "forgotten" that it had done so; if it got unlucky previously, it could try again and discover a good policy it may not have been able to discover before.
 \subsection{RL-VI Meta}
-This implementation aims to deal with varying domains. We opted for planning by dynamic programming, namely through Value Iteration. Value Iteration was chosen because it allowed for us to easily evaluate plans (policies) through the Value Function. We chose Value Iteration over Policy Iteration, as Value Iteration is generally faster, and we needed to perform it many times.
-\\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state tuples, reasonable meta actions were embedded in the model by-hand. Starting from an initial estimate of the optimal value function, $V$, the planner constructs a plan that is greedy with respect to $V$, however at each state, $s$, changes are hypothesised and verified to be beneficial by performing a few steps of value iteration to produce a temporary value function $V_h$. If $V_h(s) > V(s)$, then the change is accepted and the Meta Action is added to the plan.
+The main problem with the RL-A* agents is the reliance on a good heuristic function, which can be difficult to design and hence, they are limited to domains where a good heuristic function can be easily designed.
+Therefore, this implementation aims to deal with varying domains. We opted for planning by dynamic programming, namely through Value Iteration. Value Iteration was chosen because it allowed for us to easily evaluate plans (policies) through the Value Function. We chose Value Iteration over Policy Iteration, as Value Iteration is generally faster, and we needed to perform it many times. Despite its nature, in our setting repeatedly performing Value Iteration is not too expensive, as the changes (both real and hypothetical) to the model are not too different, which means that Value Iteration can converge in few iterations.
+\\The Meta Actions that were available to the planner allowed it to increase/decrease transition probabilities, and increase/decrease rewards for state-action-state tuples, reasonable meta actions were embedded in the model by-hand. Starting from an initial estimate of the optimal value function, $V$, the planner constructs a plan that is greedy with respect to $V$, however at each state, $s$, changes are hypothesised and verified to be beneficial by performing a few steps of value iteration to produce a temporary value function $V_h$. If $V_h(s) > V(s)$, then the change is accepted and the Meta Action is added to the plan.
 To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of those called within the current episode. A brief overview of the planner implementation can be seen in Algorithm \ref{alg:vi_planner}.
 \subsection{RL-VI Meta, with learned Meta Actions}
 The overall implementation is the same as RL-VI Meta, except Meta Actions are learned and obtained through experience, rather than embedded by-hand in the model. A Meta Action is learned when a discrepancy is noticed between the model and the real environment; this change that was applied to the model through model-learning becomes an action that can be invoked later on. For example, if an action "UP" is taken, which the model expects to move the agent a single state in the upward direction, but actually mvoes the agent two states upwards, then the agent learns the Meta Action that adds a transition to move two states upwards on the "UP" action.
 
 
-\begin{algorithm}
-\caption{VI Planner}
-\label{alg:vi_planner}
-\begin{algorithmic}
-\REQUIRE $V$, initial value function
-\REQUIRE $M=(S,A,T,R)$, model
-\REQUIRE $s_s$, $s_g$, start, goal state
-\ENSURE $Plan$
+% \begin{algorithm}
+% \caption{VI Planner}
+% \label{alg:vi_planner}
+% \begin{algorithmic}
+% \REQUIRE $V$, initial value function
+% \REQUIRE $M=(S,A,T,R)$, model
+% \REQUIRE $s_s$, $s_g$, start, goal state
+% \ENSURE $Plan$
 
 
-\STATE $M' \leftarrow M$
-\STATE $s \leftarrow s_s$
-\STATE $Plan \leftarrow []$
-\WHILE{$s \neq s_g$}
-    \STATE $C \leftarrow \FALSE$
-    \FOR{Each possible change}
-        \STATE $M_h \leftarrow $ copy of $M'$ with change applied.
-        \STATE $V_h \leftarrow ValueIteration(M_h)$
-        \IF{$V_h(s) > V(s)$}
-            \STATE $C \leftarrow \TRUE$
-            \STATE $M_b \leftarrow M_h$
-            \STATE $V_b \leftarrow V_h$
-            \STATE $A_M \leftarrow$ Meta Action that caused $M_h$
-        \ENDIF
-    \ENDFOR
-    \IF{$C$ is \TRUE}
-        \STATE $M' \leftarrow M_b$
-        \STATE $V \leftarrow V_b$
-        \STATE $Plan.add(A_M)$
-    \ENDIF
-    \STATE $A \leftarrow$ greedy action in state $s$ with respect to $V$
-    \STATE $Plan.add(A)$
-    \STATE $s \leftarrow$ new state after taking action $A$
-\ENDWHILE
-\RETURN $Plan$
+% \STATE $M' \leftarrow M$
+% \STATE $s \leftarrow s_s$
+% \STATE $Plan \leftarrow []$
+% \WHILE{$s \neq s_g$}
+%     \STATE $C \leftarrow \FALSE$
+%     \FOR{Each possible change}
+%         \STATE $M_h \leftarrow $ copy of $M'$ with change applied.
+%         \STATE $V_h \leftarrow ValueIteration(M_h)$
+%         \IF{$V_h(s) > V(s)$}
+%             \STATE $C \leftarrow \TRUE$
+%             \STATE $M_b \leftarrow M_h$
+%             \STATE $V_b \leftarrow V_h$
+%             \STATE $A_M \leftarrow$ Meta Action that caused $M_h$
+%         \ENDIF
+%     \ENDFOR
+%     \IF{$C$ is \TRUE}
+%         \STATE $M' \leftarrow M_b$
+%         \STATE $V \leftarrow V_b$
+%         \STATE $Plan.add(A_M)$
+%     \ENDIF
+%     \STATE $A \leftarrow$ greedy action in state $s$ with respect to $V$
+%     \STATE $Plan.add(A)$
+%     \STATE $s \leftarrow$ new state after taking action $A$
+% \ENDWHILE
+% \RETURN $Plan$
 
 
 
@@ -210,5 +238,5 @@ The overall implementation is the same as RL-VI Meta, except Meta Actions are le
 % \ENDFOR
 % \STATE $\pi(s) \leftarrow \argmax_a Q(s,a), \forall s \in S, \forall a \in A$
 % \RETURN $\pi$
-\end{algorithmic}
-\end{algorithm}
+% \end{algorithmic}
+% \end{algorithm}
