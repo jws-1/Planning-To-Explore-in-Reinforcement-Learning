@@ -1,242 +1,190 @@
-\chapter{Methods}
+\chapter{Empirical Evaluation}
 \label{chapter4}
+We evaluate our various method implementations across a variety of domains. The goal of this evaluation is to discover how effectively our agents can explore and learn against other baseline methods. 
+% The baseline methods that we consider are $\epsilon$-greedy and PRL. $\epsilon$-greedy was chosen as it is perhaps the most widely used random exploration strategy in practice. PRL is simply a naive model-based exploration method, that works in the same way as our method, except it is not equipped with the additional Meta Actions and was 
+% chosen to evaluate the usefulness of the Meta Actions.
+\section{Baselines}
+In order to truly evaluate our framework implementations, we needed some baselines to compare against. Firstly, we chose $\epsilon$-greedy due to its ubiquity. Secondly, we chose "PRL", a model-based exploration method that always acts greedily with respect to current model, which is updated through observations; this is essentially our framework minus the Meta Actions. This was chosen as we wanted to evaluate the usefulness of Meta Actions. We decided not to compare against SOTA algorithms discussed in the literature review, as due to their complexities they would prove difficult to implement. Furthermore, it didn't seem like a fair comparison, as we made various simplifications when implementing our framework.
+\section{Domains}
+The domains that we chose to evaluate within were all gridworld-based. This decision was made due to the ease of modelling such domains, especially in a tabular manner. Furthermore, this enabled us to easily understand how the agents explore. Thus, the actions available to the agents are common between tasks (unless specified otherwise); up, down, left and right.
+\\Gridworld is a deterministic domain, shown in Figure {}. The agent starts in the middle of the room at the bottom of the grid. There are three doors to leave the room, in the left, right and top of the room. All of the doors are open, if they were closed then the agent would not know how to open them. The goal of the agent is to navigate to the other side of the top door. In our experiments, the model that the agents were seeded with indicated that the door leading to the goal was closed. The agent receives a reward of -1 at every time step.
+\\Cliff-Walking \cite{Sutton1998} is a deterministic domain, shown in Figure {}. The agent starts in the bottom left corner of the grid and needs to navigate to the goal state at the bottom right of the grid. However, there is a cliff along the bottom of the grid, which the agent needs to avoid. In our experiments, the model that the agents were seeded with indicated that the cliff was bigger than it actually is; it was along the bottom two rows of the grid. The agent receives a reward of -1 at every time step, unless it steps into the cliff which induces a reward of -100 and returns the agent to the start state (without terminating the episode).
+\\Windy-Gridworld \cite{Sutton1998} is a deterministic domain, shown in Figure {}. The agent starts in the left middle of the grid, and must navigate towards a goal state on the right-hand side of the grid. However, the is an upward wind within some columns which varies in strength. The wind shifts the next state upwards by the strength of the wind. In our experiments, the model that the agents were seeded with did not capture the wind. The agent receives a reward of -1 at every time step.
+\\Stochastic Gridworld is the same as Gridworld, except there is some stochasticity introduced; the top door has a probability of 0.4 of being closed, within each episode. In our experiments, the model that the agents were seeded with indicated that the door leading to the goal was closed, with probability 1. The reward formulation and the actions available to the agent remain the same along with the seeded model.
+\\Frozen Lake is a stochastic domain, where the agent must navigate from the start state in the top-left corner to the goal state in the bottom-right corner. However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes terminate the episode. The model that the agents were seeded with did not capture the slipperiness of the frozen lake, and also suggests that there is only a single path to the goal state. Rewards are sparse; reaching the goal state returns a reward of +1, whilst at all other time steps the agent receives no reward.
+\\Stochastic Windy-Gridworld is the same as Windy-Gridworld, except there is stochasticity introduced;  the wind (if there is any) is stochastic. The reward formulation and the actions available to the agent remain the same along with the seeded model.
 
-When human's make decisions, they are often driven by previous experiences and some form of internal model of the world that we maintain. However, sometimes we question ourselves and think "what if this other decision is better?"; this leads to us making different decisions, which are driven by reasoning. As an example, consider the route that you travel to work everyday. At some point you might question yourself and think "what if there is a faster route?", which may lead to you taking a longer route, by distance, because you think that there is a possibility that it could be faster. It might turn out that the longer route is indeed slower, and you may never try it again. However, it might be that you realise that the longer route is much faster, due to lack of congestion for example, and thereafter you follow it. This is the decision-making and reasoning process that we try to emulate.
-\\Therefore, we propose a framework that synthesises planning and reinforcement learning which aims to overcome the inherent inaccuracies of models whilst constraining exploration  and improving sample efficiency by hypothesising, through reasoning, changes to the model that would be most beneficial to the planner and then planning on this temporary model to guide exploration. The correctness of these changes is then realised through experience in the real environment, and the model is updated.
+% The Frozen Lake domain \cite{1606.01540} is a stochastic gridworld, where the agent must navigate from the start state in the top left corner to the goal state in the bottom right corner, by using the actions "up", "down", "left" and "right". However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes end the epsisode. Rewards are sparse; reaching the goal state returns a reward of +1, whilst all other transitions return a reward of 0. The model that the model-based agents were seeded with did not model the slippery nature of the lake; thus the agents were unaware of it.
 
-This approach means that exploration is driven by both the intrinsic motivation of the agent and extrinsic rewards; the agent explores with the goal of finding the optimal policy, whilst optimistically contemplating that there might be better policies. This is based on the principle of \textit{optimism in the face of uncertainty} \cite{lai-allocation}; until we have actually verified the correctness of the model through experience in the real environment, we are in a state of uncertainty due to the inevitable inaccuracies.
-To enable the planner to make these hypotheses we equip it with additional actions which we denote Meta Actions.
-\section{Meta Actions}
-\label{sec:31}
-These actions do not cause the agent to act in and affect the environment, and thus do not return any observation in terms of a new state and a reward, but rather cause changes directly to the model when called upon. An important factor and one of the main difficulties is deciding what Meta Actions should be exposed to the planner and when the planner should be able to invoke the Meta Actions. Therefore, we state three conditions which all must hold for a Meta Action to be invoked: a Meta Action must be admissible, feasible and reasonable.
+% The Cliff-Walking domain \cite{Sutton1998} is a deterministic gridworld, where the agent begins in the bottom left corner and needs to navigate to the goal state in the bottom right corner by using the actions "up", "down", "left" and "right". However, there is a cliff along the bottom of the grid. The goal of the agent is to reach the goal state whilst avoiding the cliff, as stepping into the cliff returns the agent to the start state (without ending the episode) and induces a large reward penalty of -100. All other transitions return a reward of -1. The model that the model-based agents were seeded with indicated that the cliff was bigger than it actually is; the cliff in the model took up the bottom two rows (minus the end states).
 
-\begin{defn}
-\label{defn:admissible}
-    A Meta Action is admissible if applying it to the model leads to a better policy with respect to the model.
-\end{defn}
-It's important that hypothesised changes are optimistic; that they benefit the planner in some way, otherwise they are not very useful. Thus, admissibility is important, as defined in Definition \ref{defn:admissible}, if applying a Meta Action does not result in any benefit to the planner, but rather it negatively affects the planner, then it should not be called. This means that planning must be done with finding the sequence of actions that maximises reward in mind.
-\begin{defn}
-\label{defn:feasible_deterministic}
-In a deterministic domain, a Meta Action is feasible if the target state-action pair that it is to be applied to has not been previously observed nor has that Meta Action been previously called on it.
-\end{defn}
-\begin{defn}
-\label{defn:feasible_stochastic}
-In a stochastic domain, a Meta Action is feasible if either:
+% The Windy Gridworld domain \cite{Sutton1998} is a deterministic gridworld, where the agent most navigate from the start state to the goal state, by using the actions "up", "down", "left" and "right". However, there is "wind" through the middle of the grid which varies in strength. The wind shifts the next state upwards by the strength of the wind. All transitions return a reward of -1. The model that the model-based agents were seeded with did not model the wind; thus the agents were unaware of it.
+
+\section{Results}
+\begin{figure}[H]
+    \centering
+    \includegraphics[max size={250}{250}]{report/assets/gridworld.png}
+    \caption{Gridworld Results}
+    \label{fig:deterministic_gridworld}
+\end{figure}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Agent} & \textbf{Min} & \textbf{Max} & \textbf{Mean} & \textbf{Std. Dev} & \textbf{Final}\\ \hline
+\textbf{MetaPRL} & -104 & -4 & -10 & 19 & -4\\ \hline
+\textbf{PRL} & -102 & -4 & -11 & 20 & -4\\ \hline
+\textbf{RL} & -168 & -4 & -15 & 28 & -4 \\ \hline
+\end{tabular}
+\caption{Reward Summary for Gridworld}
+\label{tab:example_table}
+\end{table}
+\begin{figure}[H]
+    \centering
+    \includegraphics[max size={250}{250}]{report/assets/cliff_walking.png}
+    \caption{Cliff-Walking Results}
+    \label{fig:cliff_walking}
+\end{figure}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Agent} & \textbf{Min} & \textbf{Max} & \textbf{Mean} & \textbf{Std. Dev} & \textbf{Final}\\ \hline
+\textbf{MetaPRL} & -137 & -13 & -22 & 21 & -13\\ \hline
+\textbf{PRL} & -221 & -13 & -27 & 42 & -13\\ \hline
+\textbf{RL} & -23099 & -14 & -520 & 2228 & -14 \\ \hline
+\end{tabular}
+\caption{Reward Summary for Cliff-Walking}
+\label{tab:example_table}
+\end{table}
+\begin{figure}[H]
+    \centering
+    \includegraphics[max size={250}{250}]{report/assets/windy.png}
+    \caption{Windy Gridworld Results}
+    \label{fig:deterministic_wind}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Agent} & \textbf{Min} & \textbf{Max} & \textbf{Mean} & \textbf{Std. Dev} & \textbf{Final}\\ \hline
+\textbf{MetaPRL} & -168 & -15 & -33 & 30 & -15\\ \hline
+\textbf{PRL} & -183 & -15 & -34 & 33 & -15\\ \hline
+\textbf{RL} & -2061 & -15 & -74 & 216 & -15 \\ \hline
+\end{tabular}
+\caption{Reward Summary for Windy Gridworld}
+\label{tab:example_table}
+\end{table}
+\section{Analysis}
 \begin{itemize}
-    \item The target state-action pair that it is to be applied to has not been previously observed within the current episode nor has that Meta Action been called on it within the current episode.
-    \item The target state-action pair that it is to be applied to has not been previously observed within the current or previous $N$ episodes, nor has that Meta Action been called on it within the current or previous $N$ episodes.
+    \item The dip.
+    
 \end{itemize}
-\end{defn}
-If the agent were to make hypothesises that contradict its own observations, it would induce hallucinatory behaviour. Furthermore, by the optimistic nature of our approach, its possible that the agent could infinitely hypothesise changes to the model, namely in the form of increased rewards. Therefore, feasibility is important, as defined in Definitions \ref{defn:feasible_deterministic} and \ref{defn:feasible_stochastic}. Within deterministic settings the transitions and rewards that the agent observes are the true ones; thus we can be certain that the model is correct with respect to the observations of the agent, hence Definition \ref{defn:feasible_deterministic} ensures that observations in the entire lifetime of the agent are not contradicted. Definition \ref{defn:feasible_stochastic} gives two alternate conditions for feasibility in stochastic settings, each of which are explored throughout the implementations to see which is stronger. This definition ensures that the agent cannot contradict recent observations (those within the current or previous $N$ inclusive episodes), and thus hallucinate, whilst ensuring that changes to the model cannot be infinitely hypothesised. It allows Meta Actions to be called multiple times on state action pairs, including those of which have been previously observed, this is because we can never be completely certain of the correctness of the model due to the aleatoric uncertainity introduced due to the stochasticity.
+% \begin{itemize}
+%     \item State why we chose each domain, what we were evaluating, etc.
+% \end{itemize}
 
-% Definition \ref{defn:feasible_deterministic} ensures that in deterministic settings the agent cannot contradict its observations, and thus hallucinate, whilst ensuring that changes to the model cannot be infinitely hypothesised.
-
-\\
-\begin{defn}
-\label{defn:reasonable}
-A Meta Action is reasonable if it has been embedded by-hand or learned through experience.
-\end{defn}
-Often, the change to the model that would be of most benefit the planner, is to simply add a transition from the current state to the goal state. However, this is almost never going to be a change that is realised to be correct, it is too optimistic, and instead would lead to behaviour akin to taking a random-walk through the state space until the goal is reached and the Meta Actions have been exhausted, or perhaps it would induce exploration that is akin to R-MAX or OIM. Hence, reasonability, as defined in Definition \ref{defn:reasonable} is key.
-
-\section{The Framework}
-We assume that the environment has a discrete state space, $S$, or a state space that can be discretised, a finite action space, $A$, with deterministic or stochastic dynamics which can be described by a transition function, $T$, and deterministic rewards which can be described by a reward function, $R$. Therefore, we assume that the environment can be modelled as an MDP $E = (S, A, T, R)$, within which the agent acts at discrete time steps. The goal of the framework is to produce a policy, $\pi^*$ which maximises the cumulative reward received when acting in the environment $E$.
-Additionally, we assume that an attempt at modelling the environment has been made and embedded in an MDP $M = (S, A, T', R')$, where the same conditions hold for $T'$ and $R'$ as for $T$ and $R$. We do not expect or require $M$ to be accurate. 
-\\We perform model-learning by maintaining $T'$ as a tabular maximum-likelihood model, and keep track of observed transitions using a function $n$ which maps state-action-state triples to an integer indicating how many times that transition has been observed.
-\\We learn a tabular Quality Function, $Q$, through Q-Learning, which the policy $\pi$ is derived from. Q-Learning was chosen over SARSA, since it allows the optimal policy to be learnt independently of the current policy being followed; this suited our framework well, since we acknowledge that the policies followed during the exploration may not be optimal.
-% The choice of initialisation open.
-\\Our framework consists of two distinct phases: a planning phase where exploration takes place and a model-free phase. Since we only consider episodic tasks, the agent is given a finite number of episodes, $N_p$, for the planning phase, thereafter until termination (some finite number of episodes has been completed), the model-free learning takes over and the idea is that given sufficient model-free episodes $Q$ can converge to $Q^*$, and thus $\pi^*$ can be derived. Algorithm \ref{alg:framework_pc} gives a relatively high-level overview of the framework.
-
-\begin{algorithm}
-\caption{High-level Framework Pseudocode}
-\label{alg:framework_pc}
-\begin{algorithmic}
-\REQUIRE $N$, number of episodes
-\REQUIRE $N_p$, number of planning episodes
-\REQUIRE $M=(S,A,T,R)$, model
-\REQUIRE $s_s$, $s_g$, start, goal state
-\ENSURE $\pi$, final policy
-\STATE $i \leftarrow 0$
-\STATE $Q(s,a) \leftarrow 0 $, $\forall s \in S$, $\forall a \in A$
-\STATE $s \leftarrow s_s$
-\FOR{$i=0$ to $N$}
-    \STATE $Planning \leftarrow (i < N_p)$
-    \WHILE{$s \neq s_g$}
-        \IF{$Planning$ is \TRUE}
-            \STATE $a \leftarrow$ Plan($s$, $s_g$)
-        \ELSE
-            \STATE $a \leftarrow \argmax_a Q(s,a)$
-        \ENDIF
-        \STATE Take action $a$ in state $s$, observe reward $r$ and new state $s'$
-        \STATE Learn $Q$ according to observation.
-        \IF{$Planning$ is \TRUE}
-            \STATE Learn $M$ according to observation.
-        \ENDIF
-        $s \leftarrow s'$
-    \ENDWHILE
-\ENDFOR
-\STATE $\pi(s) \leftarrow \argmax_a Q(s,a), \forall s \in S, \forall a \in A$
-\RETURN $\pi$
-\end{algorithmic}
-\end{algorithm}
-
-
-% \\Our framework consists of two phases, a planning phase and a model-free phase. 
-%  Since we only consider episodic tasks, the agent is given a finite number of episodes, $N_p$ for the planning phase. The planning phase performs exploration and computes initial estimates for the Q-Values, $Q$. The model-free phase bootstraps from the initial Q-Value estimates and carries out model-free learning, following the policy $\pi_Q$, refining the estimate and continually updating the Q-Values.
-\subsection{The Planning Phase}
-The planning phase has three distinct steps: planning, acting and learning, which can be seen in Figure \ref{fig:planning_phase}. The goal of the planning phase is to perform exploration, and provide a good estimate for $Q^*$ which the model-free learning can bootstrap and derive a policy from.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={\textwidth}{\textheight}]{report/assets/planning_phase.png}
-    \caption{Planning Phase}
-    \label{fig:planning_phase}
-\end{figure}
-
-% Throughout the planing phase we maintain a tabular likelihood model which is used for model-learning, therefore we maintain a table $n$ which maps state-action-state triples to integers; for instance $(0, 1, 0) \rightarrow 3$ means that the transitions $(0, 1, 0)$ has been observed three times.
-\subsubsection{Planning}
-The planner constructs a temporary model, $M'$, which is identical to $M$. It then plans on $M'$ to produce a plan, $P$, from the current state $s$ to some goal, terminal, state $s_g$. The planner has access to the action space, $A$, as well as the additional Meta Actions. Whilst considering the Meta Actions, the planner may create additional temporary models, in order to evaluate the benefit of calling a particular Meta Action. If a Meta Action is chosen, then the temporary model $M'$ is updated, and planning continues. $P$ is maintained by the planner until $M$ is updated, when re-planning occurs. This ensures that unnecessary planning does not take place, saving on computational costs. However, this means that some mechanism needs to be in place for determining if the model has been altered since the last plan was generated; this can be a simple Boolean flag. $P$ is stored in a first-in, first-out (FIFO) data structure, such as a Queue. Thus, when the planner is invoked by the agent it simply removes and returns the top action.
-\subsubsection{Acting}
-At discrete time steps, $t$, the agent samples an action $a$ from the Planner, and executes it. If the action is a Meta Action, then it did not result in any interactions with the environment, and thus no observations are "time steps" are made. Otherwise, at time $t+1$ it observes its new state $s'$ and the scalar reward signal
-\subsubsection{Learning}
-Learning only occurs of the action taken was not a Meta Action. The observation table is updated with the observed transition: $n(s, a, s') \leftarrow n(s, a, s')+1$, and if necessary the transition function, $T'$ of $M$ is updated by Equation \ref{eqn:tmlmupdate}. Furthermore, the reward function, $R'$, of $M$ is updated with the received reward, if necessary. $Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}.
-% We begin by updating the observation table $n$ with the observed transition. Then, we update the model, $M$ (if necessary). Furthermore, the $Q$-Function is updated according to the new state and reward received.
-\subsection{The Model-Free Phase}
-The model-free phase has two distinct steps: acting and learning, which can be seen in Figure \ref{fig:model_free_phase}. The goal of the model-free phase is to use pure model-free learning to bootstrap from the Q values learned during exploration, and get as close as possible to $Q^*$, so that $\pi^*$ can be derived.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={300}{300}]{report/assets/model_free_phase.png}
-    \caption{Model-Free Phase}
-    \label{fig:model_free_phase}
-\end{figure}
-
-\subsubsection{Acting}
-At discrete time steps, $t$, the agent greedily selections an action $a$ with respect to the $Q$, it selects the action according to the current policy, and executes it. At time $t+1$ it observes its new state $s'$ and the scalar reward signal.
-\subsubsection{Learning}
-$Q$ is updated according to the new state and reward received using Equation \ref{eqn:qlearningupdate}. Eventually, the updates will not result in changes to the policy, $\pi$, and therefore it will be continually followed until termination.
-\section{An Illustrative Example}
-Consider the deterministic domain in Figure \ref{fig:cliff-real}. This is a modified version of the cliff-walking domain \cite{Sutton1998}. The red circle located at (0,0) is the agent; the goal is located in the bottom right corner, (0, 7). If the agent transitions into one of the "cliff" states, they are returned to the start state. Let's suppose that for some reason, perhaps due to changes in the environment, the agent is seeded with the inaccurate model shown in Figure \ref{fig:cliff-model}. A pure planning approach would fail, as it would continually plan a path that goes through the cliff, due to the inaccurate model. A pure model-free learning approach would probably be successful, as this is a very simple domain, however in reality domains can be much more complicated than this; which is where model-free methods begin to struggle.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_real.png}
-    \caption{Modified Cliff-Walking Domain}
-    \label{fig:cliff-real}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={200}{200}]{report/assets/envs/cliff_model.png}
-    \caption{Agent's Model}
-    \label{fig:cliff-model}
-\end{figure}
-
-
-\\Assuming an implementation of our framework, where reasonable Meta Actions are embedded, that allow the agent to hypothesise changes to transitions and rewards originating in the current state, and targeting an adjacent state. 
-Initially, the most beneficial changes to the model would be to remove the cliff across the bottom row, as shown in Figure \ref{fig:cliff-hyp-1}. The agent then attempts to follow the plan going across the bottom of the grid, after which it realises that the hypotheses were correct. The planner may make further hypotheses which lead to the agent trying alternate paths, for instance hypothesising that the cliff is not present across the second row and that the reward through that row is increased; meaning that it would be a better path than the previous one. This process continues, with the planner making hypotheses and the agent verifying them, until no more hypotheses can be made, or the agent runs out of planning steps, after which the model-free learning takes over, and the produce policy matches the initial plan.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[max size={200}{200}]
-    {report/assets/envs/cliff_hypothesis_1.png}
-    \caption{Hypothesised Model}
-    \label{fig:cliff-hyp-1}
-\end{figure}
-
-\section{Implementations}
-The high-level ideas of the framework led to various implementations. The main differences between the implementations lie in the choice of planning algorithm, thus how the planning algorithm hypothesises changes, the available Meta Actions and the source of reasonable Meta Actions, for example learned versus embedded. Furthermore, some implementations had simplifications applied to them to deal with specific domains. All implementations were developed in Python. Whilst C or C++ would have been a better choice for computational reasons, various RL benchmarking suites are available for Python.
-% The description of the framework above led to various implementations. The underlying concept of allowing the planner to hypothesise changes to the model through Meta Actions is present throughout all of the implementations. However, the choice of planning algorithm differs. Each implementation will be presented and highlighted here. Since in general the implementations follow the high-level overview provided in Algorithm \ref{alg:framework_pc}, we will not provide pseudocodes for each individual implementation, but we will however note where implementations differ.
-\subsection{RL-A* Meta}
-This was the intial implementation of the framework, and we developed with the goal of realising if Meta Actions are useful, and if so, when they are useful. The chosen planner was a basic A* planner, which limited the implementation to deterministic domains. A* was chosen due to ease of implementation and its use of an evaluation function, $f$, which provided a good means of evaluating Meta Actions. As discussed in Section \ref{sec:astar}, the evaluation function, $f$, is the combination of the heuristic function, $h$, and the cost function.
-For the cost function,  it was intuitive to use the inverted reward function, namely $-R'$, this ensured that states with very negative reward were assigned a high cost and vice versa, leading to the following definition:
-\begin{equation}
-\label{eqn:astareval}
-f : S \times A \times S \rightarrow \mathbb{R}
-\end{equation}
-\begin{equation}
-\label{eqn:astarevalsas}
-f(s,a,s') = -R'(s, a, s') + h(s')
-\end{equation}
-The choice of heuristic, $h$, relies on domain specific knowledge, therefore we do not define it here. However,  it remains that the heuristic must be admissible.
-\\The Meta Actions that were available to the planner allowed it to add/remove transitions, and increase/decrease rewards for state-action-state triples, reasonable meta actions were embedded in the model by-hand. The transition function was treated as a graph, which A* search was then performed on. To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples - this was used to ensure that each Meta Action can only be called once on each state-action-state triple. 
-\subsection{RL-A* Meta with short-term memory}
-\label{sec:342}
-This implementation was an extension of RL-A* Meta, which aimed to scale to stochastic domains. The stochastic nature meant that the evaluation function once again needed to be modified, as such:
-\begin{equation}
-\label{eqn:astarevalsast}
-f(s, a, s') = (1-T(s, a, s'))(-R(s,a, s')) + h(s')
-\end{equation}
-Since transitions were not guaranteed, the cost was weighted using the probability of the transition not occurring. This meant that transitions with a higher probability of occurring were preferred.
-\\ The Meta Actions that were available to the planner allowed it to increase/decrease transition probabilities and increase/decrease rewards for state-action-state triples. Reasonable meta actions were embedded in the model by-hand. 
-By the definition of feasibility in RL-A* Meta, if we hypothesise a change which would be beneficial, and then follow a path that utilises that change but realise that the change didn't come to fruition due to the agent getting unlucky with stochasticity, we would never try that path again. Therefore, we needed to alter this definition to still ensure that Meta Actions are not infinitely called but also to ensure that they can be tried multiple times, in case the agent got unlucky due to stochasticity. Hence, a table was maintained which kept track of which Meta Actions had been called on which state-action-triples in the previous $N$ episodes, this was referred to as the short term memory. This encouraged the agent to try Meta Actions again that it had tried in the past, but "forgotten" that it had done so; if it got unlucky previously, it could try again and discover a good policy it may not have been able to discover before.
-\subsection{RL-VI Meta}
-The main problem with the RL-A* agents is the reliance on a good heuristic function, which can be difficult to design and hence, they are limited to domains where a good heuristic function can be easily designed.
-Therefore, this implementation aims to deal with varying domains. We opted for planning by dynamic programming, namely through Value Iteration. Value Iteration was chosen because it allowed for us to easily evaluate plans (policies) through the Value Function. We chose Value Iteration over Policy Iteration, as Value Iteration is generally faster, and we needed to perform it many times. Despite its nature, in our setting repeatedly performing Value Iteration is not too expensive, as the changes (both real and hypothetical) to the model are not too different, which means that Value Iteration can converge in few iterations.
-\\The Meta Actions that were available to the planner allowed it to increase/decrease transition probabilities, and increase/decrease rewards for state-action-state tuples, reasonable meta actions were embedded in the model by-hand. Starting from an initial estimate of the optimal value function, $V$, the planner constructs a plan that is greedy with respect to $V$, however at each state, $s$, changes are hypothesised and verified to be beneficial by performing a few steps of value iteration to produce a temporary value function $V_h$. If $V_h(s) > V(s)$, then the change is accepted and the Meta Action is added to the plan.
-To ensure feasibility of Meta Actions and ensure that they were not infinitely called, a table was maintained which kept track of those called within the current episode. A brief overview of the planner implementation can be seen in Algorithm \ref{alg:vi_planner}.
-\subsection{RL-VI Meta, with learned Meta Actions}
-The overall implementation is the same as RL-VI Meta, except Meta Actions are learned and obtained through experience, rather than embedded by-hand in the model. A Meta Action is learned when a discrepancy is noticed between the model and the real environment; this change that was applied to the model through model-learning becomes an action that can be invoked later on. For example, if an action "UP" is taken, which the model expects to move the agent a single state in the upward direction, but actually mvoes the agent two states upwards, then the agent learns the Meta Action that adds a transition to move two states upwards on the "UP" action.
-
-
-% \begin{algorithm}
-% \caption{VI Planner}
-% \label{alg:vi_planner}
-% \begin{algorithmic}
-% \REQUIRE $V$, initial value function
-% \REQUIRE $M=(S,A,T,R)$, model
-% \REQUIRE $s_s$, $s_g$, start, goal state
-% \ENSURE $Plan$
-
-
-% \STATE $M' \leftarrow M$
-% \STATE $s \leftarrow s_s$
-% \STATE $Plan \leftarrow []$
-% \WHILE{$s \neq s_g$}
-%     \STATE $C \leftarrow \FALSE$
-%     \FOR{Each possible change}
-%         \STATE $M_h \leftarrow $ copy of $M'$ with change applied.
-%         \STATE $V_h \leftarrow ValueIteration(M_h)$
-%         \IF{$V_h(s) > V(s)$}
-%             \STATE $C \leftarrow \TRUE$
-%             \STATE $M_b \leftarrow M_h$
-%             \STATE $V_b \leftarrow V_h$
-%             \STATE $A_M \leftarrow$ Meta Action that caused $M_h$
-%         \ENDIF
-%     \ENDFOR
-%     \IF{$C$ is \TRUE}
-%         \STATE $M' \leftarrow M_b$
-%         \STATE $V \leftarrow V_b$
-%         \STATE $Plan.add(A_M)$
-%     \ENDIF
-%     \STATE $A \leftarrow$ greedy action in state $s$ with respect to $V$
-%     \STATE $Plan.add(A)$
-%     \STATE $s \leftarrow$ new state after taking action $A$
-% \ENDWHILE
-% \RETURN $Plan$
+% \section{Empirical Evaluation}
+% We evaluated the performance of our agents within a range of domains, from self-designed domains to classic-control tasks. Most experiments were performed using OpenAI Gym \cite{1606.01540} and Behaviour Suite \cite{osband2020bsuite}. We organise the experiments into those that took place within deteriministic domains, and those which took place in stochastic domains. As baselines for evaluation, we used the PRL agent and $\epsilon$-greedy described in Chapter \ref{chapter2}. We chose the PRL agent, because we wanted to compare against a naive model-based exploration approach. Furthermore, we chose $\epsilon$-greedy as we wanted to compare to the most ubiquitous random exploration approach.
+% \subsection{Deterministic Domains}
+% \subsubsection{Gridworld}
+% A deterministic gridworld, where the agent begins in the bottom middle, and needs to navigate to the goal state, using the actions "up", "down", "left" and "right". There is an open door, that if closed the agent wouldn't know how to open. All transitions return a reward of -1. The model that the model-based agents were seeded with indicated that the door was closed.
 
 
 
 
-% \STATE $i \leftarrow 0$
-% \STATE $Q(s,a) \leftarrow 0 $, $\forall s \in S$, $\forall a \in A$
-% \STATE $s \leftarrow s_s$
-% \FOR{$i=0$ to $N$}
-%     \STATE $Planning \leftarrow (i < N_p)$
-%     \WHILE{$s \neq s_g$}
-%         \IF{$Planning$ is \TRUE}
-%             \STATE $a \leftarrow$ Plan($s$, $s_g$)
-%         \ELSE
-%             \STATE $a \leftarrow \argmax_a Q(s,a)$
-%         \ENDIF
-%         \STATE Take action $a$ in state $s$, observe reward $r$ and new state $s'$
-%         \STATE Learn $Q$ according to observation.
-%         \IF{$Planning$ is \TRUE}
-%             \STATE Learn $M$ according to observation.
-%         \ENDIF
-%         $s \leftarrow s'$
-%     \ENDWHILE
-% \ENDFOR
-% \STATE $\pi(s) \leftarrow \argmax_a Q(s,a), \forall s \in S, \forall a \in A$
-% \RETURN $\pi$
-% \end{algorithmic}
-% \end{algorithm}
+
+% \subsubsection{Cliff-Walking}
+% The Cliff-Walking domain \cite{Sutton1998} is a deterministic gridworld, where the agent begins in the bottom left corner and needs to navigate to the goal state in the bottom right corner by using the actions "up", "down", "left" and "right". However, there is a cliff along the bottom of the grid. The goal of the agent is to reach the goal state whilst avoiding the cliff, as stepping into the cliff returns the agent to the start state (without ending the episode) and induces a large reward penalty of -100. All other transitions return a reward of -1. The model that the model-based agents were seeded with indicated that the cliff was bigger than it actually is; the cliff in the model took up the bottom two rows (minus the end states).
+
+% % This domain can be seen in Figure \ref{fig:cliff_walking}.
+
+
+
+
+
+% \subsubsection{Windy Gridworld}
+% \label{sec:windy}
+% The Windy Gridworld domain \cite{Sutton1998} is a deterministic gridworld, where the agent most navigate from the start state to the goal state, by using the actions "up", "down", "left" and "right". However, there is "wind" through the middle of the grid which varies in strength. The wind shifts the next state upwards by the strength of the wind. All transitions return a reward of -1. The model that the model-based agents were seeded with did not model the wind; thus the agents were unaware of it.
+
+
+
+
+% \subsection{Stochastic Domains}
+% \subsubsection{Stochastic Gridworld}
+% A simple gridworld, with a door that is open with probability 0.5, closed otherwise. The model embedded suggests that the door is closed with probability 1.0.
+
+% A stochastic gridworld, where the agent begins in the bottom middle, and needs to navigate to the goal state, using the actions "up", "down", "left" and "right". The door is open with probability 0.6 and closed otherwise. The agent does not have the ability to open the door. All transitions return a reward of -1. The model that the model-based agents were seeded with indicated that the door was closed with probability 1.0.
+
+% \subsubsection{Stochastic Windy Gridworld}
+% This is a stochastic version of the Windy Gridworld described in Section \ref{sec:windy}. The modification that makes it stochastic is that the wind (if there is any) is stochastic. Apart from that, the general setup is the same as previously described. Similarly, the model that the model-based agents were seeded with did not model the wind; thus the agents were unaware of it.
+
+% %and seen in Figure \ref{fig:deterministic_wind}.
+
+% \subsubsection{Frozen Lake}
+% The Frozen Lake domain \cite{1606.01540} is a stochastic gridworld, where the agent must navigate from the start state in the top left corner to the goal state in the bottom right corner, by using the actions "up", "down", "left" and "right". However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes end the epsisode. Rewards are sparse; reaching the goal state returns a reward of +1, whilst all other transitions return a reward of 0. The model that the model-based agents were seeded with did not model the slippery nature of the lake; thus the agents were unaware of it.
+
+% \section{An Ablation Study: Learning from Scratch}
+% Within Chapter \ref{chapter2}, we stated that learning from scratch is a weakness of other model-based exploration approaches as models created by humans can be useful for learning. However, an interesting question is: is the usefulness of models created by humans worth the time it takes to construct them? This is what we investigate in this section. We seeded the various agents with optimistic initial models, as in the approach followed by R-MAX and OIM, however the so-called "Garden of Eden State" was a real-state in the environments, namely the actual goal state. Hence, the model suggests that every transition leads to the goal state.
+
+
+% The ideas we have for future work mostly begin by solving the limitations outlined above. Most issues regarding scalability can be overcome by moving from exact to approximate solutions through function approximation methods; this would allow scaling to continuous, partially  observable domains. Furthermore, our method could be easily extended to domains with stochastic rewards, however in stateless domains such as Bandits, the criteria for calling a Meta Action that would increase reward needs to be further considered; this could be done by count-based methods or uncertainty based methods. Furthermore, more suitable planning algorithms could be explored, such as UCT \cite{10.1007/11871842_29}; which is the UCB algorithm \cite{auer2002finite} applied to tree search; this would offer a scalable, faster solution than Value Iteration. Consider generalization?
+% \\Defining reasonability by known, unknown unvisited, similar to $E^3$, after the planning phase, don't visit any unvisited states?
+
+
+% This domain can be seen in Figure \ref{fig:cliff_walking}.
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[max size={200}{200}]{report/assets/envs/windy.png}
+%     \caption{Windy Gridworld}
+%     \label{fig:deterministic_wind}
+% \end{figure}
+
+
+% \subsection{Cart-Pole}
+% The Cart-Pole domain \cite{1606.01540, 6313077} consists of a pole placed on top of a moving cart, with the goal being to balance the pole by applying forces to the cart. There are two actions available to the agent; push cart left and push cart right. The agent's state is described by four variables; the cart's position, the cart's velocity, the pole's angle and the pole's angular velocity. 
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[max size={200}{200}]{report/assets/envs/cartpole.png}
+%     \caption{Cartpole}
+%     \label{fig:cartpole}
+% \end{figure}
+
+
+% \subsection{Mountain Car}
+% The Mountain Car domain consists of a car placed stochastically in between two mountains, with the goal of getting to the top of the hill \cite{1606.01540, Moore90efficientmemory-based}. There are three actions available to the agent; accelerate left, don't accelerate and accelerate right. The agents state is described by two variables; it's velocity and it's position along the x-axis. 
+% The transition function can be described by the following equations:
+% \begin{equation}
+% \label{eqn:mcdnl}
+% \text{velocity}_{t+1} = \text{velocity}_t + (D * \text{F}) - \cos{(3*\text{position}_t)} * g
+% \end{equation}
+% \begin{equation}
+% \label{eqn:mcdnr}
+% \text{position}_{t+1} = \text{position}_t + \text{velocity}_{t+1}
+% \end{equation}
+% Where $D$ is the direction of acceleration: left = -1, none = 0, right = +1.
+% All transitions return a reward of -1 and episodes are terminated after 200 time steps, if the goal has not been reached.
+
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[max size={200}{200}]{report/assets/envs/mountaincar.png}
+%     \caption{Mountain Car}
+%     \label{fig:mountaincar}
+% \end{figure}
+
+
+% \section{Results}
+
+
+% % This domain can be seen in Figure \ref{fig:frozen}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[max size={500}{500}]{report/assets/results.png}
+%     \caption{Deterministic Results}
+%     \label{fig:deterministic_results}
+% \end{figure}
