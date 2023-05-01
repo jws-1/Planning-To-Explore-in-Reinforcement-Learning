@@ -1,48 +1,71 @@
 \chapter{Discussion}
 \label{chapter5}
 
-We proposed a framework that performs exploration based on intrinsic motivation using the idea of enabling the planner to ask "what if?" questions about the model. We benchmarked our various implementations of this framework in varying domains, and showed it to be more powerful than a typical $\epsilon$-greedy approach as well as a naive agent that explores by planning.
+% We proposed a framework that performs exploration based on intrinsic motivation using the idea of enabling the planner to ask "what if?" questions about the model. We benchmarked our various implementations of this framework in varying domains, and showed it to be more powerful than a typical $\epsilon$-greedy approach as well as a naive agent that explores by planning.
 
+\section{Conclusion}
 
-\section{Complexity and Efficiency}
-\subsection{RL-A* Meta}
-\subsection{RL-VI Meta}
-The time complexity of planning is $O(|S|^2|A|)$. Interestingly, the additional Meta Actions do not increase the time complexity of VI, since the number of reasonable meta actions per state 
-
-\section{Sample Efficiency}
-Sample Efficiency refers 
-\subsection{Simulated}
-\subsection{Real}
-\begin{itemize}
-    \item Sample efficiency (simulated, real, exploratory).
-    \item Complexity analysis?
-\end{itemize}
-\section{Complexity and Efficiency}
-\section{Limitations}
-The main limitation of the implementations proposed of our framework relate to its scalibility, due to the tabular approaches followed for the model and the Q function as well as assumptions made regarding discretisation. Furthermore, our approach assumes full observability, which may not be the case in some real world tasks. Also, our approach does not consider stochastic rewards; it assumes that the reward received for every transition is the same, which is certainly not always the case, particularly in the case of bandit algorithms \citep{lattimore}. Our approach also only considers episodic taks, rather than continuous ones - this limits the application of our algorithm.
-\section{Conclusions}
-We proposed a framework that 
-\section{Ideas for future work}
-
-\subsection{Proof of Convergence, Optimality, Efficiency, etc.}
+\section{Limitations and Future Work}
+The main limitations with our framework, and therefore the various implementations, are due to the assumptions we made that enabled simplifications. These limitations directly influence our ideas for future work.
 \subsection{Further Benchmarking}
-\subsection{Stochastic Rewards and Bandits}
-Within this work, we made an assumption that rewards are deterministic. This assumption is one that certainly does not hold in most domains, most notably within Bandit scenarios, where there is a single state and multiple actions \citep{lattimore}. Stochastic Rewards could be considered my extending model-learning to learn a \textit{tabular maximum likelihood model} for the reward function alongside the transition function. Currently, the Meta Actions available regarding the rewards can increase reward to an observed reward, or to the maximum reward according in the model. This could be modified to increase the probability of such rewards. Furthermore, in the Bandit setting, our approach of choosing when to call Meta Actions, by considering which would most benefit the planner, would probably not work; due to the single state nature, every change would most benefit the planner. Therefore in this case, a better way of choosing when to call Meta Actions needs to be considered - this could be through information theory or perhaps a count-based approach.
+We restricted our benchmarking to gridworld-like domains. Whilst this enabled us to clearly evaluate and prove the usefulness of using Meta Actions, it would have been worthwhile to benchmark our implementations in a wider range of domains, such as classic control tasks; this would've provided us with a more in-depth empirical evaluation, further showing the usefulness of our framework.
 \subsection{Continuous State and Action Spaces}
-Whilst we were able to benchmark against domains with continuous state spaces by manually discretising them, this is not a very robust approach, and lots of accuracy might be lost through discretisation, especially when it's done by hand. Furthermore, we did not consider continuous action spaces. Therefore, to scale to continuous state and action spaces, the model could be approximated through function approximation methods.
+We assumed discrete domains, or domains that offered discretisation. However, discretisation might not be sufficient; it's difficult to find a balance between coarse and fine grain state and action boundaries that maintain accuracy and efficiency. Thus, it's likely that function approximation based approaches would be a better fit, such as using Fitted Value Iteration as in \cite{SARA07-jong}.
+\subsection{Stochastic Rewards and Bandit Algorithms}
+Within this work, we made an assumption that rewards are deterministic. This assumption is one that certainly does not hold in most domains, most notably within Bandit scenarios, where there is a single state and multiple actions \citep{lattimore}. Stochastic Rewards could be considered by extending model-learning to learn a \textit{tabular maximum likelihood model} for the reward function alongside the transition function.
+\\Currently, the Meta Actions available regarding the rewards simply enable the reward to be increased. This could be modified to increase the probability of such rewards. Furthermore, in the Bandit setting, our approach of choosing when to call Meta Actions, by considering which would most benefit the planner, would probably not work; due to the single state nature, every change would most benefit the planner. Therefore in this case, a better way of choosing when to call Meta Actions needs to be considered - this could be through information theory, such as minimising uncertainty, or perhaps a count-based approach.
 \subsection{Partial Observability}
-Partial Observability (through POMDPs) was not considered in this work; we assumed full observability. In real-life scenarios, especially those in the robotics domain, full observability is unrealistic. Therefore, a possible extension to this work could be to apply it to POMDPs.
+We assumed fully observable domains which is not always possible, particularly in real-life tasks of interests, such as those the robotics domain. Therefore, our approach could be extended to POMDPs, where planning would take place in belief space, rather than state space. Exactly solving POMDPs is an intractible problem, however various approaches have been suggested for approximate planning in POMDPs, such as POMCP \cite{NIPS2010_edfbe1af}.
 \subsection{Planning}
-A key benefit of using an A* planner is that it is fast, at the cost of having to design a good, admissible, heuristic, and probably having to determinise the domain, although the approach to stochasticity described in Section \ref{sec:342} did work. In many domains, designing a good heuristic by-hand is very difficult, hence why we limited our evaluation of the RL-A* family of agents. However, recent works \cite{DBLP:journals/corr/abs-2107-02603}, have shown that heuristics for A* can be learned directly - which is a potentially interesting extension to this work, which would allow a very simple planner to be used.
-\\Value Iteration is quite inefficient, due to its exhaustive nature. Therefore, alternate, faster, planning algorithms could be considered such as Upper Confidence Trees (UCT) \cite{10.1007/11871842_29}; which is the UCB algorithm \cite{auer2002finite} applied to tree search.
-
-\cite{POHL1970193, nilsson1971problem}
-
-\subsection{Definition of Feasibility}
-Whilst the definition of feasibility, given in Section \ref{sec:31}, is sufficient to prevent infinite hypothesising, through only allowing Meta Actions to be called once on a SAS-triple, a stronger emphasis could be put on preventing contradictions to be made (particularly in the stochastic case, where we only consider the observations pertaining to the current episode). A formidable approach could be to follow the idea of \texit{known, unknown} and \textit{unvisited} states, present in $E^3$ \cite{Kearns+Singh:2002} and R-MAX \cite{10.1162/153244303765208377}, only allowing Meta Actions to be called on \textit{unknown} and \textit{unvisited} states/state-action pairs; however this would introduce a hyperparameter, $m$, to define after how many observations a state/state-action pair becomes known.
+A key benefit of using an A* planner is that it is fast, at the cost of having to design a good, admissible, heuristic, and probably having to determinise the domain, although the approach to stochasticity described in Section \ref{sec:342} did work. 
+In many domains, designing a good heuristic by-hand is very difficult. However recent works, such as \cite{DBLP:journals/corr/abs-2107-02603}, have shown that heuristics for A* can be learned directly - which is a potentially interesting extension to this work, which would allow a very simple planner to be used in perhaps a wide range of domains. Furthermore, as state spaces grow, Value Iteration may become inefficient. Therefore, alternate, faster, planning algorithms could also be considered such as Upper Confidence Trees (UCT) \cite{10.1007/11871842_29}; which is the UCB algorithm \cite{auer2002finite} applied to tree search.
 \subsection{Task-Agnostic Exploration}
-The exploration that we perform is goal directed and task-specific. This could mean that in larger, more complex domains, generalisation is not possible. Therefore, an interesting line of work could modify the exploration approach slightly to be task-agnostic; that is the environment is explored without considering any specific task, as in \cite{plan2explore}. This could be done by the agent using intrinsic motivation to choose goals to plan and explore towards (utilising the Meta Actions along the way), as an example a goal could be chosen because its horizon is large (e.g. it seems like it will take many time steps to get there), and the planner may use the Meta Actions to hypothesise that actually it is much smaller. If this task-agnostic exploration is done correctly, it could mean that we can generalize to a variety of tasks in an environment with minimal learning beyond the initial exploration steps.
+Our exploration approaches are goal-conditioned and task-specific. A useful line of investigation might be to consider task-agnostic exploration, where we explore the state space independent of any task, and then afterwards use extrinsic reward to adapt to downstream tasks, as in Plan2Explore \cite{plan2explore}. This could be done by choosing goals to plan and explore towards through intrinsic motivation, for instance seeking novel states that have high levels of uncertainty associated with them or seeking states with a long planning horizon. This could lead to generalisation to a variety of tasks in a given domain with minimal learning beyond the initial exploratory phase; this would take place in the model-free phase that we outlined within our framework.
 \subsection{Beyond Episodic Tasks}
-We limited our experiments to just episodic tasks, since our exploration relies on there being a "goal" state (or set of them) to plan towards. Altering exploration to be task-agnostic, therefore not goal-directed, could mean that scaling to continuous tasks would be a natural occurrence without any further modifications.
+We only considered tasks with a finite time horizon associated with them. An interesting further line of work could be to consider tasks that have an infinite time horizon: continuous tasks. Task-agnostic exploration could naturally enable continuous tasks to be learned.#
 \subsection{Learning Meta Actions}
 The method of learning Meta Actions that we proposed is rather simple, and may not actually be that effective - a better solution might be missed out on, as a discrepancy was not experienced, and thus Meta Action learned, that allowed the it to be discovered. For example, we may learn a Meta Action that prevents a transition to take place (due to some obstacle, for instance), but we might not learn the inverse that enables us to hypothesise that an obstacle is not in-fact there, and a transition is possible. As an alternative, we may not directly learn Meta Actions but employ an "Operator" trained on experience in an environment, that takes as input a state, and suggests modifications to the transitions and rewards relating to that state.
+\subsection{Definition of Feasibility}
+Whilst the definition of feasibility, given in Section \ref{sec:31}, is sufficient to prevent infinite hypothesising, through only allowing Meta Actions to be called once on a SAS-triple, a stronger emphasis could be put on preventing contradictions to be made (particularly in the stochastic case, where we only consider the observations pertaining to the current episode). A formidable approach could be to follow the idea of \texit{known, unknown} and \textit{unvisited} states, present in $E^3$ \cite{Kearns+Singh:2002} and R-MAX \cite{10.1162/153244303765208377}, only allowing Meta Actions to be called on \textit{unknown} and \textit{unvisited} states/state-action pairs; however this would introduce a hyperparameter, $m$, to define after how many observations a state/state-action pair becomes known.
+% \section{Complexity and Efficiency}
+% \subsection{RL-A* Meta}
+% \subsection{RL-VI Meta}
+% The time complexity of planning is $O(|S|^2|A|)$. Interestingly, the additional Meta Actions do not increase the time complexity of VI, since the number of reasonable meta actions per state 
+
+% \section{Sample Efficiency}
+% Sample Efficiency refers 
+% \subsection{Simulated}
+% \subsection{Real}
+% \begin{itemize}
+%     \item Sample efficiency (simulated, real, exploratory).
+%     \item Complexity analysis?
+% \end{itemize}
+% \section{Complexity and Efficiency}
+% \section{Limitations}
+% The main limitation of the implementations proposed of our framework relate to its scalibility, due to the tabular approaches followed for the model and the Q function as well as assumptions made regarding discretisation. Furthermore, our approach assumes full observability, which may not be the case in some real world tasks. Also, our approach does not consider stochastic rewards; it assumes that the reward received for every transition is the same, which is certainly not always the case, particularly in the case of bandit algorithms \citep{lattimore}. Our approach also only considers episodic taks, rather than continuous ones - this limits the application of our algorithm.
+% \section{Limitations}
+% \begin{itemize}
+%     \item Deterministic Rewards
+%     \item Discrete state and action spaces, partial observability
+%     \item Learning heuristics?
+%     \item "Better" planne; UCTs?
+% \end{itemize}
+% We proposed a framework 
+% \section{Ideas for future work}
+% \subsection{Stochastic Rewards and Bandits}
+% Within this work, we made an assumption that rewards are deterministic. This assumption is one that certainly does not hold in most domains, most notably within Bandit scenarios, where there is a single state and multiple actions \citep{lattimore}. Stochastic Rewards could be considered by extending model-learning to learn a \textit{tabular maximum likelihood model} for the reward function alongside the transition function. Currently, the Meta Actions available regarding the rewards can increase reward to an observed reward, or to the maximum reward according in the model. This could be modified to increase the probability of such rewards. Furthermore, in the Bandit setting, our approach of choosing when to call Meta Actions, by considering which would most benefit the planner, would probably not work; due to the single state nature, every change would most benefit the planner. Therefore in this case, a better way of choosing when to call Meta Actions needs to be considered - this could be through information theory or perhaps a count-based approach.
+% \subsection{Continuous State and Action Spaces}
+% Whilst we were able to benchmark against domains with continuous state spaces by manually discretising them, this is not a very robust approach, and lots of accuracy might be lost through discretisation, especially when it's done by hand. Furthermore, we did not consider continuous action spaces. Therefore, to scale to continuous state and action spaces, the model could be approximated through function approximation methods.
+% \subsection{Partial Observability}
+% Partial Observability (through POMDPs) was not considered in this work; we assumed full observability. In real-life scenarios, especially those in the robotics domain, full observability is unrealistic. Therefore, a possible extension to this work could be to apply it to POMDPs.
+% \subsection{Planning}
+% A key benefit of using an A* planner is that it is fast, at the cost of having to design a good, admissible, heuristic, and probably having to determinise the domain, although the approach to stochasticity described in Section \ref{sec:342} did work. In many domains, designing a good heuristic by-hand is very difficult, hence why we limited our evaluation of the RL-A* family of agents. However, recent works \cite{DBLP:journals/corr/abs-2107-02603}, have shown that heuristics for A* can be learned directly - which is a potentially interesting extension to this work, which would allow a very simple planner to be used.
+% \\Value Iteration is quite inefficient, due to its exhaustive nature. Therefore, alternate, faster, planning algorithms could be considered such as Upper Confidence Trees (UCT) \cite{10.1007/11871842_29}; which is the UCB algorithm \cite{auer2002finite} applied to tree search.
+
+% \cite{POHL1970193, nilsson1971problem}
+
+
+% \subsection{Task-Agnostic Exploration}
+% The exploration that we perform is goal directed and task-specific. This could mean that in larger, more complex domains, generalisation is not possible. Therefore, an interesting line of work could modify the exploration approach slightly to be task-agnostic; that is the environment is explored without considering any specific task, as in \cite{plan2explore}. This could be done by the agent using intrinsic motivation to choose goals to plan and explore towards (utilising the Meta Actions along the way), as an example a goal could be chosen because its horizon is large (e.g. it seems like it will take many time steps to get there), and the planner may use the Meta Actions to hypothesise that actually it is much smaller. If this task-agnostic exploration is done correctly, it could mean that we can generalize to a variety of tasks in an environment with minimal learning beyond the initial exploration steps.
+% \subsection{Beyond Episodic Tasks}
+% We limited our experiments to just episodic tasks, since our exploration relies on there being a "goal" state (or set of them) to plan towards. Altering exploration to be task-agnostic, therefore not goal-directed, could mean that scaling to continuous tasks would be a natural occurrence without any further modifications.

@@ -7,18 +7,51 @@ We evaluate our various method implementations across a variety of domains. The 
 In order to truly evaluate our framework implementations, we needed some baselines to compare against. Firstly, we chose $\epsilon$-greedy due to its ubiquity. Secondly, we chose "PRL", a model-based exploration method that always acts greedily with respect to current model, which is updated through observations; this is essentially our framework minus the Meta Actions. This was chosen as we wanted to evaluate the usefulness of Meta Actions. We decided not to compare against SOTA algorithms discussed in the literature review, as due to their complexities they would prove difficult to implement. Furthermore, it didn't seem like a fair comparison, as we made various simplifications when implementing our framework.
 \section{Domains}
 The domains that we chose to evaluate within were all gridworld-based. This decision was made due to the ease of modelling such domains, especially in a tabular manner. Furthermore, this enabled us to easily understand how the agents explore. Thus, the actions available to the agents are common between tasks (unless specified otherwise); up, down, left and right.
-\\Gridworld is a deterministic domain, shown in Figure {}. The agent starts in the middle of the room at the bottom of the grid. There are three doors to leave the room, in the left, right and top of the room. All of the doors are open, if they were closed then the agent would not know how to open them. The goal of the agent is to navigate to the other side of the top door. In our experiments, the model that the agents were seeded with indicated that the door leading to the goal was closed. The agent receives a reward of -1 at every time step.
-\\Cliff-Walking \cite{Sutton1998} is a deterministic domain, shown in Figure {}. The agent starts in the bottom left corner of the grid and needs to navigate to the goal state at the bottom right of the grid. However, there is a cliff along the bottom of the grid, which the agent needs to avoid. In our experiments, the model that the agents were seeded with indicated that the cliff was bigger than it actually is; it was along the bottom two rows of the grid. The agent receives a reward of -1 at every time step, unless it steps into the cliff which induces a reward of -100 and returns the agent to the start state (without terminating the episode).
-\\Windy-Gridworld \cite{Sutton1998} is a deterministic domain, shown in Figure {}. The agent starts in the left middle of the grid, and must navigate towards a goal state on the right-hand side of the grid. However, the is an upward wind within some columns which varies in strength. The wind shifts the next state upwards by the strength of the wind. In our experiments, the model that the agents were seeded with did not capture the wind. The agent receives a reward of -1 at every time step.
+\\Gridworld is a deterministic domain, shown in Figure \ref{fig:domains}a. The agent starts in the middle of the room at the bottom of the grid. There are three doors to leave the room, in the left, right and top of the room. All of the doors are open, if they were closed then the agent would not know how to open them. The goal of the agent is to navigate to the other side of the top door. In our experiments, the model that the agents were seeded with indicated that the door leading to the goal was closed. The agent receives a reward of -1 at every time step.
+\\Cliff-Walking \cite{Sutton1998} is a deterministic domain, shown in Figure \ref{fig:domains}b. The agent starts in the bottom left corner of the grid and needs to navigate to the goal state at the bottom right of the grid. However, there is a cliff along the bottom of the grid, which the agent needs to avoid. In our experiments, the model that the agents were seeded with indicated that the cliff was bigger than it actually is; it was along the bottom two rows of the grid. The agent receives a reward of -1 at every time step, unless it steps into the cliff which induces a reward of -100 and returns the agent to the start state (without terminating the episode).
+\\Windy-Gridworld \cite{Sutton1998} is a deterministic domain, shown in Figure \ref{fig:domains}c. The agent starts in the left middle of the grid, and must navigate towards a goal state on the right-hand side of the grid. However, the is an upward wind within some columns which varies in strength. The wind shifts the next state upwards by the strength of the wind. In our experiments, the model that the agents were seeded with did not capture the wind. The agent receives a reward of -1 at every time step.
 \\Stochastic Gridworld is the same as Gridworld, except there is some stochasticity introduced; the top door has a probability of 0.4 of being closed, within each episode. In our experiments, the model that the agents were seeded with indicated that the door leading to the goal was closed, with probability 1. The reward formulation and the actions available to the agent remain the same along with the seeded model.
-\\Frozen Lake is a stochastic domain, where the agent must navigate from the start state in the top-left corner to the goal state in the bottom-right corner. However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes terminate the episode. The model that the agents were seeded with did not capture the slipperiness of the frozen lake, and also suggests that there is only a single path to the goal state. Rewards are sparse; reaching the goal state returns a reward of +1, whilst at all other time steps the agent receives no reward.
+\\Frozen Lake is a stochastic domain, shown in Figure \ref{fig:domains}d. The agent must navigate from the start state in the top-left corner to the goal state in the bottom-right corner. However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes terminate the episode. The model that the agents were seeded with did not capture the slipperiness of the frozen lake, and also suggests that there is only a single path to the goal state. Rewards are sparse; reaching the goal state returns a reward of +1, whilst at all other time steps the agent receives no reward.
 \\Stochastic Windy-Gridworld is the same as Windy-Gridworld, except there is stochasticity introduced;  the wind (if there is any) is stochastic. The reward formulation and the actions available to the agent remain the same along with the seeded model.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[max size={250}{250}]{report/assets/envs/cliff-walking.png}
+%     \caption{Cliff-Walking Domain}
+%     \label{fig:cliff_walking}
+% \end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[max size={200}{200}]{report/assets/envs/frozen-lake.png}
+%     \caption{Frozen Lake Domain}
+%     \label{fig:frozen_lake}
+% \end{figure}
+
+\begin{figure}
+\label{fig:domains}
+\begin{tabular}{cc}
+    \includegraphics[width=65mm]{report/assets/envs/cliff-walking.png} & \includegraphics[width=65mm]{report/assets/envs/cliff-walking.png} \\
+    (a) Gridworld & (b) Cliff Walking \\[6pt]
+    \includegraphics[width=65mm]{report/assets/envs/cliff-walking.png} & \includegraphics[width=65mm]{report/assets/envs/frozen-lake.png} \\[6pt]
+    (c) Windy Gridworld & (d) Frozen Lake\\[6pt]
+%   \includegraphics[width=65mm]{it} &   \includegraphics[width=65mm]{it} \\
+% (a) first & (b) second \\[6pt]
+%  \includegraphics[width=65mm]{it} &   \includegraphics[width=65mm]{it} \\
+% (c) third & (d) fourth \\[6pt]
+\multicolumn{2}{c}{\includegraphics[width=65mm]{it} }\\
+\multicolumn{2}{c}{(e) fifth}
+\end{tabular}
+\caption{Domains}
+\end{figure}
 
 % The Frozen Lake domain \cite{1606.01540} is a stochastic gridworld, where the agent must navigate from the start state in the top left corner to the goal state in the bottom right corner, by using the actions "up", "down", "left" and "right". However, the frozen lake is slippery, meaning that the agent moves in the intended direction with probability $\frac{1}{3}$ and in either of the perpendicular directions with probability $\frac{1}{3}$ each. Furthermore, there are holes where the ice has been broken or melted and entering these holes end the epsisode. Rewards are sparse; reaching the goal state returns a reward of +1, whilst all other transitions return a reward of 0. The model that the model-based agents were seeded with did not model the slippery nature of the lake; thus the agents were unaware of it.
 
 % The Cliff-Walking domain \cite{Sutton1998} is a deterministic gridworld, where the agent begins in the bottom left corner and needs to navigate to the goal state in the bottom right corner by using the actions "up", "down", "left" and "right". However, there is a cliff along the bottom of the grid. The goal of the agent is to reach the goal state whilst avoiding the cliff, as stepping into the cliff returns the agent to the start state (without ending the episode) and induces a large reward penalty of -100. All other transitions return a reward of -1. The model that the model-based agents were seeded with indicated that the cliff was bigger than it actually is; the cliff in the model took up the bottom two rows (minus the end states).
 
 % The Windy Gridworld domain \cite{Sutton1998} is a deterministic gridworld, where the agent most navigate from the start state to the goal state, by using the actions "up", "down", "left" and "right". However, there is "wind" through the middle of the grid which varies in strength. The wind shifts the next state upwards by the strength of the wind. All transitions return a reward of -1. The model that the model-based agents were seeded with did not model the wind; thus the agents were unaware of it.
+
+
 
 \section{Results}
 \begin{figure}[H]

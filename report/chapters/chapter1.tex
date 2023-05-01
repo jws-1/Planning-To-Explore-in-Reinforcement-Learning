@@ -1,8 +1,8 @@
 
-\chapter{Introduction}
+\chapter{Introduction \& Background Research}
 
 \label{chapter1}
-
+\section{Introduction}
 Reinforcement Learning (RL) \citep{Sutton1998} is based on the idea of learning through experience, it is trial-and-error learning. A decision-making agent learns how to behave in an environment by interacting with it and receiving positive and negative reinforcement. This is akin to human and animal learning, and comes from the field of Psychology through the studies of operant conditioning \citep{nla.cat-vn2770732}, which have shown that human and animal behaviour can be shaped through positive and negative reinforcement. Experience can only be gained by trying new things, however it is often infeasible to try everything. Hence, there is a need for exploration, where the agent tries new things and learns the consequences of its actions. However, indefinitely exploring means that the experience gained is never exploited - this gives rise to the so-called \textit{exploration versus exploitation} trade-off.
 \\Consider a human trying to navigate a maze, as in Figure \ref{fig:maze}. At the beginning, they know nothing, so they must choose some path to try. If they realise this path leads to a dead end, then they receive negative reinforcement, and they will learn from this experience that this path is not a good one to take. This process will continue until they reach the exit of the maze, where they might receive some positive reinforcement. To escape the maze, the human must try new things; they must explore the maze and discover where the dead ends are, and which paths seem promising, but they also need to exploit the knowledge that they have gained, and follow paths which seem promising.
 \\Exploration is a very important topic in RL, as it necessitates learning. However, to effectively learn, exploration must be efficient in terms of learning time and cost \cite{Thrun-1992-15850}.
@@ -18,3 +18,4 @@ Exploration methods vary widely, from  using optimism, such as R-MAX and OIM, to
     \caption{Maze Navigation}
     \label{fig:maze}
 \end{figure}
+

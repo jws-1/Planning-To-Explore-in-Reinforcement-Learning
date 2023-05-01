@@ -12,7 +12,13 @@
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition} % definition numbers are dependent on theorem numbers
 \newtheorem{exmp}[thm]{Example} % same for example numbers
+\usepackage{subcaption} % add this line to your preamble
 
+\usepackage{array} % needed for the m{} column type
+\usepackage{cellspace} % needed for the cell space
+\setlength{\cellspacetoplimit}{4pt} % set space above contents
+\setlength{\cellspacebottomlimit}{4pt} % set space below contents
+\makeatletter \let\c@table\c@figure \makeatother
 
 \usepackage{epsfig,graphics}
 \usepackage{graphicx, wrapfig}
@@ -87,11 +93,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Bibliography style: choose one and make sure you have the relevant .bst file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[square, numbers]{natbib}
+\usepackage[square]{natbib}
+% \bibliographystyle{plainnat}
 % \setcitestyle{square}
 % \bibliographystyle{numeric}
-\bibliographystyle{plainnat}
-% \bibliographystyle{}
+\bibliographystyle{plain}
+% \bibliographystyle{nature}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Layout for the front cover !!!!! YOU SHOULD NOT HAVE TO CHANGE THIS!!!!!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
