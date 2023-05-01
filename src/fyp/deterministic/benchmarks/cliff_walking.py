@@ -1,141 +1,115 @@
-from ..agents import PRLAgent, MetaPRLAgent, RLAgent
-
-from ..models.deterministic_mdp import D_MDP
+from .benchmark_env import BenchmarkEnv
 import gym
+import os
+import matplotlib.pyplot as plt
 import numpy as np
-from types import SimpleNamespace
-from plot import plot_results
+from ..models import D_MDP
 
 
-def generate_inaccurate_mdp(env, mdp, p_tf, p_r):
-    new_tf = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.int64)
-    new_rf = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.float64)
-    for state in mdp.states:
-        for action in mdp.actions:
-            next_state = mdp.get_transition(state, action)
-            reward = mdp.get_reward(state, action)
-            reward = -1.0
-            new_tf[state, action] = next_state
-            new_rf[state, action] = reward
-            if next_state == env.goal:
-                new_rf[state,action] = 0.0
-            # if np.random.random() < p_tf:
-            #     # Choose a random next state
-            #     new_tf[state, action] = np.random.choice(list(mdp.states))
-            # else:
-            #     # Use the original transition function
-            #     new_tf[state, action] = next_state
-            # if next_state == env.goal:
-            #     new_tf[state, action] = next_state
-            # if np.random.random() < p_r and mdp.transition_function[state, action] != env.goal:
-            # #     # Choose a random reward
-            #     new_rf[state, action] = np.random.uniform(-2., -1.)
-            # else:
-            #     # Use the original reward function
-            #     new_rf[state, action] = reward
-            # if next_state == env.goal:
-            #     new_rf[state, action] = 100.
-    new_tf[36, 1] = 37
-    for state in range(37, 47, 1):
-        new_tf[state, 0] = state - 12
-        new_tf[state, 1] = state +1
-        new_tf[state, 2] = state
-        new_tf[state, 3] = state - 1
+class BenchmarkCliffWalking(BenchmarkEnv):
 
-    return D_MDP(mdp.states, env.goal, mdp.actions, new_tf, new_rf, mdp.discount_factor)
+    def __init__(self, seed=42):
+        self.env_name = "CliffWalking-v0"
+        self.seed = seed
 
+    def reset_env(self):
+        self.env = gym.make(self.env_name)
+        self.env.seed(self.seed)
+        self.env.max_reward = -13.0
 
-mb_learn_config_dict = {
-    "m": 5,
-    "episodes": 100,
-    "window_size":10,
-    "planning_steps":20,
-    "eps": 0.0,
-    "lr": 0.6,
-    "df": 1.0,
-    "learn_model":True,
-}
+    def generate_model(self, reasonable_meta=False, noise=False, planner="VI"):
+        """
+        Generates an inaccurate model for the MB agents.
+        The inaccuracy is that the cliff is bigger in the model than in the real environment
+        """
+        T = np.zeros((self.env.nS, self.env.nA), dtype=int)
+        R = np.full((self.env.nS, self.env.nA), -1., dtype=float)
+        cliff_states = [
+            25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+            37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
+        ]
 
-mb_config_dict = {
-    "m": 5,
-    "episodes": 100,
-    "window_size":10,
-    "planning_steps":20,
-    "eps": 0.1,
-    "lr": 0.6,
-    "df": 1.0,
-    "learn_model":False,
-}
+        reasonable_meta_states = {}
 
-mf_config_dict = {
-    "m": 5,
-    "episodes": 100,
-    "window_size":10,
-    "eps": 0.5,
-    "eps_min": 0.1,
-    "decay": False,
-    "lr": 0.6,
-    "df": 1.0,
-}
+        for s in range(self.env.nS):
 
-def benchmark(agent_cls, learn=True):
-    np.random.seed(42)
-    env = gym.make("CliffWalking-v0")
-    env.goal = 47
-    T = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.int64)
-    R = np.zeros((env.observation_space.n, env.action_space.n), dtype=np.float64)
-    # T = {}
-    # R = {}
-    for s in range(env.observation_space.n):
-    #     T[s] = {}
-    #     R[s] = {}
-        for a in range(env.action_space.n):
-            for p, next_s, r, _ in env.P[s][a]:
-                if p == 1.0:
-                    T[s, a] = next_s
-                    R[s, a] = r
-    #                 T[s][a] = next_s
-    #                 R[s][a] = r
+            s2d = np.unravel_index(s, (4,12))
 
-    mdp = D_MDP(states=np.array(range(env.observation_space.n)),
-                goal=env.goal,
-                actions=np.array(range(env.action_space.n)),
-                transition_function=T,
-                reward_function=R,#lambda s,a: env.P[s][a][0][2],
-                discount_factor=1.0)
-    
-    if agent_cls in [MetaPRLAgent, PRLAgent]:
-        inaccurate_mdp = generate_inaccurate_mdp(env, mdp, 0.5, 0.5)
-        agent = agent_cls(env, inaccurate_mdp)
-        if learn:
-            config = SimpleNamespace(**mb_learn_config_dict)
-        else:
-            config = SimpleNamespace(**mb_config_dict)
-    else:
-        agent = agent_cls(env)
-        config = SimpleNamespace(**mf_config_dict)
-    
-    rewards, rewards_95pc, states = agent.learn_and_aggregate(config)
+            up2d = s2d + np.array([-1, 0])
+            up2d = np.clip(up2d, np.array([0,0]), np.array([3,11]))
+            up = np.ravel_multi_index(up2d, (4,12))
 
-    return rewards, rewards_95pc, states
+            right2d = s2d + np.array([0, 1])
+            right2d = np.clip(right2d, np.array([0,0]), np.array([3,11]))
+            right = np.ravel_multi_index(right2d, (4,12))
+
+            down2d = s2d + np.array([1, 0])
+            down2d = np.clip(down2d, np.array([0,0]), np.array([3,11]))
+            down = np.ravel_multi_index(down2d,  (4,12))
+
+            left2d = s2d + np.array([0, -1])
+            left2d = np.clip(left2d, np.array([0,0]), np.array([3,11]))
+            left = np.ravel_multi_index(left2d, (4,12))
+
+            reasonable_meta_states[s] = [up, right, down, left]
 
 
-def plot_states_heatmap(results, dir):
-    pass
+            if s not in cliff_states:
+                up = 36 if up in cliff_states else up
+                right = 36 if right in cliff_states else right
+                down = 36 if down in cliff_states else down
+                left = 36 if left in cliff_states else left
 
+            T[s, 0] = up
+            T[s, 1] = right
+            T[s, 2] = down
+            T[s, 3] = left
+        
+        for s in range(self.env.nS):
+            for a in range(self.env.nA):
+                if T[s, a] in cliff_states:
+                    R[s,a] = -100.
+        model = D_MDP(np.array(range(self.env.nS)), np.array([47]), np.array(range(self.env.nA)), T, R, reasonable_meta_transitions=None if not reasonable_meta else reasonable_meta_states, planner=planner, undiscretize_fn=lambda x : np.unravel_index(x, (4,12)))
+        return model
 
-if __name__ == "__main__":
-    results = {
-        "MetaPRL" : benchmark(MetaPRLAgent),
-        "PRL" : benchmark(PRLAgent),
-        # "DumbPRL" : benchmark(PRLAgent, False),
-        "RL" : benchmark(RLAgent)
-    }
-    plot_results(results, "deterministic_results", optimal_reward=-13.)
-    # plot_states_heatmap(results)
-    for agent, (rewards, rewards_95pc, states) in results.items():
-        if agent in ["MetaPRL", "PRL", "DumbPRL"]:
-            print(f"{agent} min, max, mean, final planning, final model-free rewards: {min(rewards), max(rewards), np.mean(rewards), rewards[mb_learn_config_dict['planning_steps']-mb_learn_config_dict['window_size']], rewards[-1]}")
-        else:
-            print(f"{agent} min, max, mean, final model-free rewards: {min(rewards), max(rewards), np.mean(rewards), rewards[-1]}")
-    
+    def handle_results(self, results, p, w):
+        if not os.path.exists("results"):
+            os.mkdir("results")
+        if not os.path.exists(os.path.join("results", "deterministic")):
+            os.mkdir(os.path.join("results", "deterministic"))
+        if not os.path.exists(os.path.join("results", "deterministic", "cliff_walking")):
+            os.mkdir(os.path.join("results", "deterministic", "cliff_walking"))
+        
+        for agent, result in results.items():
+            rewards, rewards_95pc, states, regrets, regrets_95pc = result
+            np.save((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-rewards.npy")), rewards)
+            np.save((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-rewards_95pc.npy")), rewards_95pc)
+            np.save((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-states.npy")), states)
+            np.save((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-regrets.npy")), regrets)
+            np.save((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-regrets_95pc.npy")), regrets_95pc)
+
+        #     plt.figure(0)
+        #     plt.plot(rewards, label=agent)
+        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
+        #     plt.xlabel("Episode")
+        #     plt.ylabel("Reward")
+        #     plt.title(f"Cliff Walking {agent} Learning Curve")    
+        #     plt.savefig((os.path.join("results", "deterministic", "cliff_walking", f"{agent}-rewards.png")))
+        #     plt.clf()
+
+        #     plt.figure(1)
+        #     plt.plot(rewards, label=agent)
+        #     if not "PRL" in agent:
+        #         print(f"[Cliff Walking] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
+        #     else:
+        #         print(f"[Cliff Walking] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
+        #         print(f"[Cliff Walking] {agent} mean, std, min, max, final planning rewards: {np.mean(rewards[:p-w]), np.std(rewards[:p-w]), np.min(rewards[:p-w]), np.max(rewards[:p-w]), rewards[:p-w][-1]}")
+        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
+
+        # plt.figure(1)
+        # plt.legend()
+        # plt.xlabel("Episode")
+        # plt.ylabel("Reward")
+        # plt.title("Cliff Walking")  
+        # plt.savefig((os.path.join("results", "deterministic", "cliff_walking", "rewards.png")))
+        # plt.clf()

@@ -11,7 +11,7 @@ class PRLAgent(RLAgent):
         self.reset()
 
     def reset(self):
-        self.Q = {state : {action : 100. for action in range(self.env.nA)} for state in range(self.env.nS)}
+        self.Q = {state : {action : 0. for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.model = deepcopy(self.initial_model)
 
     def learn(self, config):
@@ -30,29 +30,24 @@ class PRLAgent(RLAgent):
             planning = i < config.planning_steps
 
             while not done:
-            
+                self.env.render()
 
                 if planning:
                     if random.uniform(0, 1) < config.eps:
                         action = self.env.action_space.sample()
                     else:
-                        action = self.model.plan_VI(state, self.env.goal)
+                        action = self.model.plan(state)
                 else:
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
-                
                 next_state, reward, done, _ = self.env.step(action)
-
-                old_value = self.Q[state][action]
-                next_max = max(self.Q[next_state].values())
-                new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state][action] = new_value
+                print(state, action, next_state)
+                self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
 
                 if config.learn_model and planning:
                     self.model.update_transition(state, action, next_state)
                     self.model.update_reward(state, action, reward)
 
-                if state != next_state:
-                    states[i][state]+=1
+                states[i][state]+=1
                 
                 state = next_state
                 rewards[i] += reward
