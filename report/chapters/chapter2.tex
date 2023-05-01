@@ -29,7 +29,6 @@ An MDP is said to be stochastic if it is not deterministic
 % If $\forall s,s' \in S, \forall a \in A$, $T(s,a,'s) \in \{0,1\}$, then the environment is deterministic, otherwise it is stochastic.
 % A deterministic environment is one which there is no variance in the outcomes of action in a given state; taking the same action in the same state always produces the same outcome. Whereas a stochastic (or non-deterministic) environment has uncertainty associated with transitions.
 \subsection{Policies, Value and Quality}
-% The goal of a decision-making agent acting in an MDP is to maximise the cumulative reward it receives over time - to maximise the return:
 A policy, denoted by $\pi$, is a mapping of states to actions that describes a behaviour within an MDP. The desired behaviour within an MDP is to maximise the cumulative reward, this is known as the optimal policy and denoted $\pi^*$. The cumulative reward is given by:
 \begin{equation}
 \label{eqn:return}
@@ -122,23 +121,34 @@ The two main algorithms that we consider are Policy Iteration \cite{Bellman:1957
 
 % Dynamic Programming \cite{Bellman:1957, DBLP:books/lib/Bertsekas05} is a problem-solving method which involves breaking down problems into smaller sub-problems, solving them, storing the solutions, and combining them to solve the original problem. Given a perfect model of the environment, embedded in an MDP, an optimal policy can be computed using Dynamic Programming, through both Policy Iteration  and Value Iteration.
 \subsubsection{Policy Evaluation and Improvement}
-Policy Improvement \cite{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \cite{DBLP:books/lib/Bertsekas05}. One way to improve a policy $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
+Given a policy, $\pi$, it can be evaluated by computing its Value Function, $V^\pi$:
+\begin{equation}
+\label{eqn:policyeval}
+V^\pi = \sum_a \pi(a|s)\sum_{s'}T(s,a,s')[R(s,a,s') + V^\pi(s')]
+\end{equation}
+Policy Improvement is the process of generating an improved policy from a suboptimal policy \cite{DBLP:books/lib/Bertsekas05}. A policy $\pi$ could be improved by contemplating taking an action $a \in A$ in a state $s \in S$, such that $\pi(s) \neq a$ and then continue following $\pi$ thereafter. We can evaluate this change by computing the Q-function for $s,a$:
+\begin{equation}
+\label{eqn:qval}
+Q^\pi(s,a) = \sum_{s'}T(s,a,s')[R(s,a,s') + V^\pi(s')]
+\end{equation}
+Then comparing $Q^\pi(s,a)$ with $V^\pi(s)$. If $Q^\pi(s,a) > V(s)$, then the policy is update and improved as such: $\pi(s) = a$.
+% Policy Improvement \cite{Bellman:1957} is the process of generating an improved policy from a suboptimal policy \cite{DBLP:books/lib/Bertsekas05}. One way to improve a policy $\pi$ is to contemplate taking an action $a$ in a state $s$, such that $\pi(s) \neq a$ and then continue following $\pi$ afterwards. If this change turns out to be better, then $\pi(s) \leftarrow a$; the policy has been improved.
 \subsubsection{Policy Iteration}
-Policy Iteration (PI) \cite{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V_\pi$ (or a Q-Function $Q_\pi$). The policy is then updated greedily with respect to $V_\pi$ (or $Q_\pi$).
+Policy Iteration (PI) \cite{Bellman:1957, howard:dp} is a method for computing the optimal policy of an MDP. Assuming an arbitrary initial policy, $\pi$, at each step $\pi$ is evaluated, yielding a Value Function $V^\pi$ (or a Q-Function $Q^\pi$). The policy is then updated greedily with respect to $V^\pi$ (or $Q^\pi$). This iterative process leads to monotonic improvements to $\pi$.
 \subsubsection{Value Iteration}
 Value Iteration (VI) \cite{Bellman:1957} is a method for computing the optimal estimate for the Value or Q-Function of an MDP. As the estimate approaches optimality, the policy that is greedy with respect to the Value or Q-Function also approaches optimality \cite{series/synthesis/2010Szepesvari}.
-In the context of Value Functions, assuming an arbitrary initial estimate, $V$, at each step $V$ is updates as such:
+In the context of Value Functions, assuming an arbitrary initial estimate, $V$, at each step $V$ is updated as such:
 \begin{equation}
 \label{eqn:vupdate}
-V(s) \leftarrow \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]
+V(s) = \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]
 \end{equation}
-for all $s \in S$.
+for all $s \in S$. This update originates from the Bellman optimality equation for $V$, Equation \ref{eqn:vsB}.
 For Q-Functions, assuming an arbitrary initial estimate, $Q$, at each step $Q$ is updated as such:
 \begin{equation}
 \label{eqn:qupdate}
-Q(s,a) \leftarrow \sum_{s'}T(s,a,s')[R(s,a,s') + \max_{a'}Q(s',a')]
+Q(s,a) = \sum_{s'}T(s,a,s')[R(s,a,s') + \max_{a'}Q(s',a')]
 \end{equation}
-for all $s \in S$, $a \in A$. These update rules originate from the Bellman optimality equation.
+for all $s \in S$, $a \in A$. This update originates from the Bellman optimality equation for $Q$, Equation \ref{eqn:qsB}.
 % Assuming an arbitrary estimate of the Value Function, $V$, or the Q-Function, $Q$, at each step
 % Value Iteration (VI) is a method for computing the optimal policy in an MDP; this policy is akin to a plan and can be used in the same way. Assuming an arbitrary estimate of the Value Function, $V$, at each step, $V$ is updated as such:
 % $$V(s) = \max_a\sum_{s'}T(s, a, s')[R(s, a, s')+V(s')]$$
@@ -160,7 +170,7 @@ Temporal Difference (TD) Learning \cite{10.5555/911176, 5392560, 5391906} aims a
 \\The simplest TD Learning algorithm is TD(0) \cite{Sutton:1988}, which updates it's estimates as such:
 \begin{equation}
 \label{eqn:td0update}
-V(s_t) \leftarrow V(s_t) + \alpha[r_{t+1} + V(s_{t+1}) - V(s_t)]
+V(s_t) = V(s_t) + \alpha[r_{t+1} + V(s_{t+1}) - V(s_t)]
 \end{equation}
 The TD target is the current prediction of the expected cumulative reward: $r_{t+1} + V(s_{t+1})$. The TD error is $r_{t+1} + V(s_{t+1}) - V(s_t)$.
 $0 \le \alpha \le 1$ is the learning rate, which is used to control how much weight is given to the TD error when updating the estimate. 
@@ -189,8 +199,9 @@ Q(s_t, a_t) \leftarrow Q(s_t, a_t) + \alpha[r_{t+1} + Q(s_{t+1}, a_{t+1})-Q(s_t,
 \end{equation}
 Where $0 \le \alpha \le 1$ is the learning rate, which indicates how quickly learning occurs.
 \subsection{Model-Based Learning}
+% We define Model-based (or indirect) RL as any algorithm that aims to maximise a numerical reward signal and does 
 Model-based (or indirect) RL is where an agent uses a known or learned model of the environments dynamics (in the form of an MDP) in order to learn the optimal policy \cite{MAL-086}. The agent may learn the model and policy at the same time, as in the Dyna family \cite{Sutton:1990, 10.1145/122344.122377} or learn a policy by planning over a known model, as in AlphaZero \cite{DBLP:journals/corr/abs-1712-01815} or learn a policy by planning over a learned model, as in MuZero \cite{DBLP:journals/corr/abs-1911-08265}.
-Model-based learning tends to provide better sample efficiency than model-free approaches, since learning can occur from simulation rather than directly from experience \cite{RLSOTA11} and the number of exploratory actions can be reduced by using targeted exploration \cite{Thrun-1992-15850}. However, this comes at a computational cost; planning can be expensive, especially if the state and action spaces are large.
+% Model-based learning tends to provide better sample efficiency than model-free approaches, since learning can occur from simulation rather than directly from experience \cite{RLSOTA11} and the number of exploratory actions can be reduced by using targeted exploration \cite{Thrun-1992-15850}. However, this comes at a computational cost; planning can be expensive, especially if the state and action spaces are large.
 % \\Comparison
 % \begin{itemize}
 %     \item model-free RL is more scalable, simpler to program
@@ -255,178 +266,101 @@ However, more commonly an approximate model is learned through Function Approxim
 % \subsection{Our Perspective}
 
 \section{Exploration in Reinforcement Learning}
-Thrun \cite{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. More recently, Amin, et al. \cite{DBLP:journals/corr/abs-2109-00157} presented a comprehensive survey on exploration in RL, which distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration.
-However, since there is not a definitive taxonomy of exploration methods in RL, we choose to distinguish between model-free and model-based exploration methods. Model-free methods tend to be classic, simple methods based, often based on randomness. These methods are not directly relevant to our approach, however its important to discuss them to further motivate our approach.
-Model-based methods are generally more advanced exploration methods, that may utilise planning, optimism, intrinsic motivation and curiosity to explore. These methods are most relevant to our approach.
+Within this section we provide a brief survey of exploration methods in RL.  Thrun \cite{Thrun-1992-15850} distinguished between \textit{directed}, where exploration is informed by memory about the state space, and \textit{undirected}, where exploration is driven by randomness. Amin et al. \cite{DBLP:journals/corr/abs-2109-00157} distinguished between reward-free and reward-based exploration, each of which category was then broken down into memory-free (undirected) and memory-based exploration (directed). However it remains that there is no definitive taxonomy for exploration methods. Thus, we choose to distinguish between model-free and model-based methods, akin to undirected and directed methods. The reader should note that not all of the methods we describe are related, or relevant, to our proposed method; however, we want to give a clear background of the topic, and show where our reasoning comes from.
 
-% However, we prefer to distinguish between model-free and model-based exploration. Model-free methods tend to be classical methods, and more often than not employ randomness whereas model-based methods are mostly more advanced, and may use planning, intrinsic motivation and curiosity to explore.
-
-
-\subsection{Model-Free Exploration}
-% % Model-free approaches to exploration are often chosen, due to their simplicity of implementation, scalability and robustness to diverse domains. Generally, no modifications need to be made to a model-free exploration approach when deploying it in different domains.
-Purely random exploration comes in the form of a Random Walk, or unguided random search \cite{anderson86}, which arises from randomly sampling actions with uniform probability, as seen in Equation \ref{eqn:rw}. 
-\begin{equation}
-\label{eqn:rw}
-    a_t \sim P(A)
-\end{equation}
-Where $P(A)$ is the uniform distribution over the action space, $A$. Exploration occurs naturally when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions. This is perhaps the most naive method of exploration, since it is entirely random and is therefore very inefficient.
-% \\$\epsilon z$-greedy \cite{dabney2021temporallyextended} is an extension to $\epsilon$-greedy that uses temporal persistence. The agent follows a temporally-extended sequence of actions with probability $\epsilon$ and with probability $1-\epsilon$ exploits by taking the best action, which is selected greedily with respect to the current policy. The temporally-extended sequences of actions are called options \cite{SUTTON1999181}). The options consist of actions repeated $n$ times, where $n$ is chosen from a distribution. Whilst this overcomes some of the issues with $\epsilon$-greedy, it can suffer in complex MDPs, where long exploratory trajectories which result in nothing informative being learned can be a very big waste of time and resources.
+\subsection{Model-Free}
+Model-free exploration methods are characterised by the fact that they do not use, or learn, a model aid exploration. This means that they can be robust to varying domains, where designing or learning a model could prove difficult. However, this means that they must rely on other methods to drive exploration, which are grounded in randomness.
+\\ Purely random exploration comes in the form of a Random Walk, or unguided random search \cite{anderson86}, which arises from randomly sampling actions with uniform probability. Exploration occurs naturally when the agent moves away from the goal, rather than closer to it. This is perhaps the most naive exploration method, since it is entirely random, and thus it is very inefficient.
 \\ Boltzmann exploration samples an action according to the Boltzmann distribution:
 \begin{equation}
 \label{eqn:boltzmann}
 \pi(a|s) = \frac{e^{Q(s,a)/\tau}}{\sum_{a' \in A}e^{Q(s,a')/\tau}}
 \end{equation}
-Where $\tau$ is the temperature, and determines how frequently random actions are chosen. As $\tau$ decreases, the policy approaches greediness \cite{DBLP:journals/corr/cs-AI-9605103, DBLP:journals/corr/abs-2109-00157}. $\tau$ may be decayed temporally, in the same fashion as $\epsilon$ can be decayed temporally in $\epsilon$-greedy. Here we gave the definition in the context of a $Q$-function, however this can be replaced with any value that estimates the reward received from taking action $a$. The main drawback of this approach is that the initial value for $\tau$ needs to be carefully selected, and may need to be tuned for each environment. This is because as $\tau$ approaches 0 the agent acts greedily, whereas at large values of $\tau$, all actions have an approximately uniform probability of being selected leading to exploration akin to a Random Walk \cite{DBLP:journals/corr/abs-2109-00157}.
-\\$\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $\epsilon$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy; this is summarised in Equation \ref{eqn:egreedy}.
-\begin{equation}
-\label{eqn:egreedy}
-a_t = 
-\begin{cases}
-\pi(s_t) \qquad \qquad \qquad \text{with probability} \quad 1-\epsilon\\
-\text{random action} \qquad  \text{with probability} \quad $\epsilon$
-\end{cases}
-\end{equation}
-Where $0 \le \epsilon \le 1$, and $\pi$ is the current greedy policy.
-Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence; although $\epsilon z$-greedy \cite{dabney2021temporallyextended} offered an extension to $\epsilon$-greedy that does use temporal persistance through temporally-extended sequences of actions. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima. $\epsilon$ may be decayed temporally, to ensure that lots of exploration happens early on, and then exploitation occurs more when learning has occurred. Whilst $\epsilon$-greedy is very easy to implement, it is very inefficient and only converges to optimality in the limit, under certain conditions.
-\\ Whilst these model-free approaches are useful, in that they are generally easy to implement and are robust to varying domains, they tend to share two common drawbacks: practical inefficiency and introducing hyperparameters that have to be tuned. 
-% Furthermore, their lack of reasoning implies a lack of intelligence.
-% % \\Optimistic Initial Values
-\subsection{Model-Based Exploration}
-The term Model-Based Exploration can be interpreted as a lot of different things. We define Model-Based Exploration as any exploration method that uses a model, known or learned, to direct exploration trajectories.
+Where the temperature, $0 \le \tau \le 1$, is a hyperparameter that determines how frequently random actions are chosen; as $\tau$ approaches 0, the policy approaches greediness \cite{Thrun-1992-15850, DBLP:journals/corr/abs-2109-00157}. 
+% Boltzmann exploration can similarly get stuck in a local optima, particularly in domains with sparse rewards.
+\\$\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $0 \le \epsilon \le 1$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy. 
+
+\\Model-free methods are easy to implement, and can be robust to varying domains. However, they are generally inefficient due to their random nature, and lack temporal persistence - although a temporally-persistent form of $\epsilon$-greedy that uses temporally extended sequences of actions was propose by Dabney \cite{dabney2021temporallyextended}. Furthermore, they introduce hyperparameters which may need to be tuned to specific domains; this can be difficult, although simulated annealing (temporal decay) seems to be an effective choice. Somehow, they continue to be ubiquitous in practice, with $\epsilon$-greedy being the most prevalent.
+
+\subsection{Model-Based}
+Conversely to model-free exploration methods, model-based methods use, or learn, a model to aid exploration. We separate these methods into two categories: optimistic methods, and intrinsically motivated methods.
 \subsubsection{Optimistic}
-% Optimistic exploration methods are grounded in the principle \textit{optimism in the face of uncertainty}. 
-\\\textbf{Explicit Explore or Exploit} ($E^3$) \cite{Kearns+Singh:2002} maintains a partial model of the environment through collecting statistics, akin to the \textit{tabular maximum likelihood} approach. A distinguishement is made between \textit{known} and \textit{unknown} states; a state is \textit{known} after it has been visited an arbitrary number of times, thus its learned dynamics must be close to the true dynamics. If the current state is \textit{unknown}, then \textit{balanced wandering} takes place, and the agent explores by selecting the action that has been taken the least number of times from that state. If the current state is \textit{known} then the action is chosen greedily with respect to the current model.
-\\\textbf{R-MAX} \cite{10.1162/153244303765208377} is an extension and generalisation of $E^3$. It begins with an optimistic initial model such that every transition leads to some imaginary state that returns the maximal reward, denoted $R_{max}$. R-MAX uses the same concept of \textit{known} and \textit{unknown} states as in $E^3$; after a state becomes known, then the model is updated with the collected statistics regarding that state. The agent always follows the optimal policy according to the model. R-MAX removes the need for explicit contemplation between exploring and exploiting as in $E^3$; exploration and exploitation occur naturally.
-\\\textbf{Optimistic Initial Model} (OIM) \cite{10.1145/1390156.1390288} begins with an optimistic model, the same as R-MAX. The model is updated through observations similarly to $E^3$. The agent maintains two Q-functions, $Q^r$ and $Q^e$, which are initialised and updated according to observations through dynamic programming. $Q^r$ corresponds to the "real", extrinsic rewards, whereas $Q^e$ corresponds to the intrinsic exploration rewards. Whilst exploring, the agent acts optimally with respect to the combination of the two Q-functions; thus $Q^e$ can be seen as an exploration bonus. During this, the agent will either act near-optimally, or will gain new information it can utilise. After exploration is terminated, $Q^e$ is dropped and the agent acts optimally with respect to $Q^r$.
+Optimistic methods utilise the principle of \textit{optimism in the face of uncertainty} (OFU).
+\\ Explicit, Explore or Exploit ($E^3$)  \cite{Kearns+Singh:2002} maintains a partial model of the environment through collecting statistics, akin to the \textit{tabular maximum likelihood} approach. A distinguishment is made between \textit{known} and \textit{unknown} states; a state is \textit{known} after it has been visited an arbitrary number of times, thus its learned dynamics must be close to the true dynamics. If the current state is \textit{unknown}, then \textit{balanced wandering} takes place, and the agent explores by selecting the action that has been taken the least number of times from that state. If the current state is \textit{known} then the action is chosen greedily with respect to the current model.
+\\ R-MAX \cite{10.1162/153244303765208377} is an extension and generalisation of $E^3$. It begins with an optimistic initial model such that every transition leads to some imaginary state, \textit{The Garden of Eden State}, that returns the maximal reward, denoted $R_{max}$. R-MAX uses the same concept of \textit{known} and \textit{unknown} states as in $E^3$; after a state becomes known, then the model is updated with the collected statistics regarding that state. The agent always follows the optimal policy according to the model. R-MAX removes the need for explicit contemplation between exploring and exploiting as in $E^3$; exploration and exploitation occur naturally.
+\\ Optimistic Intial Model (OIM) \cite{10.1145/1390156.1390288} begins with an optimistic model, the same as R-MAX. The model is updated through observations similarly to $E^3$. The agent maintains two Q-functions, $Q^r$ and $Q^e$, which are initialised and updated according to observations through dynamic programming. $Q^r$ corresponds to the "real", extrinsic rewards, whereas $Q^e$ corresponds to the intrinsic exploration rewards. Whilst exploring, the agent acts optimally with respect to the combination of the two Q-functions; thus $Q^e$ can be seen as an exploration bonus. During this, the agent will either act near-optimally, or will gain new information it can utilise. After exploration is terminated, $Q^e$ is dropped and the agent acts optimally with respect to $Q^r$.
 \\ $E^3$, R-MAX and OIM are provably able to achieve near-optimal performance in polynomial time in discrete environments. R-MAX and OIM in particular show that optimism is definitely a useful heuristic, but they are very optimistic in perhaps an unrealistic way; an interesting question to ask is whether this unrealistic level of optimism necessary, and if a \textit{reasonable} level of optimism is just as useful. These methods also assume that the model will eventually become correct, which may not be the case in complex tasks, and in the worst case will learn the entire model.
 \subsubsection{Intrinsically Motivated}
-\\\textbf{Model-Based Active Exploration} (MAX) \cite{DBLP:journals/corr/abs-1810-12162} is purely an exploration framework, which pure exploitation could follow from. An ensemble of dynamics models is maintained and trained on new observations. At each time step a model is sampled from the ensemble, and a one-step policy is derived from the model such that it maximises the intrinsic reward function, which indicates novel states using expected information gain, based on the Jensen-Shannon Divergence.
-\\ \textbf{Plan2Explore} \cite{plan2explore} separates learning in to two separate phases. During the first phase, the agent learns a global model of the environment, in the form of a latent dynamics model, whilst maintaining and training an ensemble of models on new observations. To explore, the agent trains an exploration policy in the world model that aims to seek out novel states; novelty is defined by estimating latent disagreement in the ensemble of models with the global model. In the second phase, the agent adapts to downstream tasks by using the extrinsic reward signals.
-\\ \textbf{GoExplore} \cite{goexplore} consists of two phases. In phase one, an \textit{archive} of states is maintained, and trajectories that can be used to reach them, initially this contains only the start state. Exploration is done by sampling a state from the archive, planning to that state (Go) and from there exploring randomly (Explore). The \textit{archive} is updated when novel states are encountered, or when better trajectories to states already within the \textit{archive} are discovered. This repeats until the end of an episode. In phase two, promising trajectories are made more robust to noise using imitation learning. GoExplore does not explicitly define what exploration strategy should be used whilst exploring.
-\\ \textbf{Planning Exploration Goals} (PEG) \cite{hu2023planning} is a modification of GoExplore, where in the first phase, a state is planned to that maximises the estimated exploration value, and exploration ensues from there.
-% % However, PEG is unable to deal with long-horizon tasks and complex environments with large goal spaces.
-\\ MAX, Plan2Explore, GoExplore and PEG utilise intrinsic motivation, often determined by estimated uncertainy or information gain, to drive exploration. MAX and Plan2Explore perform task-agnostic exploration, which in theory enables generalisation to downstream tasks. Although, only Plan2Explore was shown to adapt to downstream tasks in high-dimensional, continuous domains, and in-fact it often achieves this in a zero-shot manner. However, this comes at great computational costs, due to their ensemble-based approaches.
-Whilst GoExplore and PEG do not explicitly define exploration strategies, GoExplore was shown to be very effective in difficult exploration tasks using random exploration.
+Intrinsically motivated methods direct exploration towards states that seem \textit{interesting} or \textit{novel} according to some metric, such as uncertainty.
+\\ Model-Based Active Exploration (MAX) \cite{DBLP:journals/corr/abs-1810-12162} is purely an exploration framework, which pure exploitation could follow from. An ensemble of dynamics models is maintained and trained on new observations. At each time step a model is sampled from the ensemble, and a one-step policy is derived from the model such that it maximises the intrinsic reward function, which indicates novel states using expected information gain, based on the Jensen-Shannon Divergence.
+\\Plan2Explore \cite{plan2explore} separates learning in to two separate phases. During the first phase, the agent learns a global model of the environment, in the form of a latent dynamics model, whilst maintaining and training an ensemble of models on new observations. To explore, the agent trains an exploration policy in the world model that aims to seek out novel states; novelty is defined by estimating latent disagreement in the ensemble of models with the global model. In the second phase, the agent adapts to downstream tasks by using the extrinsic reward signals.
+% \\ Go-Explore \cite{goexplore} consists of two phases. In phase one, an \textit{archive} of states is maintained, and trajectories that can be used to reach them, initially this contains only the start state. Exploration is done by sampling a state from the archive, planning to that state (Go) and from there exploring randomly (Explore). The \textit{archive} is updated when novel states are encountered, or when better trajectories to states already within the \textit{archive} are discovered. This repeats until the end of an episode. In phase two, promising trajectories are made more robust to noise using imitation learning. GoExplore does not explicitly define what exploration strategy should be used whilst exploring.
+% \cite{goexplore}, PEG \cite{hu2023planning}
+\subsection{Hybrid}
+Hybrid approaches tend to use a model to influence a form of model-free exploration.
+\\ Abbeel et al. \cite{10.1145/1143844.1143845} use an approximate model and a local policy improvement algorithm to determine a  direction for policy improvement, and then executes trajectories in the real environment along that direction, updating the model through experience
+\\Domain Approximation for Reinforcement Learning (DARLING) \cite{AIJ16-leonetti} constrains exploration by computing a \textit{partial policy} from the model, and performing model-free RL, in the form of $\epsilon$-greedy, within it; a \textit{partial policy} is a function that maps states to possible actions, and is constructed from a subset of possible plans according to some metric and threshold (for instance all plans that are shorter than 1.5 times the length of the shortest plan). 
 
-\subsection{DARLING}
-Domain Approximation for Reinforcement Learning (DARLING) \cite{AIJ16-leonetti} is neither a model-free or model-based exploration method. It is a hybrid method; it incorporates a model with model-free exploration. A \textit{partial policy} is computed from the model, using the planner; a \textit{partial policy} is a function that maps states to possible actions, and is constructed from a subset of possible plans according to some metric and threshold (for instance all plans that are shorter than 1.5 times the length of the shortest plan). RL is then done inside the partial policy through $\epsilon$-greedy. This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main benefits of this approach are its ability to incorporate embedded domain knowledge in the form of a model, and its robustness to inaccuracies in said model, whilst also being able to scale to stochastic, continuous domains, such as a real world robotics navigation task. However, it seems that the model must be somewhat correct; as if the optimal policy does not exist in the space of the partial policy, it will never be discovered. Moreover, the use of $\epsilon$-greedy is undesirable, due to the random nature it introduces; however efficiency is not impacted too much, due to the reduced space.
-
-% \\ \textbf{DARLING}% % \\MAX, Plan2Explore and PEG perform task-agnostic exploration which aims to achieve fast adaptation to downstream tasks. However, only Plan2Explore actually demonstrates this ability, and does so in a fast, in some cases zero-shot, manner. MAX was shown to achieve entire state-space coverage in exploration tasks that are intractable for traditional exploration methods, and the authors claim that this suggests that it can scale to large environments. What's interesting about all of these approaches is that they share a common idea of using intrinsic motivation to seek out novel states, which is an interesting line of research.
-% % % that allows fast, and in some cases zero-shot, adaptation to downstream tasks in high-dimensional and continuous domains. However, this comes at a very large computational cost due to the nature of the algorithms.
-
-% % While MAX, Plan2Explore, PEG and GoExplore achieve task-agnostic exploration that allows fast, and in some cases zero-shot, adaptation to downstream tasks in high-dimensional and continuous domains, they do this at a very large computational cost due to their nature.
-% \\Domain Approximation for Reinforcement Learning (DARLING) \cite{AIJ16-leonetti} computes a \textit{partial policy} from the model, using the planner. A \textit{partial policy} is a function that maps states to possible actions, and is constructed from a subset of possible plans according to some metric and threshold (for instance all plans that are shorter than 1.5 times the length of the shortest plan). RL is then done inside the partial policy through $\epsilon$-greedy. This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct; as if the optimal policy does not exist in the partial policy, it will never be discovered. A key benefit of this approach is the ability to constrain exploration through reasoning, whilst also being able to scale to stochastic, continuous domains, such as a real world robotics navigation task. However, the use of $\epsilon$-greedy introduces randomness into the framework.
-
-% \\ $E^3$, R-MAX and OIM are provably able to achieve near-optimal performance in polynomial time, however they are limited to full-observability and discrete environments. R-MAX and OIM show that optimism is definitely a useful heuristic, but they are very optimistic in perhaps an unrealistic way; an interesting question to ask is whether this unrealistic level of optimism necessary, and if a \textit{reasonable} level of optimism is just as useful, or perhaps even more useful.
-% \\MAX, Plan2Explore and PEG perform task-agnostic exploration which aims to achieve fast adaptation to downstream tasks. However, only Plan2Explore actually demonstrates this ability, and does so in a fast, in some cases zero-shot, manner. MAX was shown to achieve entire state-space coverage in exploration tasks that are intractable for traditional exploration methods, and the authors claim that this suggests that it can scale to large environments. What's interesting about all of these approaches is that they share a common idea of using intrinsic motivation to seek out novel states.
-% \\A common assumption among the aforementioned methods is that the model will eventually become correct, which is often not the case especially in complex domains. Furthermore, human knowledge is often not leveraged in the form of a model, which means learning takes place from scratch. Whilst this done mean that the agents do not have to worry about model inaccuracies, it means they do not leverage useful information that can be present in models created by humans. The outlier to these drawbacks is DARLING, which makes it perhaps the most related work to ours. DARLING puts some trust in the model to guide exploration, but acknowledges that it is likely inaccurate and therefore only uses it for that - the optimal policy is discovered through learning.
-
-% % DARLING is perhaps the work closest related to ours, because it leverages human knowledge in the model, whereas the other approaches tend to learn the model entirely from scratch.
-
-% The approach we take is similar; we put some trust in the model, that there is some useful information embedded in there, but ultimately acknowledge that it is probably not entirely correct and thus only use it to guide exploration.
-
-% All models are useful, but none are correct.
+% RL is then done inside the partial policy through $\epsilon$-greedy. 
 
 
-% Whilst learning from scratch means that the agents do not have to worry about model inaccuracies, it means that the agents are missing useful
+% This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main benefits of this approach are its ability to incorporate embedded domain knowledge in the form of a model, and its robustness to inaccuracies in said model, whilst also being able to scale to stochastic, continuous domains, such as a real world robotics navigation task. However, it seems that the model must be somewhat correct; as if the optimal policy does not exist in the space of the partial policy, it will never be discovered. Moreover, the use of $\epsilon$-greedy is undesirable, due to the random nature it introduces; however efficiency is not impacted too much, due to the reduced space.
+\\ Reward shaping refers to the method of augmenting the reward function in a way that aids in directing the agent towards the goal. Grzes and Kudenko proposed a method \cite{4670492} of creating a reward shaping function from a plan, which aids the agent in learning faster, particularly in domains with sparse reward.
+ 
+
+
+\subsection{Conclusions}
+
+
+
+% Thrun \cite{Thrun-1992-15850} distinguished between directed and undirected exploration. Direct exploration refers to exploraiton that is informed by memory about the state space, wjereas undirected exploration is uninformed, random.
+
 % \section{Exploration in Reinforcement Learning}
+% Thrun \cite{Thrun-1992-15850} distinguished exploration methods in to two main categories: directed and undirected. Directed exploration refers to exploration that is informed by memory about the state space, whereas undirected exploration is uninformed, random. More recently, Amin, et al. \cite{DBLP:journals/corr/abs-2109-00157} presented a comprehensive survey on exploration in RL, which distinguished between reward-free and reward-based exploration; each of these categories is then broken down into memory-free (undirected) and memory-based (directed) exploration.
+% % However, since there is not a definitive taxonomy of exploration methods in RL, we choose to distinguish between model-free and model-based exploration methods. Model-free methods tend to be classic, simple methods based, often based on randomness. These methods are not directly relevant to our approach, however its important to discuss them to further motivate our approach.
+% % Model-based methods are generally more advanced exploration methods, that may utilise planning, optimism, intrinsic motivation and curiosity to explore. These methods are most relevant to our approach.
 
-% \subsection{Random Exploration}
-% % Due to simplicity of implementation and ease of generalisation, random exploration is the most popular form of exploration, and is widely seen in the literature; even where some other exploration method is used, there is often some underlying randomness.
-
-% % The agent only explores and doesn't exploit; unless it learns a value function whilst exploring which it switches to exploit after some number of discrete time steps.
-
-% % $\epsilon$-greedy that uses temporal persistence; the agent follows a temporally-extended sequence of actions (an option \cite{SUTTON1999181}) until termination with probability $\epsilon$ and with probability $1-\epsilon$ the agent exploits by taking the current best action.
-% % \begin{itemize}
-% %     \item Pure random exploration: Random Walk
-% %     \item $\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95}
-% %     \item $\epsilon z$-geedy \cite{dabney2021temporallyextended, SUTTON1999181}
-% %     \item Softmax
-% %     \item Boltzmann \cite{Watkins:1989, 10.1007/BF00992699, SCC.Barto.Bradtke.ea1991}
-% % \end{itemize}
-% % \subsection{Intrinsically Motivated Exploration}
-% % \cite{scott1996, pmlr-v97-jinnai19b, Jinnai2020Exploration}
-% % \subsection{Optimistic}
-% % \cite{10.1145/1390156.1390288, NIPS2006_c1b70d96, 10.1162/153244303765208377, NIPS2008_d5cfead9}
-% \subsection{Model-based}
-% Not all model-based RL methods use models as part of their exploration, therefore model-based exploration methods are a subset of model-based RL.
-% % Planning-based approaches are by definition model-based. We consider any model-based approach to utilise planning-based exploration if the 
-% % We refer to Model-Based exploration as any method of exploration that uses a model to influence exploration.
-
-% % \cite{SARA07-jong}
-
-% % For instance, a simple form of model-based RL where an agent plans on an initial model, and performs model-learning concurrently is an exploration method; although a naive one, that doesn't work in practice.\\
-% % \cite{SARA07-jong, Littman2011EfficientME, Epshteyn2008ActiveRL}
-% % \subsubsection{DARLING}
-% \\ Plan2Explore \cite{plan2explore} explores using planning and intrinsic motivation to learn a model of the world. Exploration is task-agnostic, this leads to the agent learning the dynamics of the world, and being able to transfer to downstream tasks easily.
-% \\ MAX \cite{DBLP:journals/corr/abs-1810-12162} explores using planning and intrinsic motivation. It aims to seek out novel states by Jensen-Renyi Divergence \cite{renyi}.
-% \\DARLING \cite{AIJ16-leonetti} approximates a deterministic model, which it then produces a partial policy from which $\epsilon$-greedy is performed within. A partial policy is essentially a combination of a selection of plans.  This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main problem in this approach, is that it is only suitable for where the inaccuracies are not too significant, so there is a reliance on the embedded model being somewhat correct. Also, DARLING is only suitable for domains where discretisation is possible; it does not scale to continuous state or action spaces. Furthermore, $\epsilon$-greedy introduces randomness into the framework.
-% \\ LEO \cite{10.5555/2484920.2485088} learns the best exploration strategies on-line, given a set of exploration strategies. It chooses those which discover rewards and goal quickest; thus lead to the most efficient exploration.
-% \\ OIM \cite{10.1145/1390156.1390288} uses an overly optimistic model, which is updated and learned approximately through experience, to guide exploration by greedily acting with respect to a value function computed through dynamic programming.
-
-% \\ R-MAX \cite{10.1162/153244303765208377} begins with a model of the environment which assumes that all transitions lead to a hypothetical maximum-reward terminal state. The model is updated through experience. The optimal policy with respect to the model is either near optimal in the real environment, or useful because it leads to learning.
-
-% \\Fitted R-MAX \cite{SARA07-jong} is an extension of R-Max to continuous domains.
-% \\ \cite{NIPS2008_d5cfead9}
-% \\ DOVE \cite{pmlr-v120-seyde20a}
-% \\ $E^3$ \cite{Kearns+Singh:2002}
-% \\ \cite{10.1016/S0004-3702(98)00002-2}
-% \\ \cite{10.5555/2886521.2886686}
-% \\ \cite{ISHII2002665}
-% \\ \cite{NIPS2012_a0a080f4}
-% \\ \cite{10.1145/1553374.1553441}
-% \\ \cite{10.1145/1143844.1143932}
-% \\ \cite{10.1145/1143844.1143845}
-
-% \subsubsection{PEORL}
-% PEORL \cite{DBLP:journals/corr/abs-1804-07779}
-% \subsubsection{Plan-Q Learning}
-% \cite{10.1007/978-3-540-77949-0_6}
-% \subsubsection{FRAP}
-% \cite{DBLP:journals/corr/abs-2006-15009}
-% \subsubsection{Guided Dyna-Q}
-% \cite{Hayamizu2021GuidingRE}
-% \subsubsection{TMP}
-% \cite{Jiang2019TaskMotionPW}
-% \subsubsection{Simple Model-Based Exploration}
-% For benchmarking and comparison purposes, we present a simple model-based exploration method.
-% \begin{figure}[h!]
-%     \centering
-%     \includegraphics[max size={\textwidth}{\textheight}]{report/assets/diagram.png}
-%     \caption{Framework}
-%     \label{fig:framework}
-% \end{figure}
-% Randomnes underlies most exploration strategies in RL, from using pure-randomness, to randomly samplin
-% \subsection{Random}
-% \subsubsection{$\epsilon$-greedy}
-% $\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} aims to balance exploration and exploitation through an $\epsilon$ factor, such that the agent exploits its learned knowledge, taking the current best action, with probability $1-\epsilon$ and explores randomly with probability $\epsilon$. It's common to decay $\epsilon$ temporally, so that the agent explores a lot early on and then exploits more after it has learnt for a while. Whilst this method offers a nice balance between the two extremes of pure exploration and pure exploitation, it only provably converges to an optimal policy with an infinite number of observations, so in-fact it is quite inefficient. Furthermore, due to the random nature, it results in continually evaluating sub-optimal actions. A key drawback to $\epsilon$-greedy is that without infinite observations, it can easily get stuck in a local optima.
-% \subsubsection{$\epsilon z$-greedy}
-% Dabney, et al., \cite{dabney2021temporallyextended} stated that another key problem with $\epsilon$-greedy is its lack of temporal persistence; actions are only performed for one time-step. They proposed $\epsilon z$-greedy, or temporally extended $\epsilon$-greedy, where the agent takes the current best action with probability $1-\epsilon$ and follows an "option" until termination with probability $\epsilon$. An "option" is a sequence of actions, akin to a "plan" in the planning literature.
-% \subsubsection{Boltzmann}
-% \subsubsection{Thompson Sampling}
-% \subsubsection{UCB}
-% \subsubsection{Conclusion}
-% \subsection{Intrinsically Motivated}
-% \subsubsection{Count-based}
-% \subsubsection{Information Theoretic}
-% \subsubsection{Curiosity Driven}
+% \subsection{Model-Free Exploration}
+% Purely random exploration comes in the form of a Random Walk, or unguided random search \cite{anderson86}, which arises from randomly sampling actions with uniform probability, as seen in Equation \ref{eqn:rw}. 
+% \begin{equation}
+% \label{eqn:rw}
+%     a_t \sim P(A)
+% \end{equation}
+% Where $P(A)$ is the uniform distribution over the action space, $A$. Exploration occurs naturally when the agent moves away from the goal, rather than closer to it, due to the uniform selection of actions. This is perhaps the most naive method of exploration, since it is entirely random and is therefore very inefficient.
+% \\ Boltzmann exploration samples an action according to the Boltzmann distribution:
+% \begin{equation}
+% \label{eqn:boltzmann}
+% \pi(a|s) = \frac{e^{Q(s,a)/\tau}}{\sum_{a' \in A}e^{Q(s,a')/\tau}}
+% \end{equation}
+% Where $\tau$ is the temperature, and determines how frequently random actions are chosen. As $\tau$ decreases, the policy approaches greediness \cite{DBLP:journals/corr/cs-AI-9605103, DBLP:journals/corr/abs-2109-00157}. $\tau$ may be decayed temporally, in the same fashion as $\epsilon$ can be decayed temporally in $\epsilon$-greedy. Here we gave the definition in the context of a $Q$-function, however this can be replaced with any value that estimates the reward received from taking action $a$. The main drawback of this approach is that the initial value for $\tau$ needs to be carefully selected, and may need to be tuned for each environment. This is because as $\tau$ approaches 0 the agent acts greedily, whereas at large values of $\tau$, all actions have an approximately uniform probability of being selected leading to exploration akin to a Random Walk \cite{DBLP:journals/corr/abs-2109-00157}.
+% \\$\epsilon$-greedy \cite{Watkins:1989, conf/nips/Sutton95} uses a hyperparameter, $\epsilon$ to balance between exploration and exploitation. With probability $\epsilon$ the agent explores by taking a random action, which is sampled with uniform probability, with probability $1-\epsilon$ the agent exploits by taking the best action, which is selected greedily with respect to the current policy; this is summarised in Equation \ref{eqn:egreedy}.
+% \begin{equation}
+% \label{eqn:egreedy}
+% a_t = 
+% \begin{cases}
+% \pi(s_t) \qquad \qquad \qquad \text{with probability} \quad 1-\epsilon\\
+% \text{random action} \qquad  \text{with probability} \quad $\epsilon$
+% \end{cases}
+% \end{equation}
+% Where $0 \le \epsilon \le 1$, and $\pi$ is the current greedy policy.
+% Whilst this provides a clear method for balancing exploration and exploitation, it lacks temporal persistence; although $\epsilon z$-greedy \cite{dabney2021temporallyextended} offered an extension to $\epsilon$-greedy that does use temporal persistance through temporally-extended sequences of actions. Furthermore, by the nature of the name, it is a greedy method which could lead to a local optima. $\epsilon$ may be decayed temporally, to ensure that lots of exploration happens early on, and then exploitation occurs more when learning has occurred. Whilst $\epsilon$-greedy is very easy to implement, it is very inefficient and only converges to optimality in the limit, under certain conditions.
+% \\ Whilst these model-free approaches are useful, in that they are generally easy to implement and are robust to varying domains, they tend to share two common drawbacks: practical inefficiency and introducing hyperparameters that have to be tuned. 
 % \subsection{Model-Based Exploration}
-% \subsubsection{DARLING}
-% Leonetti et al \cite{AIJ16-leonetti}, developed DARLING (Domain Approximation for Reinforcement Learning), where given a model, a planner is used to produce a "partial policy", which is a set of reasonable choices the agent can make in each state. Exploration is then constrained to this partial policy, and performed using $\epsilon$-greedy. This work showed that whilst planning and RL take two different approches to decision making, on on their own each struggle in stochastic, high-dimensional domains, integrating them can overcome each of their weaknesses. This work was successful in carrying out complex robotics tasks, even with an inaccurate model, and moreover, it showed that the region of the environment that is explored by the agent is more reasonable and is goal-directed.
-% \subsection{Evaluating RL}
-% When studying and developing algorithms, its important that firstly they work but secondly that they work efficiently. Generally, the efficiency of algorithms is measured by their time and space complexity; which indicates how the time and space requirements of the algorithm increase as the size of the input increases. In RL, we are mostly interested in sample complexity, which refers to how many interactions are required with the environment in order to effectively learn \cite{Kakade2003OnTS}. The sample complexity of exploration refers to how many sub-optimal actions are followed during learning.
+% The term Model-Based Exploration can be interpreted as a lot of different things. We define Model-Based Exploration as any exploration method that uses a model, known or learned, to direct exploration trajectories.
+% \subsubsection{Optimistic}
+% \\\textbf{Explicit Explore or Exploit} ($E^3$) \cite{Kearns+Singh:2002} maintains a partial model of the environment through collecting statistics, akin to the \textit{tabular maximum likelihood} approach. A distinguishement is made between \textit{known} and \textit{unknown} states; a state is \textit{known} after it has been visited an arbitrary number of times, thus its learned dynamics must be close to the true dynamics. If the current state is \textit{unknown}, then \textit{balanced wandering} takes place, and the agent explores by selecting the action that has been taken the least number of times from that state. If the current state is \textit{known} then the action is chosen greedily with respect to the current model.
+% \\\textbf{R-MAX} \cite{10.1162/153244303765208377} is an extension and generalisation of $E^3$. It begins with an optimistic initial model such that every transition leads to some imaginary state that returns the maximal reward, denoted $R_{max}$. R-MAX uses the same concept of \textit{known} and \textit{unknown} states as in $E^3$; after a state becomes known, then the model is updated with the collected statistics regarding that state. The agent always follows the optimal policy according to the model. R-MAX removes the need for explicit contemplation between exploring and exploiting as in $E^3$; exploration and exploitation occur naturally.
+% \\\textbf{Optimistic Initial Model} (OIM) \cite{10.1145/1390156.1390288} begins with an optimistic model, the same as R-MAX. The model is updated through observations similarly to $E^3$. The agent maintains two Q-functions, $Q^r$ and $Q^e$, which are initialised and updated according to observations through dynamic programming. $Q^r$ corresponds to the "real", extrinsic rewards, whereas $Q^e$ corresponds to the intrinsic exploration rewards. Whilst exploring, the agent acts optimally with respect to the combination of the two Q-functions; thus $Q^e$ can be seen as an exploration bonus. During this, the agent will either act near-optimally, or will gain new information it can utilise. After exploration is terminated, $Q^e$ is dropped and the agent acts optimally with respect to $Q^r$.
+% \\ $E^3$, R-MAX and OIM are provably able to achieve near-optimal performance in polynomial time in discrete environments. R-MAX and OIM in particular show that optimism is definitely a useful heuristic, but they are very optimistic in perhaps an unrealistic way; an interesting question to ask is whether this unrealistic level of optimism necessary, and if a \textit{reasonable} level of optimism is just as useful. These methods also assume that the model will eventually become correct, which may not be the case in complex tasks, and in the worst case will learn the entire model.
+% \subsubsection{Intrinsically Motivated}
+% \\\textbf{Model-Based Active Exploration} (MAX) \cite{DBLP:journals/corr/abs-1810-12162} is purely an exploration framework, which pure exploitation could follow from. An ensemble of dynamics models is maintained and trained on new observations. At each time step a model is sampled from the ensemble, and a one-step policy is derived from the model such that it maximises the intrinsic reward function, which indicates novel states using expected information gain, based on the Jensen-Shannon Divergence.
+% \\ \textbf{Plan2Explore} \cite{plan2explore} separates learning in to two separate phases. During the first phase, the agent learns a global model of the environment, in the form of a latent dynamics model, whilst maintaining and training an ensemble of models on new observations. To explore, the agent trains an exploration policy in the world model that aims to seek out novel states; novelty is defined by estimating latent disagreement in the ensemble of models with the global model. In the second phase, the agent adapts to downstream tasks by using the extrinsic reward signals.
+% \\ \textbf{GoExplore} \cite{goexplore} consists of two phases. In phase one, an \textit{archive} of states is maintained, and trajectories that can be used to reach them, initially this contains only the start state. Exploration is done by sampling a state from the archive, planning to that state (Go) and from there exploring randomly (Explore). The \textit{archive} is updated when novel states are encountered, or when better trajectories to states already within the \textit{archive} are discovered. This repeats until the end of an episode. In phase two, promising trajectories are made more robust to noise using imitation learning. GoExplore does not explicitly define what exploration strategy should be used whilst exploring.
+% \\ \textbf{Planning Exploration Goals} (PEG) \cite{hu2023planning} is a modification of GoExplore, where in the first phase, a state is planned to that maximises the estimated exploration value, and exploration ensues from there.
 
 
-% \\In the context of RL, sample complexity refers to how much data (how many interactions with the environment) we need to collect in order to learn, and the computational complexity refers to how much computation needs to be performed using this data to learn .
+% \\ MAX, Plan2Explore, GoExplore and PEG utilise intrinsic motivation, often determined by estimated uncertainy or information gain, to drive exploration. MAX and Plan2Explore perform task-agnostic exploration, which in theory enables generalisation to downstream tasks. Although, only Plan2Explore was shown to adapt to downstream tasks in high-dimensional, continuous domains, and in-fact it often achieves this in a zero-shot manner. However, this comes at great computational costs, due to their ensemble-based approaches.
+% Whilst GoExplore and PEG do not explicitly define exploration strategies, GoExplore was shown to be very effective in difficult exploration tasks using random exploration.
 
-
-
-
-% \subsection{Learning Curves}
-% \subsection{Varying Domains}
-\\
-\\
-% \\PAC, Regret \cite{lattimore}, Learning curve
-% \subsubsection{What is "Efficient Exploration"?}
-
-% \cite{10.5555/1867270.1867286, 10.5555/1577069.1755867, Kakade2003OnTS}
+% % \subsection{DARLING}
+% Domain Approximation for Reinforcement Learning (DARLING) \cite{AIJ16-leonetti} is neither a model-free or model-based exploration method. It is a hybrid method; it incorporates a model with model-free exploration. A \textit{partial policy} is computed from the model, using the planner; a \textit{partial policy} is a function that maps states to possible actions, and is constructed from a subset of possible plans according to some metric and threshold (for instance all plans that are shorter than 1.5 times the length of the shortest plan). RL is then done inside the partial policy through $\epsilon$-greedy. This leads to constraining exploration to a set of seemingly reasonable states, enabling the agent to overcome inaccuracies in the model, although the model is not explicitly learned. The main benefits of this approach are its ability to incorporate embedded domain knowledge in the form of a model, and its robustness to inaccuracies in said model, whilst also being able to scale to stochastic, continuous domains, such as a real world robotics navigation task. However, it seems that the model must be somewhat correct; as if the optimal policy does not exist in the space of the partial policy, it will never be discovered. Moreover, the use of $\epsilon$-greedy is undesirable, due to the random nature it introduces; however efficiency is not impacted too much, due to the reduced space.
