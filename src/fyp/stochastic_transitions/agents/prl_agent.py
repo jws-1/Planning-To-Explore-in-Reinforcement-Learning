@@ -39,8 +39,6 @@ class PRLAgent(RLAgent):
 
             planning = i < config.planning_steps
 
-            if config.decay_lr and not planning:
-                lr*= (config.min_lr/config.lr)**(1/(config.episodes-config.planning_steps))
             while not done:
                 # self.env.render()
 
@@ -58,7 +56,7 @@ class PRLAgent(RLAgent):
                 # old_value = self.Q[state][action]
                 # next_max = max(self.Q[next_state].values())
                 # new_value = (1 - config.lr) * old_value + config.lr * (reward + config.df * next_max)
-                self.Q[state][action] = self.Q[state][action] + lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
+                self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
                 actions[i].append(action)
 
                 if config.learn_model and planning:

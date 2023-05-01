@@ -14,7 +14,10 @@ class MetaActionT(MetaAction):
 
     def __init__(self, action, action_sequence):
         self.action = action
-        self.action_sequence = action_sequence
+        if action_sequence is None:
+            self.action_sequence = [action]
+        else:
+            self.action_sequence = action_sequence
 
     def __eq__(self, other):
         if not hasattr(other, "action"):
@@ -22,6 +25,8 @@ class MetaActionT(MetaAction):
         return self.action == other.action and self.action_sequence == other.action_sequence
 
     def __key(self):
+        if self.action_sequence is None:
+            return (self.action, self.action)
         return (self.action, *self.action_sequence)
 
     def __hash__(self):

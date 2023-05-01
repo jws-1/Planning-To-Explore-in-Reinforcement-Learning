@@ -32,7 +32,7 @@ class RLAgent():
 
         for i in range(config.episodes):
             # if i % (config.episodes // 100) == 0:
-            print(f"RL-AGENT: episode {i}")
+            # print(f"RL-AGENT: episode {i}")
 
             done = False
             state = self.env.reset()
@@ -49,8 +49,7 @@ class RLAgent():
                 self.Q[state][action] = self.Q[state][action] + config.lr * ((reward + max(self.Q[next_state].values())) - self.Q[state][action])
 
 
-                if state != next_state:
-                    states[i][state]+=1
+                states[i][state]+=1
                 state = next_state
                 rewards[i] += reward
                 
@@ -61,18 +60,31 @@ class RLAgent():
     def learn_and_aggregate(self, config):
         rewards_windows = np.zeros((config.m, config.episodes - config.window_size+1, config.window_size))
         states = np.zeros((config.m, config.episodes, self.env.nS))
+        # states_windows = np.zeros((config.m, config.episodes - config.window_size+1, self.env.nS, config.window_size))
+        regrets_windows = np.zeros((config.m, config.episodes - config.window_size+1, config.window_size))
+        
         for i in range(config.m):
-
             rewards, states_ = self.learn(config)
 
+            # Compute cumulative rewards over episodes
             rewards_window = np.lib.stride_tricks.sliding_window_view(rewards, config.window_size)
             rewards_windows[i] = deepcopy(rewards_window)
-            
-            states[i] = states_
 
-        # Calculate 95% confidence interval for each window.
+            # Compute cumulative regrets over episodes
+            max_rewards = np.full_like(rewards, self.env.max_reward)
+            regrets = max_rewards - rewards
+            regrets_window = np.lib.stride_tricks.sliding_window_view(regrets, config.window_size)
+            regrets_windows[i] = deepcopy(regrets_window)
 
-        aggregated_rewards_windows = np.mean(np.mean(rewards_windows, axis=2), axis=0)
+            states[i] = deepcopy(states_)
+
+            # print(states_.shape)
+            # # Compute states over episodes
+            # states_window = np.lib.stride_tricks.sliding_window_view(states_, config.window_size, axis=0)
+            # print(states_window.shape, states_windows.shape, states_windows[i].shape)
+            # states_windows[i] = deepcopy(states_window)
+
+        # Compute confidence intervals for rewards over windows
         rewards_95pc = []
         for i in range(rewards_windows.shape[1]):
             a = []
@@ -80,7 +92,34 @@ class RLAgent():
                 a.extend(list(np.ravel(rewards_windows[j][i])))
             rewards_95pc.append(st.norm.interval(confidence=0.95, loc=np.mean(a), scale=st.sem(a)))
 
-        return aggregated_rewards_windows, np.array(rewards_95pc), states
+        # Compute confidence intervals for states over windows
+        # states_95pc = []
+        # for i in range(states_windows.shape[1]):
+        #     a = []
+        #     for j in range(states_windows.shape[0]):
+        #         a.extend(list(np.ravel(states_windows[j][i])))
+        #     states_95pc.append(st.norm.interval(confidence=0.95, loc=np.mean(a), scale=st.sem(a)))
+
+        # Compute confidence intervals for regrets over windows
+        regrets_95pc = []
+        for i in range(regrets_windows.shape[1]):
+            a = []
+            for j in range(regrets_windows.shape[0]):
+                a.extend(list(np.ravel(regrets_windows[j][i])))
+            regrets_95pc.append(st.norm.interval(confidence=0.95, loc=np.mean(a), scale=st.sem(a)))
+
+        # Compute mean of aggregated rewards over all runs and windows
+        aggregated_rewards_windows = np.mean(np.mean(rewards_windows, axis=2), axis=0)
+
+        # # Compute mean of aggregated states over all runs and windows
+        # aggregated_states_windows = np.mean(states_windows, axis=(0,2))
+        states = np.mean(states, axis=0)
+
+        # Compute mean of aggregated regrets over all runs and windows
+        aggregated_regrets_windows = np.mean(np.mean(regrets_windows, axis=2), axis=0)
+
+        return aggregated_rewards_windows, np.array(rewards_95pc), states, aggregated_regrets_windows, np.array(regrets_95pc)
+
 
     def plot_results(self, rewards, states, policy="e-greedy", rewards_95pc=None, save=True, config=None):
         if not os.path.exists(policy) and save:

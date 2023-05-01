@@ -29,14 +29,14 @@ class MetaPRLAgent(RLAgent):
         states = np.zeros((config.episodes, self.env.nS))
         next_action = None
         follows_meta_action = False
-        expected_next_state = next_action = prev_reward = None
+        expected_next_state = next_action = prev_reward = target_reward = target_state = None
 
         for i in range(config.episodes):
             self.meta_sas = {state : {action : {next_state: {meta_action : False for meta_action in BaseMetaActions} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
             self.observed_sas = {state : {action : {next_state: False for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
 
-            if i % (config.episodes // 100) == 0:
-                print(f"Meta PRL-AGENT: episode {i}")
+            # if i % (config.episodes // 100) == 0:
+            print(f"Meta PRL-AGENT {self.model.planner}: episode {i}")
 
             done = False
             state = self.env.reset()
@@ -51,31 +51,32 @@ class MetaPRLAgent(RLAgent):
 
                 elif planning:
                     if config.learn_meta_actions:
-                        plan = self.model.plan_VI(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas, meta_actions = [self.meta_actions_t, self.meta_actions_r])
+                        plan = self.model.plan(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas, meta_actions = [self.meta_actions_t, self.meta_actions_r])
                     else:
-                        plan = self.model.plan_VI(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas)
-
+                        plan = self.model.plan(state, meta=True, observed_sas=self.observed_sas, meta_sas=self.meta_sas)
                     if isinstance(plan, tuple):
                         if len(plan) == 3:
                             action, target_action, target_state = plan
                             next_action = target_action
                             expected_next_state = target_state
+                        elif len(plan) == 4:
+                            action, target_action, target_state, target_reward = plan
+                            next_action = target_action
                     else:
                         action = plan
                 else:
                     action = random.choice([a for a in range(self.env.nA) if self.Q[state][a] == max(self.Q[state].values())])
                 
                 if isinstance(action, BaseMetaActions):
-                    #    print(state, action, target_action, target_state)
+                       print(state, action, target_action, target_state, target_reward)
                        if action == BaseMetaActions.INCREASE_REWARD:
                             prev_reward = self.model.reward_function[state, target_action, target_state]
-                            self.model.update_reward(state, target_action, target_state, np.max(self.model.reward_function[state, target_action, target_state])-1)
+                            self.model.update_reward(state, target_action, target_state, target_reward)
                        elif action == BaseMetaActions.INCREASE_TRANSITION_PROBABILITY:
                             self.model.update_transition_prob(state, target_action, target_state, 1.0)
                        self.meta_sas[state][target_action][target_state][action] = True
                        next_action = target_action
                 elif isinstance(action, MetaAction):
-                    # print(state, action, target_action, target_state)
                     if isinstance(action, MetaActionR):
                         prev_reward = self.model.reward_function[state, target_action, target_state]
                         self.model.update_reward(state, target_action, target_state, action.reward)
@@ -85,7 +86,7 @@ class MetaPRLAgent(RLAgent):
                     self.meta_sas[state][target_action][target_state][action] = True
                     next_action = target_action
                 else:
-                    # print(state, action)
+                    print(state, action)
                     next_state, reward, done, info = self.env.step(action)
                     if done and not info.get("TimeLimit.truncated"):
                         print("Completed ", i)
@@ -95,10 +96,10 @@ class MetaPRLAgent(RLAgent):
                     if planning:
                         if config.learn_meta_actions:
                             if not follows_meta_action:
-                                if state != next_state:
-                                    print(state, next_state)
+                                if state != next_state and next_state != self.env.start:
+                                    # print(state, next_state)
                                     action_sequence = self.model.action_sequence(state, next_state)
-                                    if action_sequence != [action]:
+                                    if action_sequence != [action] and action_sequence is not None and len(action_sequence) <=3:
                                         meta_action = MetaActionT(action, action_sequence)
                                         if not meta_action in self.meta_actions_t:
                                             print(f"Learned: {meta_action}")
