@@ -21,7 +21,6 @@ class PRLAgent(RLAgent):
         states = np.zeros((config.episodes, self.env.nS))
 
         for i in range(config.episodes):
-            # if i % (config.episodes // 100) == 0:
             print(f"PRL-AGENT: episode {i}")
 
             done = False

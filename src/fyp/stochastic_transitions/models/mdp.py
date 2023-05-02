@@ -15,40 +15,6 @@ import heapq
 def manhattan_distance(state1, state2):
     return abs(state1[0] - state2[0]) + abs(state1[1] - state2[1])
 
-# @numba.jit()
-# def value_iteration(V, goal_states, states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-10, max_iter=1000):
-
-#     pi = np.zeros(len(states), dtype=np.int64)
-#     for _ in range(max_iter):
-#         delta = 0
-
-#         for i in range(len(states)):
-#             state = states[i]
-#             if state in goal_states:
-#                 V[i] = 0.0
-#                 continue
-#             v = V[i]
-
-#             Q = np.full(len(actions), -np.inf)
-#             for j in range(len(actions)):
-#                 action = actions[j]
-#                 for k in range(len(states)):
-#                     next_state = states[k]
-#                     p = transition_function[state, action, next_state]
-#                     if p > 0.0:
-#                         q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
-#                         if Q[j] == -np.inf: Q[j] = 0.0
-#                         Q[j]+=q
-
-#             V[i] = np.max(Q)
-#             pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V[i]]))
-#             delta = max(delta, abs(v - V[i]))
-
-#         if delta < theta:
-#             break
-#     return V, pi
-
-
 
 def make_deterministic(transition_function):
     # Get the number of states and actions
@@ -109,63 +75,40 @@ def a_star(start, goal_states, states, actions, transition_function, reward_func
             # Calculate the tentative g-score of the next state
             tentative_g_score = g_scores[current] + -reward_function[current, action, best_next_state]
             tentative_f_score = tentative_g_score +  manhattan_distance(undiscretize_fn(best_next_state), undiscretize_fn(goal_states[0]))
-            # if meta:
-            #     if use_learned_actions:
-            #         pass
-                
-            #         # meta_actions_t, meta_actions_r = meta_actions
-            #         # for meta_action in meta_actions_t:
-            #         #     next_state = action_seq_sim(current, meta_action.action_sequence)
-            #         #     if not observed_sas[current][action][next_state]:
-            #         #         if not meta_sas[current][action][next_state][meta_action] and meta_action.action == action:
-            #         #             f_score = g_scores[current] + -reward_function[current, action, next_state] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-            #         #             if f_score < tentative_f_score:
-            #         #                 best_next_state = next_state
-            #         #                 tentative_f_score = f_score
-            #         #                 tentative_g_score =  g_scores[current] +  -reward_function[current, action, best_next_state]
-            #         #                 meta_calls[(current, action)] = [(meta_action, action, next_state)]
+            if meta:
+                if use_learned_actions:
+                    pass
 
-            #         # for meta_action in meta_actions_r:
-            #         #     for next_state in states:
-            #         #         if not observed_sas[current][action][next_state] and current != next_state:
-            #         #             if not meta_sas[current][action][next_state][meta_action] and meta_action.action == action:
-            #         #                 f_score = g_scores[current] + -meta_action.reward + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-            #         #                 if f_score < tentative_f_score:
-            #         #                     best_next_state = next_state
-            #         #                     tentative_f_score = f_score
-            #         #                     tentative_g_score =  g_scores[current] + -meta_action.reward
-            #         #                     meta_calls[(current, action)] = [(meta_action, action, next_state)]
+                elif reasonable_meta_actions is not None:
+                    for next_state in reasonable_meta_actions[current]:
+                        if not observed_sas[current][action][next_state]:
+                            if not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
+                                f_score = g_scores[current] + -np.max(reward_function) + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
+                                if f_score < tentative_f_score:
+                                    best_next_state = next_state
+                                    tentative_f_score = f_score
+                                    tentative_g_score =  g_scores[current] + -np.max(reward_function)
 
-            #     elif reasonable_meta_actions is not None:
-            #         for next_state in reasonable_meta_actions[current]:
-            #             if not observed_sas[current][action][next_state]:
-            #                 if not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-            #                     f_score = g_scores[current] + -np.max(reward_function) + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-            #                     if f_score < tentative_f_score:
-            #                         best_next_state = next_state
-            #                         tentative_f_score = f_score
-            #                         tentative_g_score =  g_scores[current] + -np.max(reward_function)
+                                    if transition_function[current, action] == next_state or current == next_state:
+                                        meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
+                                    else:
+                                        meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state), (BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
 
-            #                         if transition_function[current, action] == next_state or current == next_state:
-            #                             meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
-            #                         else:
-            #                             meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state), (BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
-
-            #                 elif not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-            #                     f_score = g_scores[current] + -np.max(reward_function) + manhattan_distance(undiscretize_fn(best_next_state), undiscretize_fn(goal_states[0]))
-            #                     if f_score < tentative_f_score:
-            #                         tentative_f_score = f_score
-            #                         tentative_g_score =  g_scores[current] + -np.max(reward_function)
-            #                         meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
+                            elif not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
+                                f_score = g_scores[current] + -np.max(reward_function) + manhattan_distance(undiscretize_fn(best_next_state), undiscretize_fn(goal_states[0]))
+                                if f_score < tentative_f_score:
+                                    tentative_f_score = f_score
+                                    tentative_g_score =  g_scores[current] + -np.max(reward_function)
+                                    meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
         
-            #                 elif meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-            #                     f_score = g_scores[current] + -reward_function[current, action, next_state] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-            #                     if f_score < tentative_f_score:
-            #                         if transition_function[current, action] == next_state or current == next_state: continue
-            #                         best_next_state = next_state
-            #                         tentative_f_score = f_score
-            #                         tentative_g_score =  g_scores[current] + -reward_function[current, action, next_state]
-            #                         meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state)]
+                            elif meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
+                                f_score = g_scores[current] + -reward_function[current, action, next_state] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
+                                if f_score < tentative_f_score:
+                                    if transition_function[current, action] == next_state or current == next_state: continue
+                                    best_next_state = next_state
+                                    tentative_f_score = f_score
+                                    tentative_g_score =  g_scores[current] + -reward_function[current, action, next_state]
+                                    meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state)]
 
 
             # Check if the next state is already in the g-score dictionary
@@ -185,127 +128,6 @@ def a_star(start, goal_states, states, actions, transition_function, reward_func
 
     # If the frontier is empty and no goal state was found, return None
     return None, float('inf')
-
-
-
-
-
-    # # Initialize the g-score and parent of each state
-    # g_scores = {start: 0}
-    # parent = {start: None}
-    # parent_action = {start: None}
-    # # Initialize the frontier with the start state and its f-score
-    # frontier = [(0 + manhattan_distance(undiscretize_fn(start), undiscretize_fn(goal_states[0])), start)]
-    # meta_calls = defaultdict(list)
-    # # Loop until the frontier is empty or a goal state is found
-    # while frontier:
-    #     # Get the state with the lowest f-score from the frontier
-    #     _, current = heapq.heappop(frontier)
-        
-    #     if current in goal_states:
-    #         # print(parent, parent_action)
-    #         # print(meta_calls)
-    #         # Construct the optimal path by following the parent pointers
-    #         path = []
-    #         while current != start:
-    #             path.append(parent_action[current])
-    #             current = parent[current]
-    #         path.reverse()
-    #         print(parent)
-    #         # print(path)
-    #         return path, meta_calls
-        
-    #     # Expand the current state by applying each action
-    #     for action in range(len(actions)):
-    #         # Apply the action to get the next state and its probability
-    #         best_next_state = None
-    #         tentative_g_score = np.inf
-    #         tentative_f_score = np.inf
-    #         for next_state in states:
-    #             p = transition_function[current, action, next_state]
-    #             r = reward_function[current, action, next_state]
-                
-
-    #             # if p > 0.0:
-    #             #     r = reward_function[current, action, next_state]
-    #             #     g = g_scores[current] + -r
-    #             #     f = g + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #             #     if f < tentative_f_score:
-    #             #         tentative_g_score = g
-    #             #         tentative_f_score = f
-    #             #         best_next_state = next_state
-            
-    #         # if meta:
-    #         #     if use_learned_actions:
-    #         #         meta_actions_t, meta_actions_r = meta_actions
-    #         #         for meta_action in meta_actions_t:
-    #         #             for next_state in states:
-    #         #                 if not observed_sas[current][action][next_state] and not meta_sas[current][action][next_state][meta_action]:
-    #         #                     action, next_state = meta_action.action, action_seq_sim(current, meta_action.action_sequence)
-    #         #                     f_score = g_scores[current] + -reward_function[current, action, next_state] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #         #                     if f_score < tentative_f_score:
-    #         #                         best_next_state = next_state
-    #         #                         tentative_f_score = f_score
-    #         #                         tentative_g_score =  g_scores[current] +  -reward_function[current, action]
-    #         #                         meta_calls[(current, action)] = [(meta_action, action, next_state)]
-                    
-    #         #         for meta_action in meta_actions_r:
-    #         #             for next_state in states:
-    #         #                 if not observed_sas[current][action][next_state] and not meta_sas[current][action][next_state][meta_action]:
-    #         #                     if current != next_state:
-    #         #                         f_score = g_scores[current] + (1-transition_function[current, action, next_state])*-meta_action.reward + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #         #                         if f_score < tentative_f_score:
-    #         #                             best_next_state = next_state
-    #         #                             tentative_f_score = f_score
-    #         #                             tentative_g_score =  g_scores[current] + -meta_action.reward
-    #         #                             meta_calls[(current, action)] = [(meta_action, action, next_state)] 
-                
-    #         #     elif reasonable_meta_actions is not None:
-    #         #         for next_state in reasonable_meta_actions[current]:
-    #         #             if not observed_sas[current][action][next_state]:
-    #         #                 if not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-    #         #                     f_score = g_scores[current] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #         #                     if f_score < tentative_f_score:
-    #         #                         best_next_state = next_state
-    #         #                         tentative_f_score = f_score
-    #         #                         tentative_g_score =  g_scores[current]
-    #         #                         if transition_function[current, action, next_state] == 1.0 or current == next_state:
-    #         #                             meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, np.max(reward_function))]
-    #         #                         else:
-    #         #                             meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state), (BaseMetaActions.INCREASE_REWARD, action, np.max(reward_function))]
-                            
-    #         #                 elif not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-    #         #                     f_score = g_scores[current] + (1-transition_function[current, action, next_state])*-np.max(reward_function) + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #         #                     if f_score < tentative_f_score:
-    #         #                         tentative_f_score = f_score
-    #         #                         tentative_g_score =  g_scores[current] + (1-transition_function[current, action, next_state])*-np.max(reward_function)
-    #         #                         meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_REWARD, action, np.max(reward_function))]
-                            
-    #         #                 elif meta_sas[current][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[current][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-    #         #                     f_score = g_scores[current] + -reward_function[current, action] + manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-    #         #                     if f_score < tentative_f_score:
-    #         #                         if transition_function[current, action,next_state] == 1.0 or current == next_state: continue
-    #         #                         best_next_state = next_state
-    #         #                         tentative_f_score = f_score
-    #         #                         tentative_g_score =  g_scores[current] + -reward_function[current, action]
-    #         #                         meta_calls[(current, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state)]
-    #         # Check if the next state is already in the g-score dictionary
-    #         if best_next_state in g_scores:
-    #             # If the tentative g-score is worse than the current g-score, skip this state
-    #             if tentative_g_score >= g_scores[best_next_state]:
-    #                 continue
-
-    #         # Update the g-score and parent of the next state
-    #         g_scores[best_next_state] = tentative_g_score
-    #         parent[best_next_state] = current
-    #         parent_action[best_next_state] = action
-    #         # Calculate the f-score of the next state and add it to the frontier
-    #         # f_score = tentative_g_score +  manhattan_distance(undiscretize_fn(best_next_state), goal_states[0])
-
-    #         heapq.heappush(frontier, (tentative_f_score, best_next_state))
-    # print(parent)
-    # # If the frontier is empty and no goal state was found, return None
-    # return None, float('inf')
 
 
 def value_iteration(V, states, goal_states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-7, max_iter=1000, meta=False, meta_sas=None, observed_sas=None, reasonable_meta_actions=None, meta_actions=None, use_learned_actions=False, action_seq_sim=None):
@@ -405,76 +227,6 @@ def value_iteration(V, states, goal_states, actions, transition_function, reward
     else:
         print(V, pi)
         return V, pi
-
-
-# def value_iteration(V, states, goal_states, actions, transition_function, reward_function, discount_factor=1.0, theta=1e-7, max_iter=1000, meta=False, meta_sas=None, observed_sas=None, reasonable_meta_actions=None, meta_actions=None):
-
-#     pi = np.zeros(len(states), dtype=np.int64)
-#     meta_calls = defaultdict(list)
-#     for _ in range(max_iter):
-#         delta = 0
-
-#         for i in range(len(states)):
-#             state = states[i]
-
-#             if state in goal_states:
-#                 V[i] = 0
-#                 continue
-
-#             v = V[i]
-
-#             Q = np.full(len(actions), 0.0)
-#             for j in range(len(actions)):
-#                 action = actions[j]
-#                 for k in range(len(states)):
-#                     next_state = states[k]
-#                     p = transition_function[state, action, next_state]
-#                     if p > 0.0:
-#                         q = p * (reward_function[state, action, next_state] + discount_factor * V[next_state])
-#                         Q[j]+=q
-#             if meta:
-                
-#                 if reasonable_meta_actions is not None:
-#                     for action in range(len(actions)):
-                        
-#                         # if not observed_sa[state][action]:
-#                         #     r = reward_function[state, action]
-#                         #     if not meta_sa[state][action][BaseMetaActions.INCREASE_REWARD] and not meta_sa[state][action][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-#                         for next_state in reasonable_meta_actions[state]:
-#                             if observed_sas[state][action][next_state]: continue
-#                             if not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY] and transition_function[state, action, next_state] < 1.0:
-#                                 q = np.max(reward_function) + V[next_state]
-
-#                                 if q > Q[action]:
-#                                     Q[action] = q
-#                                     if state == next_state:
-#                                         meta_calls[(state, action)] = [(BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
-#                                     else:
-#                                         meta_calls[(state, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state), (BaseMetaActions.INCREASE_REWARD, action, next_state, np.max(reward_function))]
-                            
-#                             elif not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_REWARD] and meta_sas[state][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-#                                 q = np.max(reward_function) + V[next_state]
-#                                 if q > Q[action]:
-#                                     Q[action] = q
-#                                     meta_calls[(state, action)] = [(BaseMetaActions.INCREASE_REWARD, action, np.max(reward_function))]
-#                             elif meta_sas[state][action][next_state][BaseMetaActions.INCREASE_REWARD] and not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY]:
-#                                 if state != next_state:
-#                                     q = np.max(reward_function) + V[next_state]
-#                                     if q > Q[action]:
-#                                         Q[action] = q
-#                                         meta_calls[(state, action)] = [(BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state)]
-#             V[i] = np.max(Q)
-#             pi[i] = np.random.choice(np.array([j for j in range(len(actions)) if Q[j] == V[i]]))
-#             delta = max(delta, abs(v - V[i]))
-
-#         if delta < theta:
-#             break
-    
-#     if meta:
-#         return V, pi, meta_calls
-#     else:
-#         return V, pi
-
 
 class MDP:
 
@@ -601,130 +353,3 @@ class MDP:
             else:
                 return meta_actions[0]
         return self.pi[start]
-
-        # if self.updated:
-        #     self.V, self.pi = value_iteration(self.V, self.goal_states, self.states,  self.actions, self.transition_function, self.reward_function, self.discount_factor, max_iter=10)
-        #     self.updated = False
-        # if not meta or (not self.reasonable_meta_transitions and (len(meta_actions[0]) == 0 and len(meta_actions[1]) == 0)):
-        #     return self.pi[start]
-        
-        # if self.reasonable_meta_transitions is not None:
-        #     changes_t = defaultdict(None)
-        #     changes_r = defaultdict(None)
-        #     candidate_MDP = deepcopy(self)
-
-        #     state = start
-        #     current_pi = self.pi
-        #     current_V = self.V
-        #     while state not in self.goal_states:
-        #         best_change = None
-        #         for action in self.actions:
-        #             for next_state in np.argsort(self.transition_function[state][action])[::-1]:
-        #                 if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_TRANSITION_PROBABILITY] and next_state in self.reasonable_meta_transitions[state] and candidate_MDP.transition_function[state][action][next_state] < 1.0:
-        #                     temp_MDP = deepcopy(candidate_MDP)
-        #                     temp_MDP.update_transition_prob(state, action, next_state, 1.0)
-        #                     V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-
-        #                     if V_[state] > current_V[state]:
-        #                         best_change = (state, action, next_state, 1.0)
-        #                         current_pi = pi_
-        #                         current_V = V_
-
-        #         if best_change is not None:
-        #             candidate_MDP.update_transition_prob(*best_change)
-        #             changes_t[state] = best_change
-                
-        #         state, _ = candidate_MDP.step(state, current_pi[state])
-        #         print(f"T {state}")
-        #     state = start
-        #     while state not in self.goal_states:
-        #         best_change = None
-        #         for action in self.actions:
-        #             for next_state in np.argsort(self.transition_function[state][action])[::-1]:
-        #                 if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state][BaseMetaActions.INCREASE_REWARD] and next_state in self.reasonable_meta_transitions[state]:
-        #                     temp_MDP = deepcopy(candidate_MDP)
-        #                     temp_MDP.update_reward(state, action, next_state, max(temp_MDP.reward_function[state, action, next_state], np.max(candidate_MDP.reward_function)-1))
-        #                     V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=10)
-        #                     if V_[state] > current_V[state]:
-        #                         best_change = (state, action, next_state, max(candidate_MDP.reward_function[state, action, next_state], np.max(candidate_MDP.reward_function)-1))
-        #                         current_pi = pi_
-        #                         current_V = V_
-        #         if best_change is not None:
-        #             if not changes_r.get(state):
-        #                 candidate_MDP.update_reward(*best_change)
-        #                 changes_r[state] = best_change
-        #         state, _ = candidate_MDP.step(state, current_pi[state])
-        #         print(f"R {state}")
-
-        #     if changes_t.get(start, None):
-        #         state, action, next_state, p = changes_t[start]
-        #         return BaseMetaActions.INCREASE_TRANSITION_PROBABILITY, action, next_state
-        #     elif changes_r.get(start, None):
-        #         state, action, next_state, r = changes_r[start]
-        #         return BaseMetaActions.INCREASE_REWARD, action, next_state
-        #     else:
-        #         return current_pi[start]         
-        # else:
-        #     changes_t = defaultdict(None)
-        #     changes_r = defaultdict(None)
-        #     candidate_MDP = deepcopy(self)
-
-        #     meta_actions_t, meta_actions_r = meta_actions
-
-        #     state = start
-        #     current_pi = self.pi
-        #     current_V = self.V
-
-        #     while state not in self.goal_states:
-        #         best_change = None
-        #         for meta_action in meta_actions_t:
-        #             print(meta_action)
-        #             action, next_state = meta_action.action, self.simulate_action_sequence(state, meta_action.action_sequence)
-        #             if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state].get(meta_action, False):
-        #                 temp_MDP = deepcopy(candidate_MDP)
-        #                 temp_MDP.update_transition_prob(state, action, next_state, 1.0)
-        #                 V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-
-        #                 if V_[state] > current_V[state]:
-        #                     best_change = meta_action, action, next_state
-        #                     current_pi = pi_
-        #                     current_V = V_
-        #         if best_change is not None:
-        #             meta_action, action, next_state = best_change
-        #             candidate_MDP.update_transition_prob(state, action, next_state, 1.0)
-        #             changes_t[state] = best_change
-        #             print(f"Meta Action {meta_action} useful for {state, action, next_state}")
-        #         state, _ = candidate_MDP.step(state, current_pi[state])
-        #         # print(f"T {state}")
-
-        #     state = start
-        #     while state not in self.goal_states:
-        #         best_change = None
-        #         for meta_action in meta_actions_r:
-        #             for action in self.actions:
-        #                 for next_state in self.states:
-        #                     if not observed_sas[state][action][next_state] and not meta_sas[state][action][next_state].get(meta_action, False):
-        #                         temp_MDP = deepcopy(candidate_MDP)
-        #                         temp_MDP.update_reward(state, action, next_state, meta_action.reward)
-        #                         V_, pi_ = value_iteration(deepcopy(current_V), self.goal_states, temp_MDP.states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-
-        #                         if V_[state] > current_V[state]:
-        #                             best_change = meta_action, action, next_state
-        #                             current_pi = pi_
-        #                             current_V = V_
-
-        #         if best_change is not None:
-        #             meta_action, action, next_state = best_change
-        #             candidate_MDP.update_reward(state, action, next_state, meta_action.reward)
-        #             changes_r[state] = best_change
-        #         state, _ = candidate_MDP.step(state, current_pi[state])
-        #         # print(f"R {state}")
-
-        #     if changes_t.get(start, None):
-        #         # meta_action, target_action, next_state = changes_t[start]
-        #         return changes_t[start]
-        #     elif changes_r.get(start, None):
-        #         # meta_action, target_action, next_state = changes_r[start]
-        #         return changes_r[start]
-        #     else:
-        #         return current_pi[start]

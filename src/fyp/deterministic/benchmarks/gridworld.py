@@ -24,13 +24,13 @@ class GridWorldEnv(gym.Env):
 
     def step(self, action):
         row, col = divmod(self.current_state, self.grid_size[1])
-        if action == 0: # Move up
+        if action == 0:
             row = max(0, row - 1)
-        elif action == 1: # Move right
+        elif action == 1:
             col = min(self.grid_size[1] - 1, col + 1)
-        elif action == 2: # Move down
+        elif action == 2: 
             row = min(self.grid_size[0] - 1, row + 1)
-        elif action == 3: # Move left
+        elif action == 3: 
             col = max(0, col - 1)
 
         state = row * self.grid_size[1] + col
@@ -38,22 +38,6 @@ class GridWorldEnv(gym.Env):
             self.current_state = state
 
         return self.current_state, -1, self.current_state == self.goal_state, {}
-
-    def render(self, mode='human'):
-        for i in range(self.nS):
-            if i == self.current_state:
-                print("X", end="")
-            elif i == self.start_state:
-                print("S", end="")
-            elif i == self.goal_state:
-                print("G", end="")
-            elif i in self.walls:
-                print("#", end="")
-            else:
-                print(".", end="")
-            if (i+1) % self.grid_size[1] == 0:
-                print()
-        print()
 
 class BenchmarkGridworld(BenchmarkEnv):
 
@@ -133,28 +117,3 @@ class BenchmarkGridworld(BenchmarkEnv):
             np.save((os.path.join("results", "deterministic", "gridworld", f"{agent}-states.npy")), states)
             np.save((os.path.join("results", "deterministic", "gridworld", f"{agent}-regrets.npy")), regrets)
             np.save((os.path.join("results", "deterministic", "gridworld", f"{agent}-regrets_95pc.npy")), regrets_95pc)
-        #     plt.figure(0)
-        #     plt.plot(rewards, label=agent)
-        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-        #     plt.xlabel("Episode")
-        #     plt.ylabel("Reward")
-        #     plt.title(f"Cliff Walking {agent} Learning Curve")    
-        #     plt.savefig((os.path.join("results", "deterministic", "gridworld", f"{agent}-rewards.png")))
-        #     plt.clf()
-
-        #     plt.figure(1)
-        #     plt.plot(rewards, label=agent)
-        #     if not "PRL" in agent:
-        #         print(f"[Gridworld] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
-        #     else:
-        #         print(f"[Gridworld] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
-        #         print(f"[Gridworld] {agent} mean, std, min, max, final planning rewards: {np.mean(rewards[:p-w]), np.std(rewards[:p-w]), np.min(rewards[:p-w]), np.max(rewards[:p-w]), rewards[:p-w][-1]}")
-        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-        
-        # plt.figure(1)
-        # plt.legend()
-        # plt.xlabel("Episode")
-        # plt.ylabel("Reward")
-        # plt.title("Gridworld")  
-        # plt.savefig((os.path.join("results", "deterministic", "gridworld", "rewards.png")))
-        # plt.clf()

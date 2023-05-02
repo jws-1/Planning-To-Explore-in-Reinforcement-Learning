@@ -17,7 +17,6 @@ class MetaPRLAgent(RLAgent):
         self.model = deepcopy(self.initial_model)
         self.observed_sa = {state : {action : False for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.meta_sa = {state : {action : {meta_action : False for meta_action in BaseMetaActions} for action in range(self.env.nA)} for state in range(self.env.nS)}
-        # self.meta_sas = {state : {action : {next_state : {meta_action: False for meta_action in MetaAction} for next_state in range(self.env.nS)} for action in range(self.env.nA)} for state in range(self.env.nS)}
         self.meta_actions_r = []
         self.meta_actions_t = []
 
@@ -29,7 +28,6 @@ class MetaPRLAgent(RLAgent):
         states = np.zeros((config.episodes, self.env.nS))
         next_action = None
         for i in range(config.episodes):
-            # if i % (config.episodes // 10) == 0:
             print(f"Meta PRL-AGENT {self.model.planner}: episode {i}")
 
             done = False

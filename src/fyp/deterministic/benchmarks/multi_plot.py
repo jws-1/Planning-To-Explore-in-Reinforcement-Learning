@@ -9,7 +9,7 @@ labels = {
     "PRL" : ("PRL", "#1f77b4ff"),
     "RL" : ("RL", "#2ca02cff"),
     "RL_VI_Meta_Learn" : ("RL VI Meta (Learn)", "#9467bdff"),
-    "RL_AStar_Meta_Reasonable": ("RL A* Meta Learn", "#ff7f0eff")
+    "RL_AStar_Meta_Reasonable": ("RL A* Meta", "#ff7f0eff")
 }
 
 
@@ -38,35 +38,7 @@ for env in envs:
 optimal_paths["cliff_walking"] = [(36, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 47), -13.0]
 optimal_paths["gridworld"] = [(95, 85, 75, 65, 55), -4.0]
 optimal_paths["windy_gridworld"] = [(30, 31, 32, 33, 24, 15, 6, 7, 8, 9, 19, 29, 39, 49, 48, 37), -15.0]
-# print(np.mean(results_dict["gridworld"]["MetaPRL_reasonable"]["states"], axis=0).shape)
 
-# optimal_path = [95, 85, 75, 65, 55]
-# sub_optimal_states = [0 for _ in range(200)]
-# for episode, states in enumerate(results_dict["gridworld"]["MetaPRL_reasonable"]["states"].tolist()):
-#     for state, count in enumerate(states):
-#         if state not in optimal_path:
-#             sub_optimal_states[episode]+=count
-# plt.plot(sub_optimal_states)
-# plt.show()
-# env = "gridworld"
-
-# # ax = plt.gca()
-# # axins = ax.inset_axes([0.2, 0.2, 0.5, 0.5])
-# # ax.indicate_inset_zoom(axins)
-# for agent, results in results_dict[env].items():
-#     rewards = results["rewards"]
-#     rewards_95pc = results["rewards_95pc"]
-#     plt.plot(rewards, label=agent)
-#     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-# #     axins.plot(rewards, label=agent)
-# #     axins.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-# # axins.set_ylim((min(np.min(results_dict[env]["MetaPRL_reasonable"]["rewards"]), np.min(results_dict[env]["PRL"]["rewards"]))-10, 10))
-
-# plt.xlabel("Episode")
-# plt.ylabel("Reward")
-# plt.title(f"{prettify_name(env)}")
-# plt.legend(loc="lower right")
-# plt.show()
 print(len(envs))
 fig, axs = plt.subplots(len(envs), 1, figsize=(8, 12))
 
@@ -100,26 +72,10 @@ for i in range(len(envs)):
         print(states.shape)
         regrets = results["regrets"]
         regrets_95pc = results["regrets_95pc"]
-        # states = np.mean(states, axis=0)
 
-
-        # states = [sum([1 for s in episodic_state if s not in optimal_paths[env][0]]) for episodic_state in states]
-        # print(states)
         axs[i].plot(rewards, label=agent, color=color)
         axs[i].fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2, color=color)
-        # axs[i].plot(regrets, label=agent)
-        # axs[i].fill_between(np.arange(len(regrets_95pc)), regrets_95pc[:, 0], regrets_95pc[:, 1], alpha=0.2)
-        
-        # non_optimal = [0 for _ in range(len(states))]
-        # for k, episode in enumerate(states):
-        #     for j, c in enumerate(episode):
-        #         if j not in optimal_paths[env][0] or c > 0:
-        #             non_optimal[k]+=c
-        # print(non_optimal)
 
-        # axs[i][2].plot(np.arange(len(non_optimal)), non_optimal, label=agent)
-
-        # axs[i][3].plot(optimal_paths[env][1]-rewards)
 
         min_, max_, mean, std, final = np.min(rewards), np.max(rewards), np.mean(rewards), np.std(rewards), rewards[-1]
         min_, max_, mean, std, final = np.round(min_, 3), np.round(max_, 3), np.round(mean, 3), np.round(std, 3), np.round(final, 3)
@@ -133,9 +89,7 @@ for i in range(len(envs)):
             axins_1.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2, color=color)
             axins_1.set_ylim((min(np.min(results_dict[env]["RL_AStar_Meta_Reasonable"]["rewards"]), np.min(results_dict[env]["PRL"]["rewards"]))-10, 10))
 
-            # axins_2.plot(regrets, label=agent)
-            # axins_2.fill_between(np.arange(len(regrets_95pc)), regrets_95pc[:, 0], regrets_95pc[:, 1], alpha=0.2)
-            # axins_2.set_ylim(-100, 100)
+
 
     axs[i].set_title(f"{prettify_name(env)}")
     axs[i].set_title(f"{prettify_name(env)}")
@@ -144,6 +98,4 @@ for i in range(len(envs)):
 
 fig.text(0.5, 0.04, 'Episode', ha='center')
 fig.text(0.04, 0.5, 'Reward', va='center', rotation='vertical')
-# fig.text(0.8, 0.05, 'Episode', ha='center')
-# fig.text(0.96, 0.5, 'Regret', va='center', rotation='vertical')
 plt.show()

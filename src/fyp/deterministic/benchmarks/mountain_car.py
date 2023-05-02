@@ -27,38 +27,14 @@ class MountainCarDiscretized(gym.Env):
         y = int(np.digitize(obs[1], self.grid[1]))
         x = min(x, self.n_bins[0]-2)
         y = min(y, self.n_bins[1]-2)
-        # print(x, y)
         return np.ravel_multi_index((x,y), (len(self.grid[0]), len(self.grid[1])))
-        # return int(np.digitize(obs[0], self.grid[0])) * self.n_bins[0] + int(np.digitize(obs[1], self.grid[1]))
 
     def undiscretize(self, idx):
         return np.unravel_index(idx, (len(self.grid[0]), len(self.grid[1])))
-        # x_idx = idx // self.n_bins[1]
-        # y_idx = idx % self.n_bins[1]
-        # x = self.grid[0][x_idx]
-        # y = self.grid[1][y_idx]
-        # return np.array([x, y])
 
     def step(self, a):
         obs, reward, done, info = self.env.step(a)
         return self.discretize(obs), reward, done, info
-
-    # def discretize(self, obs):
-    #     env_low = self.env.observation_space.low
-    #     env_high = self.env.observation_space.high
-    #     env_dx = (env_high - env_low) / self.n_bins
-    #     a = int((obs[0] - env_low[0])/env_dx[0])
-    #     b = int((obs[1] - env_low[1])/env_dx[1])
-    #     return a*self.n_bins + b
-
-    # def undiscretize(self, obs):
-    #     a, b = obs // self.n_bins, obs % self.n_bins
-    #     env_low = self.env.observation_space.low
-    #     env_high = self.env.observation_space.high
-    #     env_dx = (env_high - env_low) / self.n_bins
-    #     x = env_low[0] + (b + 0.5) * env_dx[0]
-    #     y = env_low[1] + (a + 0.5) * env_dx[1]
-    #     return x, y
 
     def reset(self):
         obs = self.env.reset()
@@ -66,10 +42,6 @@ class MountainCarDiscretized(gym.Env):
 
     def render(self, mode="human"):
         return self.env.render(mode=mode)
-    
-    # def seed(self, seed):
-    #     pass
-    #     self.env.seed(seed)
     
 class BenchmarkMountainCar(BenchmarkEnv):
 
@@ -86,11 +58,7 @@ class BenchmarkMountainCar(BenchmarkEnv):
         Generates an inaccurate model for the MB agents.
         The inaccuracy is that the force and gravity are misrepresented.
         """
-        # max_position, max_velocity = self.env.env.observation_space.high
-        # goal_positions = np.arange(0.5, max_position, 0.1)
-        # goal_velocities = np.arange(0, max_velocity, 0.01)
-        # print(goal_positions, goal_velocities)
-        # goal_states = np.array([self.env.discretize((pos, vel)) for pos, vel in itertools.product(goal_positions, goal_velocities)])
+
         goal_states = np.array([self.env.discretize((0.50100002, 0.0))])
         T = np.zeros((self.env.nS, self.env.nA), dtype=int)
         R = np.full((self.env.nS, self.env.nA), -1.0, dtype=float)

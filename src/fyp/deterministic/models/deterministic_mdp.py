@@ -20,18 +20,18 @@ def a_star(start, goal_states, states, actions, transition_function, reward_func
     g_scores = {start: 0}
     parent = {start: None}
     parent_action = {start: None}
+   
     # Initialize the frontier with the start state and its f-score
     frontier = [(0 + manhattan_distance(undiscretize_fn(start), undiscretize_fn(goal_states[0])), start)]
     meta_calls = defaultdict(list)
+    
     # Loop until the frontier is empty or a goal state is found
     while frontier:
-        # Get the state with the lowest f-score from the frontier
+
+
         _, current = heapq.heappop(frontier)
         
         if current in goal_states:
-            # print(parent, parent_action)
-            # print(meta_calls)
-            # Construct the optimal path by following the parent pointers
             path = []
             while current != start:
                 path.append(parent_action[current])
@@ -43,7 +43,7 @@ def a_star(start, goal_states, states, actions, transition_function, reward_func
         for action in range(len(actions)):
             # Apply the action to get the next state and its probability
             best_next_state = transition_function[current, action]
-            # for next_state, probability in transition_function(current, action):
+
             # Calculate the tentative g-score of the next state
             tentative_g_score = g_scores[current] + -reward_function[current, action]
             tentative_f_score = tentative_g_score +  manhattan_distance(undiscretize_fn(best_next_state), undiscretize_fn(goal_states[0]))
@@ -116,88 +116,11 @@ def a_star(start, goal_states, states, actions, transition_function, reward_func
             g_scores[best_next_state] = tentative_g_score
             parent[best_next_state] = current
             parent_action[best_next_state] = action
-            # Calculate the f-score of the next state and add it to the frontier
-            # f_score = tentative_g_score +  manhattan_distance(undiscretize_fn(best_next_state), goal_states[0])
 
             heapq.heappush(frontier, (tentative_f_score, best_next_state))
 
     # If the frontier is empty and no goal state was found, return None
     return None, float('inf')
-
-# def a_star(start, goal_states, actions, transition_function, reward_function, meta=False, meta_sa=None, observed_sa=None, reasonable_meta_actions=None, meta_actions=None, undiscretize_fn=None):
-    
-#     meta_calls = defaultdict(list)
-#     # Initialize the frontier with the start state
-#     frontier = [(manhattan_distance(undiscretize_fn(start), undiscretize_fn(goal_states[0])), start)]
-#     # Initialize the explored set
-#     explored = set()
-#     # Initialize the dictionary for storing the path
-#     path = {start: (None, None)}  # each value in the dictionary is a tuple of (previous_state, previous_action)
-#     # Loop until the goal state is found or the frontier is empty
-#     while frontier:
-#         # Pop the state with the lowest f-score from the frontier
-#         _, current_state = heapq.heappop(frontier)
-#         # If the current state is a goal state, return the path
-#         if current_state == goal_states[0]:
-#             path_cost = 0
-#             result_path = []
-#             while path[current_state][0] != None:
-#                 result_path.append(path[current_state][1])
-#                 path_cost += -reward_function[path[current_state][0], path[current_state][1]]
-#                 current_state = path[current_state][0]
-#             result_path.reverse()
-#             return result_path, path_cost
-#         # Add the current state to the explored set
-#         explored.add(current_state)
-
-#         # Expand the current state by applying each action
-#         for action in actions:
-#             r = reward_function[current_state[1], action]
-#             if meta:
-#                 if not meta_sa[current_state[1]][action][BaseMetaActions.INCREASE_REWARD] and not observed_sa[current_state[1]][action]:
-#                     r = np.max(reward_function)
-
-#                 if not meta_sa[current_state[1]][action][BaseMetaActions.ADD_TRANSITION] and not observed_sa[current_state[1]][action]:
-#                     for next_state in reasonable_meta_actions[current_state[1]]:
-#                         g_score = path[current_state][1] + -r if path[current_state][1] != None else -r
-#                         h_score = manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-#                         f_score = g_score + h_score
-
-#                         if next_state not in explored and next_state not in [state[1] for state in frontier]:
-#                             heapq.heappush(frontier, (f_score, next_state))
-#                             path[next_state] = (current_state, action)
-#                         elif next_state in [state[1] for state in frontier]:
-#                             index = [state[1] for state in frontier].index(next_state)
-#                             if g_score < path[next_state][1]:
-#                                 path[next_state] = (current_state, action)
-#                                 frontier[index] = (frontier[index][0], next_state)
-                        
-#             next_state = transition_function[current_state, action]
-#             # If the next state is not in the explored set or the frontier, add it to the frontier
-            
-#             if next_state not in explored and next_state not in [state[1] for state in frontier]:
-#                 g_score = path[current_state][1] + -r if path[current_state][1] != None else -r
-#                 h_score = manhattan_distance(undiscretize_fn(next_state), undiscretize_fn(goal_states[0]))
-#                 f_score = g_score + h_score
-#                 heapq.heappush(frontier, (f_score, next_state))
-#                 path[next_state] = (current_state, action)
-
-#             # If the next state is already in the frontier, update its g-score if it is lower than the previous one
-#             elif next_state in [state[1] for state in frontier]:
-#                 index = [state[1] for state in frontier].index(next_state)
-#                 g_score = path[current_state][1] + -r if path[current_state][1] != None else -r
-#                 if g_score < path[next_state][1]:
-#                     path[next_state] = (current_state, action)
-#                     frontier[index] = (frontier[index][0], next_state)
-
-
-#     """
-#     g_score usage is incorrect here.
-#     """
-
-#     # If no path is found, return None
-#     return None
-
 
 
 # @numba.jit(nopython=True)
@@ -383,209 +306,3 @@ class D_MDP:
             else:
                 return meta_actions[0]
         return self.pi[start]
-    
-        # if not meta or not self.reasonable_meta_transitions:
-        #     return self.pi[start]
-
-        # candidate_MDP = deepcopy(self)
-        # changes_t = defaultdict(None)
-        # changes_r = defaultdict(None)
-        
-        # state = start
-        # current_pi = self.pi
-        # current_V = self.V
-
-        # while state not in self.goal_states:
-        #     best_changes = None
-
-        #     for action in self.actions:
-
-        #         for next_state in self.states:
-        #             if not observed_sa[state][action] and state != next_state and next_state in self.reasonable_meta_transitions[state]:
-        #                 temp_MDP = deepcopy(candidate_MDP)
-        #                 change_t = None
-        #                 change_r = None
-        #                 if self.transition_function[state, action] != next_state and not meta_sa[state][action][BaseMetaActions.ADD_TRANSITION]:
-        #                     temp_MDP.update_transition(state, action, next_state)
-        #                     change_t = (state, action, next_state)
-        #                 if not meta_sa[state][action][BaseMetaActions.INCREASE_REWARD]:
-        #                     temp_MDP.update_reward(state, action, np.max(candidate_MDP.reward_function))
-        #                     change_r = (state, action, np.max(candidate_MDP.reward_function))
-        #                 if change_t or change_r:
-        #                     # print(temp_MDP.transition_function[state, action])
-        #                     # print(temp_MDP.reward_function[state, action])
-        #                     V_, pi_ = value_iteration(deepcopy(current_V), temp_MDP.states, self.goal_states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor)
-        #                     # print(f"Considering {change_t, change_r}")
-        #                     # print(V_[state], current_V[state])
-        #                     # print(V_)
-        #                     # print(current_V)
-        #                     if V_[state] > current_V[state]:
-        #                         best_changes = (change_t, change_r)
-        #                         current_pi = pi_
-        #                         current_V = V_
-        #     if best_changes is not None:
-        #         best_change_t, best_change_r = best_changes
-        #         candidate_MDP.update_transition(*best_change_t)
-        #         candidate_MDP.update_reward(*best_change_r)
-        #         changes_t[state] = best_change_t
-        #         changes_r[state] = best_change_r
-            
-        #             # if not observed_sa[state][action] and not meta_sa[state][action][BaseMetaActions.ADD_TRANSITION] and next_state in self.reasonable_meta_transitions[state] and not self.transition_function[state, action] == next_state and state != next_state:
-        #             #     print(f"Trying {state} {action} {next_state}")
-        #             #     print(V_)
-        #             #     print(V_[state], current_V[state])
-        #             #     return
-
-        #     # if best_change is not None:
-        #     #     candidate_MDP.update_transition(*best_change)
-        #     #     changes_t[state] = best_change
-        #     state, _ = candidate_MDP.step(state, current_pi[state])
-        #     print(state)
-
-        
-
-        # # while state not in self.goal_states:
-        #     # best_change = None
-
-        #     # for action in self.actions:
-        #     #     next_state = candidate_MDP.transition_function[state, action] 
-        #     #     if state != next_state and not observed_sa[state][action] and not meta_sa[state][action][BaseMetaActions.INCREASE_REWARD] and next_state in self.reasonable_meta_transitions[state]:
-        #     #         temp_MDP = deepcopy(candidate_MDP)
-        #     #         temp_MDP.update_reward(state, action, candidate_MDP.reward_function[state, action]+1)
-        #     #         V_, pi_ = value_iteration(deepcopy(current_V),  temp_MDP.states, self.goal_states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-
-        #     #         if V_[state] > current_V[state]:
-        #     #             best_change = (state, action, candidate_MDP.reward_function[state, action]+1)
-        #     #             current_pi = pi_
-        #     #             current_V = V_
-        #     #     # for next_state in self.states:
-        #     #     #     if state != next_state:
-
-        #     #     #         if not observed_sa[state][action] and not meta_sa[state][action][BaseMetaActions.INCREASE_REWARD] and next_state in self.reasonable_meta_transitions[state]:
-        #     #     #             temp_MDP = deepcopy(candidate_MDP)
-        #     #     #             temp_MDP.update_reward(state, action, candidate_MDP.reward_function[state, action]+1)
-        #     #     #             V_, pi_ = value_iteration(deepcopy(current_V),  temp_MDP.states, self.goal_states, temp_MDP.actions, temp_MDP.transition_function, temp_MDP.reward_function, temp_MDP.discount_factor, max_iter=100)
-
-        #     #     #             if V_[state] > current_V[state]:
-        #     #     #                 best_change = (state, action, candidate_MDP.reward_function[state, action]+1)
-        #     #     #                 current_pi = pi_
-        #     #     #                 current_V = V_
-
-        #     # if best_change is not None:
-        #     #     candidate_MDP.update_reward(*best_change)
-        #     #     changes_t[state] = best_change
-        
-        #     # state, _ = candidate_MDP.step(state, current_pi[state])
-
-        # if changes_t.get(start, None):
-        #     _, target_action, target_state = changes_t[start]
-        #     return BaseMetaActions.ADD_TRANSITION, target_action, target_state
-        #     # return changes_t[start]
-        # elif changes_r.get(start, None):
-        #     _, target_action, _ = changes_r[start]
-        #     return BaseMetaActions.INCREASE_REWARD, target_action, None
-        # else:
-        #     return current_pi[start]
-
-        # if not meta:
-        #     return self.pi[start]
-
-        # candidate_changes_r = {(start, a, self.get_reward(start, a)+1.0) : -np.inf for a in self.actions}
-        # candidate_changes_t = {(start, a, next_state) : -np.inf for (a, next_state) in product(self.actions, self.states)}
-
-        # for (s, a, r) in candidate_changes_r.keys():
-        #     if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.INCREASE_REWARD]:
-        #         candidate_MDP = deepcopy(self)
-        #         candidate_MDP.update_reward(s, a, r)
-        #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
-        #         candidate_changes_r[(s,a,r)] = V_[s]
-        
-        # for (s, a, s_) in candidate_changes_t.keys():
-        #     if not observed_sa[s][a] and not meta_sa[s][a][MetaAction.ADD_TRANSITION]:
-        #         candidate_MDP = deepcopy(self)
-        #         candidate_MDP.update_transition(s, a, s_)
-        #         V_, pi_ = value_iteration(deepcopy(self.V), candidate_MDP.states, candidate_MDP.actions, candidate_MDP.transition_function, candidate_MDP.reward_function, candidate_MDP.discount_factor, max_iter=100)
-
-        #         candidate_changes_t[(s,a,s_)] = V_[s]
-        
-        # best_max_r = max(candidate_changes_r.values())
-        # best_change_r = random.choice([c_r for c_r in candidate_changes_r.keys() if candidate_changes_r[c_r] == best_max_r])
-        # best_max_t = max(candidate_changes_t.values())
-        # best_change_t = random.choice([c_t for c_t in candidate_changes_t.keys() if candidate_changes_t[c_t] == best_max_t])
-        
-        # if self.V[start] > candidate_changes_r[best_change_r] and self.V[start] > candidate_changes_t[best_change_t]:
-        #     return self.pi[start]
-        # elif candidate_changes_r[best_change_r] > candidate_changes_t[best_change_t] and candidate_changes_r[best_change_r] > self.V[start]:
-        #     _, target_action, _ = best_change_r
-        #     return MetaAction.INCREASE_REWARD, target_action
-        # else:
-        #     _, target_action, target_state = best_change_t
-        #     return MetaAction.ADD_TRANSITION, target_action, target_state
-
-        # for s in self.states:
-        #     for a in self.actions:
-        #         for next_state in self.states:
-        #             changes_t.append(s, a, next_state)
-
-
-        # s_a_pairs = set((s,a) for s, a, _ in changes_t)
-        # s_a_pairs_changes = defaultdict(list)
-        
-        # for s, a, next_state in changes_t:
-        #     s_a_pairs_changes[(s,a)].append(next_state)
-        
-        # permutations = [[]]
-        # for (s,a) in s_a_pairs:
-        #     new_permutations = []
-        #     for perm in permutations:
-        #         if not any(s_ == s and a == a_ for s_, a_, _ in perm):
-        #             for 
-
-
-        #             changes.append(("T", s, a, next_state))
-        #         changes.append(("R", s, a, self.reward_function[s][a]+1))
-
-        # print(changes)
-        # print(len(changes), len(self.states), len(self.actions))
-
-        # changes_r = {state: {action: None for action in self.actions} for state in self.states}
-        # changes_t = {state: {action : None for action in self.actions} for state in self.states}
-
-        # V = self.V
-        # pi = self.pi
-
-        # for state in self.states:
-
-        #     for action in self.actions:
-
-        #         if not observed_sa[state][action]:
-                
-        #             if not meta_sa[state][action][MetaAction.INCREASE_REWARD]:
-        #                 candidate_mdp_ = D_MDP(self.states, self.actions, deepcopy(self.transition_function), deepcopy(self.reward_function), run_VI=False)    
-        #                 candidate_mdp_.update_reward(state, action, 1.)
-        #                 V_, pi_ = value_iteration(deepcopy(V), candidate_mdp_.states, candidate_mdp_.actions, candidate_mdp_.transition_function, candidate_mdp_.reward_function, candidate_mdp_.discount_factor, max_iter=10)
-        #                 if V_[state] > V[state] and pi[state] != pi_[state]:
-        #                     V[state] = V_[state]
-        #                     pi[state] = pi_[state]
-        #                     changes_r[state][action] = MetaAction.INCREASE_REWARD
-
-        #             for next_state in self.states:
-        #                 if not meta_sa[state][action][MetaAction.ADD_TRANSITION]:
-        #                     if state == next_state:
-        #                         continue
-        #                     candidate_mdp_ = D_MDP(self.states, self.actions, deepcopy(self.transition_function), deepcopy(self.reward_function), run_VI=False)    
-        #                     candidate_mdp_.update_transition(state, action, next_state)
-        #                     V_, pi_ = value_iteration(deepcopy(V), candidate_mdp_.states, candidate_mdp_.actions, candidate_mdp_.transition_function, candidate_mdp_.reward_function, candidate_mdp_.discount_factor, max_iter=10)
-        #                     if V_[state] > V[state] and pi[state] != pi_[state]:
-        #                         V[state] = V_[state]
-        #                         pi[state] = pi_[state]
-        #                         changes_t[state][action] = (MetaAction.ADD_TRANSITION, next_state)
-
-        # action = pi[start]
-        # if changes_t[start][action]:
-        #     meta_action, next_state = changes_t[start][action]
-        #     return meta_action, action, next_state
-        # if changes_r[start][action]:
-        #     meta_action = changes_r[start][action]
-        #     return meta_action, action
-        # return pi[start]

@@ -105,34 +105,3 @@ class BenchmarkWindyGridworld(BenchmarkEnv):
             np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-states.npy")), states)
             np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-regrets.npy")), regrets)
             np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-regrets_95pc.npy")), regrets_95pc)
-
-        # for agent, result in results.items():
-        #     rewards, rewards_95pc, states = result
-        #     np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-rewards.npy")), rewards)
-        #     np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-rewards_95pc.npy")), rewards_95pc)
-        #     np.save((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-states.npy")), states)
-        #     plt.figure(0)
-        #     plt.plot(rewards, label=agent)
-        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-        #     plt.xlabel("Episode")
-        #     plt.ylabel("Reward")
-        #     plt.title(f"Cliff Walking {agent} Learning Curve")    
-        #     plt.savefig((os.path.join("results", "deterministic", "windy_gridworld", f"{agent}-rewards.png")))
-        #     plt.clf()
-
-        #     plt.figure(1)
-        #     plt.plot(rewards, label=agent)
-        #     if not "PRL" in agent:
-        #         print(f"[Windy Gridworld] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
-        #     else:
-        #         print(f"[Windy Gridworld] {agent} mean, std, min, max, final rewards: {np.mean(rewards), np.std(rewards), np.min(rewards), np.max(rewards), rewards[-1]}")
-        #         print(f"[Windy Gridworld] {agent} mean, std, min, max, final planning rewards: {np.mean(rewards[:p-w]), np.std(rewards[:p-w]), np.min(rewards[:p-w]), np.max(rewards[:p-w]), rewards[:p-w][-1]}")
-        #     plt.fill_between(np.arange(len(rewards_95pc)), rewards_95pc[:, 0], rewards_95pc[:, 1], alpha=0.2)
-        
-        # plt.figure(1)
-        # plt.legend()
-        # plt.xlabel("Episode")
-        # plt.ylabel("Reward")
-        # plt.title("Windy Gridworld")  
-        # plt.savefig((os.path.join("results", "deterministic", "windy_gridworld", "rewards.png")))
-        # plt.clf()

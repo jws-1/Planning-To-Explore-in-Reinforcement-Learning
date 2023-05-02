@@ -31,8 +31,6 @@ class RLAgent():
         eps = config.eps
 
         for i in range(config.episodes):
-            # if i % (config.episodes // 100) == 0:
-            # print(f"RL-AGENT: episode {i}")
 
             done = False
             state = self.env.reset()
@@ -78,11 +76,6 @@ class RLAgent():
 
             states[i] = deepcopy(states_)
 
-            # print(states_.shape)
-            # # Compute states over episodes
-            # states_window = np.lib.stride_tricks.sliding_window_view(states_, config.window_size, axis=0)
-            # print(states_window.shape, states_windows.shape, states_windows[i].shape)
-            # states_windows[i] = deepcopy(states_window)
 
         # Compute confidence intervals for rewards over windows
         rewards_95pc = []
@@ -92,13 +85,6 @@ class RLAgent():
                 a.extend(list(np.ravel(rewards_windows[j][i])))
             rewards_95pc.append(st.norm.interval(confidence=0.95, loc=np.mean(a), scale=st.sem(a)))
 
-        # Compute confidence intervals for states over windows
-        # states_95pc = []
-        # for i in range(states_windows.shape[1]):
-        #     a = []
-        #     for j in range(states_windows.shape[0]):
-        #         a.extend(list(np.ravel(states_windows[j][i])))
-        #     states_95pc.append(st.norm.interval(confidence=0.95, loc=np.mean(a), scale=st.sem(a)))
 
         # Compute confidence intervals for regrets over windows
         regrets_95pc = []
@@ -111,8 +97,7 @@ class RLAgent():
         # Compute mean of aggregated rewards over all runs and windows
         aggregated_rewards_windows = np.mean(np.mean(rewards_windows, axis=2), axis=0)
 
-        # # Compute mean of aggregated states over all runs and windows
-        # aggregated_states_windows = np.mean(states_windows, axis=(0,2))
+        # Compute mean of states over all runs and windows
         states = np.mean(states, axis=0)
 
         # Compute mean of aggregated regrets over all runs and windows
